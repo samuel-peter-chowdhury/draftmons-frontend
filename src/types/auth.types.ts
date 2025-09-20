@@ -15,6 +15,6 @@ export interface AuthState {
 }
 
 export interface AuthResponse {
-  authenticated: boolean;
+  isAuthenticated: boolean;
   user?: User;
 }

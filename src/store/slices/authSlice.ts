@@ -11,7 +11,7 @@ const initialState: AuthState = {
 
 // Thunks
 export const hydrateAuth = createAsyncThunk(
-  'auth/hydrate',
+  'auth/status',
   async () => {
     const response = await authService.checkStatus();
     return response;
@@ -51,7 +51,7 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(hydrateAuth.fulfilled, (state, action) => {
-        if (action.payload.authenticated && action.payload.user) {
+        if (action.payload.isAuthenticated && action.payload.user) {
           state.status = 'authenticated';
           state.user = action.payload.user;
         } else {
@@ -81,7 +81,7 @@ const authSlice = createSlice({
 export const { startLogin, clearError, setReturnTo } = authSlice.actions;
 
 // Selectors
-export const selectIsAuthed = (state: { auth: AuthState }) => 
+export const selectIsAuthed = (state: { auth: AuthState }) =>
   state.auth.status === 'authenticated';
 export const selectUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectAuthStatus = (state: { auth: AuthState }) => state.auth.status;

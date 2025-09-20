@@ -10,7 +10,7 @@ import leaguesService from '@/services/api/leagues.service';
 import { League } from '@/types/league.types';
 
 export default function LeaguesPage() {
-  const [leagues, setLeagues] = useState<League[]>([]);
+  const [leagues, setLeagues] = useState<Array<League>>(new Array<League>());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,8 +20,8 @@ export default function LeaguesPage() {
 
   const fetchLeagues = async () => {
     try {
-      const response = await leaguesService.getAll();
-      setLeagues(response.data);
+      //const response = await leaguesService.getAll();
+      //setLeagues(response.data);
     } catch (err) {
       setError('Failed to load leagues');
     } finally {
