@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { AuthState, User } from '@/types/auth.types';
+import { AuthState } from '@/dtos/auth.dto';
 import authService from '@/services/api/auth.service';
 
 const initialState: AuthState = {
@@ -10,7 +10,7 @@ const initialState: AuthState = {
 };
 
 // Thunks
-export const hydrateAuth = createAsyncThunk(
+export const authStatus = createAsyncThunk(
   'auth/status',
   async () => {
     const response = await authService.checkStatus();
@@ -18,7 +18,7 @@ export const hydrateAuth = createAsyncThunk(
   }
 );
 
-export const logout = createAsyncThunk(
+export const authLogout = createAsyncThunk(
   'auth/logout',
   async () => {
     await authService.logout();
@@ -45,12 +45,12 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Hydrate Auth
-      .addCase(hydrateAuth.pending, (state) => {
+      // Auth Status
+      .addCase(authStatus.pending, (state) => {
         state.status = 'checking';
         state.error = null;
       })
-      .addCase(hydrateAuth.fulfilled, (state, action) => {
+      .addCase(authStatus.fulfilled, (state, action) => {
         if (action.payload.isAuthenticated && action.payload.user) {
           state.status = 'authenticated';
           state.user = action.payload.user;
@@ -60,19 +60,19 @@ const authSlice = createSlice({
         }
         state.error = null;
       })
-      .addCase(hydrateAuth.rejected, (state, action) => {
+      .addCase(authStatus.rejected, (state, action) => {
         state.status = 'unauthenticated';
         state.user = null;
         state.error = action.error.message || 'Failed to check auth status';
       })
-      // Logout
-      .addCase(logout.fulfilled, (state) => {
+      // Auth Logout
+      .addCase(authLogout.fulfilled, (state) => {
         state.status = 'unauthenticated';
         state.user = null;
         state.error = null;
         state.returnTo = null;
       })
-      .addCase(logout.rejected, (state, action) => {
+      .addCase(authLogout.rejected, (state, action) => {
         state.error = action.error.message || 'Failed to logout';
       });
   },
@@ -81,8 +81,7 @@ const authSlice = createSlice({
 export const { startLogin, clearError, setReturnTo } = authSlice.actions;
 
 // Selectors
-export const selectIsAuthed = (state: { auth: AuthState }) =>
-  state.auth.status === 'authenticated';
+export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.status === 'authenticated';
 export const selectUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectAuthStatus = (state: { auth: AuthState }) => state.auth.status;
 export const selectAuthError = (state: { auth: AuthState }) => state.auth.error;

@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
-import { API_URL } from '@/utils/constants';
+import { API_URL } from '../utils/constants';
 
 class HttpService {
   private http: AxiosInstance;

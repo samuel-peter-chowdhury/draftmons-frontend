@@ -1,26 +1,27 @@
+import { PokemonInputDto, PokemonOutputDto } from '../../dtos/pokemon.dto';
+import { PaginatedResponse } from '../../utils/paginatedResponse';
 import httpService from '../http.service';
-import { Pokemon, PokemonResponse } from '@/types/pokemon.types';
 
 class PokemonService {
-  async getAll(page = 1, pageSize = 10): Promise<PokemonResponse> {
-    const response = await httpService.get<PokemonResponse>('/pokemon', {
+  async getAll(page = 1, pageSize = 10): Promise<PaginatedResponse<PokemonInputDto>> {
+    const response = await httpService.get<PaginatedResponse<PokemonInputDto>>('/pokemon', {
       params: { page, pageSize },
     });
     return response.data;
   }
 
-  async getById(id: string): Promise<Pokemon> {
-    const response = await httpService.get<Pokemon>(`/pokemon/${id}`);
+  async getById(id: string): Promise<PokemonInputDto> {
+    const response = await httpService.get<PokemonInputDto>(`/pokemon/${id}`);
     return response.data;
   }
 
-  async create(pokemon: Partial<Pokemon>): Promise<Pokemon> {
-    const response = await httpService.post<Pokemon>('/pokemon', pokemon);
+  async create(pokemon: PokemonOutputDto): Promise<PokemonInputDto> {
+    const response = await httpService.post<PokemonInputDto>('/pokemon', pokemon);
     return response.data;
   }
 
-  async update(id: string, pokemon: Partial<Pokemon>): Promise<Pokemon> {
-    const response = await httpService.put<Pokemon>(`/pokemon/${id}`, pokemon);
+  async update(id: string, pokemon: Partial<PokemonOutputDto>): Promise<PokemonInputDto> {
+    const response = await httpService.put<PokemonInputDto>(`/pokemon/${id}`, pokemon);
     return response.data;
   }
 

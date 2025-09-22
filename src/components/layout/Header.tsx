@@ -14,7 +14,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { useColorMode } from '@/contexts/ColorModeContext';
 import { LeaguesAccordion } from './LeaguesAccordion';
 import { useAppDispatch } from '@/store/hooks';
-import { logout } from '@/store/slices/authSlice';
+import { authLogout } from '@/store/slices/authSlice';
 import { useRouter, usePathname } from 'next/navigation';
 
 interface HeaderProps {
@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const isLeaguePage = pathname.startsWith('/leagues/') && pathname.split('/').length > 2;
 
   const handleLogout = async () => {
-    await dispatch(logout());
+    await dispatch(authLogout());
     router.push('/');
   };
 

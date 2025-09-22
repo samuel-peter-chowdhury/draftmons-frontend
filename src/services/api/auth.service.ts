@@ -1,5 +1,5 @@
 import httpService from '../http.service';
-import { AuthResponse } from '@/types/auth.types';
+import { AuthResponse } from '@/dtos/auth.dto';
 import { API_URL } from '@/utils/constants';
 
 class AuthService {

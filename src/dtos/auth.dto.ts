@@ -1,20 +1,15 @@
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  photo?: string;
-}
+import { UserInputDto } from "./user.dto";
 
 export type AuthStatus = 'idle' | 'checking' | 'authenticated' | 'unauthenticated';
 
 export interface AuthState {
   status: AuthStatus;
-  user: User | null;
+  user: UserInputDto | null;
   error: string | null;
   returnTo: string | null;
 }
 
 export interface AuthResponse {
   isAuthenticated: boolean;
-  user?: User;
+  user?: UserInputDto;
 }

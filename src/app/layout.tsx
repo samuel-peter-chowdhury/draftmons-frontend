@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
 import { ColorModeProvider } from '@/contexts/ColorModeContext';
-import { hydrateAuth } from '@/store/slices/authSlice';
+import { authStatus } from '@/store/slices/authSlice';
 import './globals.css';
 
 export default function RootLayout({
@@ -13,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    // Hydrate auth on app load
-    store.dispatch(hydrateAuth());
+    // Auth status on app load
+    store.dispatch(authStatus());
   }, []);
 
   return (
