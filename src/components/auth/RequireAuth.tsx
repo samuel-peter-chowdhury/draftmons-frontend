@@ -19,22 +19,28 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
 
   useEffect(() => {
     if (authStatus === 'unauthenticated') {
+      // Save the current path to return to after authentication
       dispatch(setReturnTo(pathname));
+      // Redirect to the public landing page
       router.push('/');
-    } else if (authStatus === 'authenticated' && returnTo) {
+    } else if (authStatus === 'authenticated' && returnTo && returnTo !== '/') {
+      // After authentication, return to the saved path
       const destination = returnTo;
       dispatch(setReturnTo(null));
       router.push(destination);
     }
   }, [authStatus, returnTo, pathname, router, dispatch]);
 
+  // Show loading while checking auth
   if (authStatus === 'checking' || authStatus === 'idle') {
     return <Loading fullScreen />;
   }
 
+  // Don't render anything if unauthenticated (will redirect)
   if (authStatus === 'unauthenticated') {
     return null;
   }
 
+  // Render children if authenticated
   return <>{children}</>;
 };

@@ -1,14 +1,17 @@
 import React from 'react';
 import { Button, Box, Typography } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
-import { useAppDispatch } from '@/store/hooks';
-import { startLogin } from '@/store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { startLogin, selectReturnTo } from '@/store/slices/authSlice';
 
 export const GoogleSignIn: React.FC = () => {
   const dispatch = useAppDispatch();
+  const returnTo = useAppSelector(selectReturnTo);
 
   const handleGoogleSignIn = () => {
-    dispatch(startLogin(window.location.pathname));
+    // If there's a saved returnTo path, use it; otherwise default to /home
+    const destination = returnTo || '/home';
+    dispatch(startLogin(destination));
   };
 
   return (

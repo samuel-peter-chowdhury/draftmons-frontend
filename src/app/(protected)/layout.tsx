@@ -1,34 +1,33 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Box, Container, Typography, Toolbar } from '@mui/material';
-import { RequireAuth } from '@/components/auth/RequireAuth';
+import { Box, Toolbar } from '@mui/material';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { RequireAuth } from '@/components/auth/RequireAuth';
 import { usePathname } from 'next/navigation';
 
-export default function HomePage() {
+export default function ProtectedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  
+  // Check if we're on a league-specific page
   const isLeaguePage = pathname.startsWith('/leagues/') && pathname.split('/').length > 2;
 
   return (
     <RequireAuth>
       <Box sx={{ display: 'flex' }}>
-        <Header onMenuClick={() => setSidebarOpen(true)} />
+        <Header onMenuClick={() => setSidebarOpen(true)} showMenuButton={isLeaguePage} />
         {isLeaguePage && (
           <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         )}
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <Toolbar />
-          <Container maxWidth="lg">
-            <Typography variant="h3" component="h1" gutterBottom>
-              Welcome to Draftmons
-            </Typography>
-            <Typography variant="body1">
-              Select a league from the header to get started.
-            </Typography>
-          </Container>
+          <Toolbar /> {/* Spacing for fixed header */}
+          {children}
         </Box>
       </Box>
     </RequireAuth>

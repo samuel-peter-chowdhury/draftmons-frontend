@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    // Auth status on app load
+    // Check auth status on app load
     store.dispatch(authStatus());
   }, []);
 
