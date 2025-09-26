@@ -5,4 +5,4 @@ export interface BaseInputDto {
   updatedAt: Date;
 }
 
-export interface BaseOutputDto { }
+export interface BaseOutputDto {}

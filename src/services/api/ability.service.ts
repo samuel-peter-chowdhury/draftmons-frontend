@@ -1,5 +1,5 @@
-import { AbilityInputDto, AbilityOutputDto } from '../../dtos/ability.dto';
-import { BaseService } from './base.service';
+import { AbilityInputDto, AbilityOutputDto } from "../../dtos/ability.dto";
+import { BaseService } from "./base.service";
 
 class AbilityService extends BaseService<AbilityInputDto, AbilityOutputDto> {
   constructor(protected readonly path: string) {
@@ -7,4 +7,4 @@ class AbilityService extends BaseService<AbilityInputDto, AbilityOutputDto> {
   }
 }
 
-export default new AbilityService('/ability');
+export default new AbilityService("/ability");

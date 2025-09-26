@@ -1,5 +1,5 @@
-import { WeekInputDto, WeekOutputDto } from '../../dtos/week.dto';
-import { BaseService } from './base.service';
+import { WeekInputDto, WeekOutputDto } from "../../dtos/week.dto";
+import { BaseService } from "./base.service";
 
 class WeekService extends BaseService<WeekInputDto, WeekOutputDto> {
   constructor(protected readonly path: string) {
@@ -7,4 +7,4 @@ class WeekService extends BaseService<WeekInputDto, WeekOutputDto> {
   }
 }
 
-export default new WeekService('/week');
+export default new WeekService("/week");

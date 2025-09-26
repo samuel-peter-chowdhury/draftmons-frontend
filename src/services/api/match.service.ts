@@ -1,5 +1,5 @@
-import { MatchInputDto, MatchOutputDto } from '../../dtos/match.dto';
-import { BaseService } from './base.service';
+import { MatchInputDto, MatchOutputDto } from "../../dtos/match.dto";
+import { BaseService } from "./base.service";
 
 class MatchService extends BaseService<MatchInputDto, MatchOutputDto> {
   constructor(protected readonly path: string) {
@@ -7,4 +7,4 @@ class MatchService extends BaseService<MatchInputDto, MatchOutputDto> {
   }
 }
 
-export default new MatchService('/match');
+export default new MatchService("/match");

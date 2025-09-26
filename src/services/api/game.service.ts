@@ -1,5 +1,5 @@
-import { GameInputDto, GameOutputDto } from '../../dtos/game.dto';
-import { BaseService } from './base.service';
+import { GameInputDto, GameOutputDto } from "../../dtos/game.dto";
+import { BaseService } from "./base.service";
 
 class GameService extends BaseService<GameInputDto, GameOutputDto> {
   constructor(protected readonly path: string) {
@@ -7,4 +7,4 @@ class GameService extends BaseService<GameInputDto, GameOutputDto> {
   }
 }
 
-export default new GameService('/game');
+export default new GameService("/game");

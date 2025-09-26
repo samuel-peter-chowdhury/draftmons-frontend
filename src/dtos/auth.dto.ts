@@ -1,6 +1,10 @@
 import { UserInputDto } from "./user.dto";
 
-export type AuthStatus = 'idle' | 'checking' | 'authenticated' | 'unauthenticated';
+export type AuthStatus =
+  | "idle"
+  | "checking"
+  | "authenticated"
+  | "unauthenticated";
 
 export interface AuthState {
   status: AuthStatus;

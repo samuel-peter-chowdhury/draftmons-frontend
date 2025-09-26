@@ -27,12 +27,22 @@ interface ColorModeProviderProps {
 }
 
 export const ColorModeProvider: React.FC<ColorModeProviderProps> = ({ children }) => {
-  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  let storedColorMode;
+  if (typeof window !== 'undefined') {
+    storedColorMode = localStorage.getItem('draftmonsColorMode');
+  }
+  const [mode, setMode] = useState<'light' | 'dark'>(storedColorMode && storedColorMode === 'light' ? 'light' : 'dark');
 
   const colorMode = useMemo(
     () => ({
       toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+        setMode((prevMode) => {
+          const newMode = prevMode === 'light' ? 'dark' : 'light';
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('draftmonsColorMode', newMode);
+          }
+          return newMode;
+        });
       },
       mode,
     }),

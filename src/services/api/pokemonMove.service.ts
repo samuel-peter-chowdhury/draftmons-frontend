@@ -1,10 +1,16 @@
-import { PokemonMoveInputDto, PokemonMoveOutputDto } from '../../dtos/pokemonMove.dto';
-import { BaseService } from './base.service';
+import {
+  PokemonMoveInputDto,
+  PokemonMoveOutputDto,
+} from "../../dtos/pokemonMove.dto";
+import { BaseService } from "./base.service";
 
-class PokemonMoveService extends BaseService<PokemonMoveInputDto, PokemonMoveOutputDto> {
+class PokemonMoveService extends BaseService<
+  PokemonMoveInputDto,
+  PokemonMoveOutputDto
+> {
   constructor(protected readonly path: string) {
     super(path);
   }
 }
 
-export default new PokemonMoveService('/pokemon-move');
+export default new PokemonMoveService("/pokemon-move");

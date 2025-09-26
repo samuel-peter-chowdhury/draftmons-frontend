@@ -1,5 +1,5 @@
-import { TeamInputDto, TeamOutputDto } from '../../dtos/team.dto';
-import { BaseService } from './base.service';
+import { TeamInputDto, TeamOutputDto } from "../../dtos/team.dto";
+import { BaseService } from "./base.service";
 
 class TeamService extends BaseService<TeamInputDto, TeamOutputDto> {
   constructor(protected readonly path: string) {
@@ -7,4 +7,4 @@ class TeamService extends BaseService<TeamInputDto, TeamOutputDto> {
   }
 }
 
-export default new TeamService('/team');
+export default new TeamService("/team");

@@ -1,5 +1,5 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
-import { API_URL } from '../utils/constants';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios";
+import { API_URL } from "../utils/constants";
 
 class HttpService {
   private http: AxiosInstance;
@@ -9,7 +9,7 @@ class HttpService {
       baseURL: API_URL,
       withCredentials: true, // Always send cookies
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
@@ -19,8 +19,11 @@ class HttpService {
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           // Session expired - trigger logout
-          if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-            window.location.href = '/';
+          if (
+            typeof window !== "undefined" &&
+            window.location.pathname !== "/"
+          ) {
+            window.location.href = "/";
           }
         }
         return Promise.reject(error);

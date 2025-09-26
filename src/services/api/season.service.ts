@@ -1,5 +1,5 @@
-import { SeasonInputDto, SeasonOutputDto } from '../../dtos/season.dto';
-import { BaseService } from './base.service';
+import { SeasonInputDto, SeasonOutputDto } from "../../dtos/season.dto";
+import { BaseService } from "./base.service";
 
 class SeasonService extends BaseService<SeasonInputDto, SeasonOutputDto> {
   constructor(protected readonly path: string) {
@@ -7,4 +7,4 @@ class SeasonService extends BaseService<SeasonInputDto, SeasonOutputDto> {
   }
 }
 
-export default new SeasonService('/season');
+export default new SeasonService("/season");
