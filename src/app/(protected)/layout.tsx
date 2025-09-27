@@ -16,7 +16,7 @@ export default function ProtectedLayout({
   const pathname = usePathname();
   
   // Check if we're on a league-specific page
-  const isLeaguePage = pathname.startsWith('/leagues/') && pathname.split('/').length > 2;
+  const isLeaguePage = pathname.startsWith('/league/') && pathname.split('/').length > 2;
 
   return (
     <RequireAuth>
