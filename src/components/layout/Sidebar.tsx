@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Drawer,
   List,
@@ -11,7 +11,7 @@ import {
   Collapse,
   Box,
   Divider,
-} from '@mui/material';
+} from "@mui/material";
 import {
   ExpandLess,
   ExpandMore,
@@ -21,9 +21,12 @@ import {
   Build,
   AdminPanelSettings,
   Settings,
-} from '@mui/icons-material';
-import { useRouter, useParams } from 'next/navigation';
-import { SIDEBAR_NAVIGATION, SIDEBAR_BOTTOM_NAVIGATION } from '@/utils/constants';
+} from "@mui/icons-material";
+import { useRouter, useParams } from "next/navigation";
+import {
+  SIDEBAR_NAVIGATION,
+  SIDEBAR_BOTTOM_NAVIGATION,
+} from "@/utils/constants";
 
 interface SidebarProps {
   open: boolean;
@@ -45,24 +48,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const leagueId = params?.id as string;
   const [openItems, setOpenItems] = useState<string[]>([]);
 
-  const handleItemClick = (item: typeof SIDEBAR_NAVIGATION[0], childPath?: string) => {
+  const handleItemClick = (
+    item: (typeof SIDEBAR_NAVIGATION)[0],
+    childPath?: string
+  ) => {
     const path = childPath || item.path;
-    
+
     if (item.children.length > 0 && !childPath) {
       // Toggle accordion for parent items with children
-      setOpenItems(prev => 
-        prev.includes(item.id) 
-          ? prev.filter(id => id !== item.id)
+      setOpenItems((prev) =>
+        prev.includes(item.id)
+          ? prev.filter((id) => id !== item.id)
           : [...prev, item.id]
       );
     } else {
       // Navigate and close drawer for items without children or child items
-      router.push(`/leagues/${leagueId}${path}`);
+      router.push(`/league/${leagueId}${path}`);
       onClose();
     }
   };
 
-  const renderNavItem = (item: typeof SIDEBAR_NAVIGATION[0]) => {
+  const renderNavItem = (item: (typeof SIDEBAR_NAVIGATION)[0]) => {
     const Icon = iconMap[item.icon];
     const isOpen = openItems.includes(item.id);
 
@@ -74,7 +80,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
               <Icon />
             </ListItemIcon>
             <ListItemText primary={item.label} />
-            {item.children.length > 0 && (isOpen ? <ExpandLess /> : <ExpandMore />)}
+            {item.children.length > 0 &&
+              (isOpen ? <ExpandLess /> : <ExpandMore />)}
           </ListItemButton>
         </ListItem>
         {item.children.length > 0 && (
@@ -82,13 +89,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
             <List component="div" disablePadding>
               {item.children.map((child) => (
                 <ListItem key={child.id} disablePadding>
-                  <ListItemButton 
-                    sx={{ pl: 4 }} 
+                  <ListItemButton
+                    sx={{ pl: 4 }}
                     onClick={() => handleItemClick(item, child.path)}
                   >
-                    <ListItemText 
-                      primary={child.label} 
-                      primaryTypographyProps={{ fontSize: '0.875rem' }}
+                    <ListItemText
+                      primary={child.label}
+                      primaryTypographyProps={{ fontSize: "0.875rem" }}
                     />
                   </ListItemButton>
                 </ListItem>
@@ -106,21 +113,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       open={open}
       onClose={onClose}
       sx={{
-        '& .MuiDrawer-paper': {
+        "& .MuiDrawer-paper": {
           width: 280,
-          boxSizing: 'border-box',
-          mt: '64px', // Height of AppBar
-          height: 'calc(100% - 64px)',
+          boxSizing: "border-box",
+          mt: "64px", // Height of AppBar
+          height: "calc(100% - 64px)",
         },
       }}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
         <List sx={{ flexGrow: 1, pt: 2 }}>
           {SIDEBAR_NAVIGATION.map(renderNavItem)}
         </List>
-        
+
         <Divider />
-        
+
         <List sx={{ pb: 2 }}>
           {SIDEBAR_BOTTOM_NAVIGATION.map(renderNavItem)}
         </List>

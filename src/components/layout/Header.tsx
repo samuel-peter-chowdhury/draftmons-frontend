@@ -14,6 +14,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HomeIcon from "@mui/icons-material/Home";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CatchingPokemonIcon from "@mui/icons-material/CatchingPokemon";
 import { useColorMode } from "@/contexts/ColorModeContext";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -54,6 +55,10 @@ export const Header: React.FC<HeaderProps> = ({
     router.push("/league/" + id);
   };
 
+  const handleAddLeagueClick = () => {
+    router.push("/league/create");
+  };
+
   useEffect(() => {
     fetchLeagues();
   }, []);
@@ -77,18 +82,16 @@ export const Header: React.FC<HeaderProps> = ({
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
     >
       <Toolbar>
-        <Box display="flex" alignItems="center" flexGrow={1} gap={2}>
+        <Box display="flex" alignItems="center" flexGrow={1} gap={1}>
           {showMenuButton && (
             <IconButton
               color="inherit"
-              edge="start"
               onClick={onMenuClick}
               aria-label="menu"
             >
               <MenuIcon />
             </IconButton>
           )}
-
           <IconButton
             color="inherit"
             onClick={handleHomeClick}
@@ -96,9 +99,17 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <HomeIcon />
           </IconButton>
+          <IconButton
+            color="inherit"
+            onClick={handleAddLeagueClick}
+            aria-label="add-league"
+          >
+            <AddCircleIcon />
+          </IconButton>
           {leagues.map((league) => (
             <Button
               color="inherit"
+              sx={{ textTransform: "none" }}
               onClick={() => handleLeagueClick(league.id)}
               aria-label={league.abbreviation}
             >
@@ -119,7 +130,6 @@ export const Header: React.FC<HeaderProps> = ({
               inputProps={{ "aria-label": "theme toggle" }}
             />
           </Tooltip>
-
           <IconButton
             color="inherit"
             onClick={handleLogout}

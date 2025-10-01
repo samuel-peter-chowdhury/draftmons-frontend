@@ -1,8 +1,8 @@
-import React from 'react';
-import { Button, Box, Typography } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { startLogin, selectReturnTo } from '@/store/slices/authSlice';
+import React from "react";
+import { Button, Box, Typography } from "@mui/material";
+import GoogleIcon from "@mui/icons-material/Google";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { startLogin, selectReturnTo } from "@/store/slices/authSlice";
 
 export const GoogleSignIn: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -10,7 +10,7 @@ export const GoogleSignIn: React.FC = () => {
 
   const handleGoogleSignIn = () => {
     // If there's a saved returnTo path, use it; otherwise default to /home
-    const destination = returnTo || '/home';
+    const destination = returnTo || "/home";
     dispatch(startLogin(destination));
   };
 
@@ -41,8 +41,8 @@ export const GoogleSignIn: React.FC = () => {
         onClick={handleGoogleSignIn}
         sx={{
           py: 1.5,
-          textTransform: 'none',
-          fontSize: '1rem',
+          textTransform: "none",
+          fontSize: "1rem",
         }}
       >
         Sign in with Google

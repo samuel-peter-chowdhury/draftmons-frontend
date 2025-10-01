@@ -5,6 +5,7 @@ A modern React frontend application for Draftmons, a Pokemon draft league manage
 ## 🚀 Features
 
 ### Core Functionality
+
 - **Google OAuth Authentication**: Secure authentication via Express.js backend with session cookies
 - **League Management**: Browse and select from multiple leagues
 - **Pokemon Database**: View and manage Pokemon with detailed stats
@@ -12,6 +13,7 @@ A modern React frontend application for Draftmons, a Pokemon draft league manage
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 
 ### Technical Features
+
 - **Type-Safe**: Full TypeScript implementation
 - **State Management**: Redux Toolkit for predictable state updates
 - **Modern UI**: Material UI components with Tailwind CSS utilities
@@ -29,12 +31,14 @@ A modern React frontend application for Draftmons, a Pokemon draft league manage
 ## 🛠️ Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone [repository-url]
    cd draftmons-frontend
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    # or
@@ -42,14 +46,16 @@ A modern React frontend application for Draftmons, a Pokemon draft league manage
    ```
 
 3. **Configure environment variables**
-   
+
    Create a `.env.local` file in the root directory:
+
    ```env
    NEXT_PUBLIC_API_URL=http://localhost:3000/api
    NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id-here
    ```
 
 4. **Start the development server**
+
    ```bash
    npm run dev
    # or
@@ -98,6 +104,7 @@ draftmons-frontend/
 ## 🔧 Available Scripts
 
 ### Development
+
 ```bash
 npm run dev        # Start development server
 npm run build      # Build for production
@@ -106,6 +113,7 @@ npm run lint       # Run ESLint
 ```
 
 ### Production Build
+
 ```bash
 npm run build
 npm run start
@@ -113,17 +121,19 @@ npm run start
 
 ## 🌐 Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:3000/api` |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth Client ID | Required |
+| Variable                       | Description            | Default                     |
+| ------------------------------ | ---------------------- | --------------------------- |
+| `NEXT_PUBLIC_API_URL`          | Backend API URL        | `http://localhost:3000/api` |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Google OAuth Client ID | Required                    |
 
 ## 📱 Pages and Routes
 
 ### Public Routes
+
 - `/` - Landing page with Google sign-in
 
 ### Protected Routes
+
 - `/home` - User dashboard
 - `/leagues` - List of all leagues
 - `/leagues/[id]` - League details
@@ -163,6 +173,7 @@ The application supports light and dark modes:
 ### Redux Slices
 
 1. **authSlice**
+
    - Manages authentication state
    - Handles login/logout flows
    - Stores user profile (non-sensitive data only)
@@ -174,18 +185,22 @@ The application supports light and dark modes:
 ## 🚢 Deployment
 
 ### Production Build
+
 ```bash
 npm run build
 ```
 
 ### Environment Setup
+
 Create `.env.production` with production values:
+
 ```env
 NEXT_PUBLIC_API_URL=https://api.yourdomain.com
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=production-client-id
 ```
 
 ### Deployment Options
+
 - **Vercel** (Recommended): Push to GitHub and connect to Vercel
 - **Docker**: Use the provided Dockerfile (if available)
 - **Traditional hosting**: Upload build output from `.next` directory
@@ -195,11 +210,13 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=production-client-id
 ### Common Issues
 
 1. **Authentication fails**
+
    - Verify backend is running
    - Check Google OAuth credentials
    - Ensure cookies are enabled
 
 2. **API calls fail**
+
    - Confirm `NEXT_PUBLIC_API_URL` is correct
    - Check backend CORS settings
    - Verify session cookies are being sent
