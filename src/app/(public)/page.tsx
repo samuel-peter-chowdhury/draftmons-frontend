@@ -1,44 +1,56 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { Box } from '@mui/material';
-import { GoogleSignIn } from '@/components/auth/GoogleSignIn';
-import { Loading } from '@/components/common/Loading';
-import { useAppSelector } from '@/store/hooks';
-import { selectAuthStatus } from '@/store/slices/authSlice';
-import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Spinner } from '@/components';
+import { useAuthStore } from '@/stores';
+import { ENDPOINTS, CLIENT_URL } from '@/lib/constants';
+import { LogIn } from 'lucide-react';
 
 export default function LandingPage() {
   const router = useRouter();
-  const authStatus = useAppSelector(selectAuthStatus);
+  const search = useSearchParams();
+  const { isAuthenticated, loading, checkAuth } = useAuthStore();
 
   useEffect(() => {
-    // If already authenticated, redirect to home
-    if (authStatus === 'authenticated') {
-      router.push('/home');
+    // Check session on first load
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      // If we arrived here with a "next" param, go there; else /home
+      const next = (search.get('next') as any) || '/home';
+      router.replace(next as any);
     }
-  }, [authStatus, router]);
+  }, [isAuthenticated, search, router]);
 
-  // Show loading state while checking authentication
-  if (authStatus === 'checking' || authStatus === 'idle') {
-    return <Loading fullScreen />;
-  }
+  const next = search.get('next') || '/home';
+  const redirectUrl = `${CLIENT_URL}${next}`;
+  const googleUrl = `${ENDPOINTS.AUTH_GOOGLE}?redirect=${encodeURIComponent(redirectUrl)}&state=${encodeURIComponent(redirectUrl)}`;
 
-  // Show sign-in page for unauthenticated users
-  if (authStatus === 'unauthenticated') {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-        bgcolor="background.default"
-      >
-        <GoogleSignIn />
-      </Box>
-    );
-  }
-
-  // Brief loading state while redirecting authenticated users
-  return <Loading fullScreen />;
+  return (
+    <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Welcome to Draftmons</CardTitle>
+          <CardDescription>Sign in to continue.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-6">
+              <Spinner size={28} />
+            </div>
+          ) : (
+            <a href={googleUrl}>
+              <Button className="w-full">
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign in with Google
+              </Button>
+            </a>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

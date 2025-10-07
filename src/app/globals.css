@@ -2,7 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-    margin: 0;
-    padding: 0;
+/* shadcn-inspired CSS variables for dark theme */
+:root {
+  --background: 222 47% 4%;
+  --foreground: 210 20% 98%;
+  --card: 222 47% 6%;
+  --card-foreground: 210 20% 98%;
+
+  --popover: 222 47% 5%;
+  --popover-foreground: 210 20% 98%;
+
+  --primary: 222 47% 50%;
+  --primary-foreground: 210 20% 98%;
+
+  --secondary: 222 27% 12%;
+  --secondary-foreground: 210 20% 98%;
+
+  --muted: 215 27% 12%;
+  --muted-foreground: 217.9 10.6% 64.9%;
+
+  --accent: 222 27% 12%;
+  --accent-foreground: 210 20% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 20% 98%;
+
+  --border: 215 27% 12%;
+  --input: 215 27% 12%;
+  --ring: 222 47% 50%;
+
+  --radius: 0.5rem;
 }
+
+html {
+  color-scheme: dark;
+}
+body {
+  @apply bg-background text-foreground min-h-screen antialiased;
+}
+/* Header height utility */
+:root { --header-h: 64px; }
+.header-h { height: var(--header-h); }
+.header-pt { padding-top: var(--header-h); }
+.sidebar-w { width: 280px; }

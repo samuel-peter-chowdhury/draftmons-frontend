@@ -1,39 +1,49 @@
 'use client';
 
-import React from 'react';
-import { Container, Typography, Box } from '@mui/material';
-import { useAppSelector } from '@/store/hooks';
-import { selectUser } from '@/store/slices/authSlice';
+import Link from 'next/link';
+import { useEffect } from 'react';
+import { useAuthStore } from '@/stores';
+import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components';
+import { ENDPOINTS } from '@/lib/constants';
 
 export default function HomePage() {
-  const user = useAppSelector(selectUser);
+  const { user, isAuthenticated, checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      checkAuth();
+    }
+  }, [isAuthenticated, checkAuth]);
 
   return (
-    <Container maxWidth="lg">
-      <Typography variant="h3" component="h1" gutterBottom>
-        Welcome to Draftmons{user?.firstName ? `, ${user.firstName}` : ''}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" paragraph>
-        Select a league from the header to get started.
-      </Typography>
-      
-      <Box mt={4}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Getting Started
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Use the leagues dropdown in the header to navigate to your leagues, or create a new one to begin drafting.
-        </Typography>
-      </Box>
+    <div className="mx-auto max-w-7xl p-4">
+      <h1 className="mb-4 text-2xl font-semibold">Welcome{user ? `, ${user.fullName || user.firstName}` : ''} 👋</h1>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Leagues</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center gap-2">
+            <Link href="/league">
+              <Button>Browse Leagues</Button>
+            </Link>
+            <Link href="/league/create">
+              <Button variant="secondary">Create League</Button>
+            </Link>
+          </CardContent>
+        </Card>
 
-      <Box mt={4}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Your Dashboard
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Track your team performance, upcoming drafts, and league standings all from this dashboard.
-        </Typography>
-      </Box>
-    </Container>
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center gap-2">
+            <Link href="/user">
+              <Button>View User</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

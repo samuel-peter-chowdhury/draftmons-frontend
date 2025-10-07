@@ -1,53 +1,129 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Container, Typography, Box } from '@mui/material';
-import { Loading } from '@/components/common/Loading';
-import { ErrorAlert } from '@/components/common/ErrorAlert';
-import { LeagueInputDto } from '../../../dtos/league.dto';
-import leagueService from '../../../services/api/league.service';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
+import { useFetch } from '@/hooks';
+import { ENDPOINTS } from '@/lib/constants';
+import type { LeagueInputDto, PaginatedResponse } from '@/types';
 
-export default function LeaguesPage() {
-  const [leagues, setLeagues] = useState<Array<LeagueInputDto>>(new Array<LeagueInputDto>());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function LeagueListPage() {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortBy, setSortBy] = useState<'name' | 'createdAt'>('name');
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
 
-  useEffect(() => {
-    fetchLeagues();
-  }, []);
+  const url = useMemo(() => {
+    const params = new URLSearchParams({
+      page: String(page),
+      pageSize: String(pageSize),
+      sortBy,
+      sortOrder
+    });
+    return `${ENDPOINTS.LEAGUE_BASE}?${params.toString()}`;
+  }, [page, pageSize, sortBy, sortOrder]);
 
-  const fetchLeagues = async () => {
-    try {
-      const response = await leagueService.getAll(true);
-      setLeagues(response.data);
-    } catch (err) {
-      setError('Failed to load leagues');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, loading, error, refetch } = useFetch<PaginatedResponse<LeagueInputDto>>(url);
 
   return (
-    <Container maxWidth="lg">
-      <Typography variant="h4" component="h1" gutterBottom>
-        Leagues
-      </Typography>
-      <ErrorAlert error={error} />
-      {loading ? (
-        <Loading />
-      ) : (
-        <Box>
-          {leagues.length === 0 ? (
-            <Typography color="text.secondary">
-              No leagues found. Create your first league to get started!
-            </Typography>
-          ) : (
-            leagues.map((league) => (
-              <Typography key={league.id}>{league.name}</Typography>
-            ))
-          )}
-        </Box>
+    <div className="mx-auto max-w-7xl p-4">
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Leagues</h1>
+        <Link href="/league/create">
+          <Button>Create League</Button>
+        </Link>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <label htmlFor="sort-by" className="text-sm">Sort by:</label>
+        <select
+          id="sort-by"
+          className="rounded-md border border-input bg-background p-2 text-sm"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as 'name' | 'createdAt')}
+          aria-label="Sort leagues by field"
+        >
+          <option value="name">Name</option>
+          <option value="createdAt">Created At</option>
+        </select>
+        <label htmlFor="sort-order" className="sr-only">Sort order</label>
+        <select
+          id="sort-order"
+          className="rounded-md border border-input bg-background p-2 text-sm"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as 'ASC' | 'DESC')}
+          aria-label="Sort order ascending or descending"
+        >
+          <option value="ASC">ASC</option>
+          <option value="DESC">DESC</option>
+        </select>
+        <label htmlFor="page-size" className="ml-4 text-sm">Page size:</label>
+        <select
+          id="page-size"
+          className="rounded-md border border-input bg-background p-2 text-sm"
+          value={pageSize}
+          onChange={(e) => setPageSize(Number(e.target.value))}
+          aria-label="Number of items per page"
+        >
+          <option>5</option>
+          <option>10</option>
+          <option>20</option>
+        </select>
+      </div>
+
+      {error && <ErrorAlert message={error} />}
+
+      {loading && !data && (
+        <div className="flex items-center justify-center py-10">
+          <Spinner size={32} />
+        </div>
       )}
-    </Container>
+
+      {data && (
+        <>
+          <div className={loading ? 'opacity-50 pointer-events-none' : ''}>
+            <div className="grid gap-3 md:grid-cols-2">
+              {data.data.map((league) => (
+                <Card key={league.id}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>{league.name}</span>
+                      <span className="text-sm text-muted-foreground">{league.abbreviation}</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex items-center justify-end">
+                    <Link href={`/league/${league.id}`}>
+                      <Button variant="secondary">Open</Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between">
+          <Button
+            variant="outline"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            aria-label="Go to previous page"
+          >
+            Previous
+          </Button>
+          <div className="text-sm text-muted-foreground" role="status" aria-live="polite">
+            Page {data.page} of {data.totalPages} • {data.total} total
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setPage((p) => (data && p < data.totalPages ? p + 1 : p))}
+            disabled={data && page >= data.totalPages}
+            aria-label="Go to next page"
+          >
+            Next
+          </Button>
+        </div>
+        </>
+      )}
+    </div>
   );
 }

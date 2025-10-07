@@ -1,45 +1,51 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Container, Typography } from '@mui/material';
-import { Loading } from '@/components/common/Loading';
+import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { LeagueInputDto } from '../../../../dtos/league.dto';
-import leagueService from '../../../../services/api/league.service';
+import { Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
+import { useFetch } from '@/hooks';
+import { ENDPOINTS } from '@/lib/constants';
+import type { LeagueInputDto } from '@/types';
+import { useUiStore } from '@/stores';
 
 export default function LeagueDetailPage() {
-  const [league, setLeague] = useState<LeagueInputDto>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const params = useParams();
-  const leagueId = params?.id as string;
+  const params = useParams<{ id: string }>();
+  const { setActiveLeagueId } = useUiStore();
+  const { data, loading, error } = useFetch<LeagueInputDto>(`${ENDPOINTS.LEAGUE_BASE}/${params.id}?full=true`);
 
   useEffect(() => {
-    if (leagueId) {
-      fetchLeague();
-    }
-  }, [leagueId]);
-  
-  const fetchLeague = async () => {
-    try {
-      const response = await leagueService.getById(leagueId);
-      setLeague(response);
-    } catch (err) {
-      setError('Failed to load leagues');
-    } finally {
-      setLoading(false);
-    }
-  };
+    setActiveLeagueId(params.id);
+    return () => {
+      setActiveLeagueId(null);
+    };
+  }, [params.id, setActiveLeagueId]);
 
   return (
-    <Container maxWidth="lg">
-      {loading ? (
-        <Loading />
-      ) : (
-        <Typography variant="h4" component="h1" gutterBottom>
-          League Dashboard
-        </Typography>
+    <div className="mx-auto max-w-7xl p-4">
+      {error && <ErrorAlert message={error} />}
+
+      {loading && !data && (
+        <div className="flex items-center justify-center py-10">
+          <Spinner size={32} />
+        </div>
       )}
-    </Container>
+
+      {data && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>{data.name}</span>
+              <span className="text-sm text-muted-foreground">{data.abbreviation}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <div>ID: {data.id}</div>
+            <div>Created: {new Date(data.createdAt).toLocaleString()}</div>
+            <div>Updated: {new Date(data.updatedAt).toLocaleString()}</div>
+            <div className="pt-2 text-foreground">More sections coming soon…</div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

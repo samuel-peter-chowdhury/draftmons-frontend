@@ -1,137 +1,180 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Collapse,
-  Box,
-  Divider,
-} from "@mui/material";
-import {
-  ExpandLess,
-  ExpandMore,
-  Groups,
-  Layers,
-  EmojiEvents,
-  Build,
-  AdminPanelSettings,
-  Settings,
-} from "@mui/icons-material";
-import { useRouter, useParams } from "next/navigation";
-import {
-  SIDEBAR_NAVIGATION,
-  SIDEBAR_BOTTOM_NAVIGATION,
-} from "@/utils/constants";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useUiStore } from '@/stores';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ChevronRight, Layers, ListOrdered, Swords, Wrench } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface SidebarProps {
-  open: boolean;
-  onClose: () => void;
+function NavLink({
+  href,
+  children,
+  disabled
+}: {
+  href: string | '#';
+  children: React.ReactNode;
+  disabled?: boolean;
+}) {
+  const pathname = usePathname();
+  const active = pathname === href || pathname?.startsWith(href + '/');
+  const content = (
+    <span
+      className={cn(
+        'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground',
+        active && 'bg-accent text-accent-foreground',
+        disabled && 'opacity-50'
+      )}
+    >
+      {children}
+      <ChevronRight className="h-4 w-4" />
+    </span>
+  );
+  if (disabled) return <div className="px-2">{content}</div>;
+  return (
+    <Link href={href as any} className="block px-2">
+      {content}
+    </Link>
+  );
 }
 
-const iconMap: { [key: string]: React.ElementType } = {
-  Groups,
-  Layers,
-  EmojiEvents,
-  Build,
-  AdminPanelSettings,
-  Settings,
-};
+export default function Sidebar() {
+  const { sidebarOpen, setSidebar, expandedGroups, toggleGroup, activeLeagueId } = useUiStore();
 
-export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
-  const router = useRouter();
-  const params = useParams();
-  const leagueId = params?.id as string;
-  const [openItems, setOpenItems] = useState<string[]>([]);
-
-  const handleItemClick = (
-    item: (typeof SIDEBAR_NAVIGATION)[0],
-    childPath?: string
-  ) => {
-    const path = childPath || item.path;
-
-    if (item.children.length > 0 && !childPath) {
-      // Toggle accordion for parent items with children
-      setOpenItems((prev) =>
-        prev.includes(item.id)
-          ? prev.filter((id) => id !== item.id)
-          : [...prev, item.id]
-      );
-    } else {
-      // Navigate and close drawer for items without children or child items
-      router.push(`/league/${leagueId}${path}`);
-      onClose();
-    }
-  };
-
-  const renderNavItem = (item: (typeof SIDEBAR_NAVIGATION)[0]) => {
-    const Icon = iconMap[item.icon];
-    const isOpen = openItems.includes(item.id);
-
-    return (
-      <React.Fragment key={item.id}>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => handleItemClick(item)}>
-            <ListItemIcon>
-              <Icon />
-            </ListItemIcon>
-            <ListItemText primary={item.label} />
-            {item.children.length > 0 &&
-              (isOpen ? <ExpandLess /> : <ExpandMore />)}
-          </ListItemButton>
-        </ListItem>
-        {item.children.length > 0 && (
-          <Collapse in={isOpen} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {item.children.map((child) => (
-                <ListItem key={child.id} disablePadding>
-                  <ListItemButton
-                    sx={{ pl: 4 }}
-                    onClick={() => handleItemClick(item, child.path)}
-                  >
-                    <ListItemText
-                      primary={child.label}
-                      primaryTypographyProps={{ fontSize: "0.875rem" }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-          </Collapse>
-        )}
-      </React.Fragment>
-    );
-  };
+  const leaguePrefix = activeLeagueId ? `/league/${activeLeagueId}` : null;
 
   return (
-    <Drawer
-      anchor="left"
-      open={open}
-      onClose={onClose}
-      sx={{
-        "& .MuiDrawer-paper": {
-          width: 280,
-          boxSizing: "border-box",
-          mt: "64px", // Height of AppBar
-          height: "calc(100% - 64px)",
-        },
-      }}
-    >
-      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-        <List sx={{ flexGrow: 1, pt: 2 }}>
-          {SIDEBAR_NAVIGATION.map(renderNavItem)}
-        </List>
+    <>
+      {/* Overlay */}
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/40 transition-opacity',
+          sidebarOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        onClick={() => setSidebar(false)}
+        role="presentation"
+        aria-hidden={!sidebarOpen}
+      />
 
-        <Divider />
+      {/* Panel */}
+      <aside
+        className={cn(
+          'fixed left-0 z-50 sidebar-w border-r border-border bg-background header-pt top-0 pt-[var(--header-h)]',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          'transition-transform'
+        )}
+        style={{ height: '100vh' }}
+        aria-hidden={!sidebarOpen}
+        aria-label="Main navigation"
+      >
+        <nav className="flex h-full flex-col gap-2 p-2" role="navigation">
+          {/* Team Matchup */}
+          <div className="mt-2">
+            <div className="flex items-center gap-2 px-3 py-2 text-sm font-semibold">
+              <Swords className="h-4 w-4" />
+              Team Matchup
+            </div>
+            <NavLink href={leaguePrefix ? `${leaguePrefix}/team-matchup` : '#'} disabled={!leaguePrefix}>
+              Open
+            </NavLink>
+          </div>
 
-        <List sx={{ pb: 2 }}>
-          {SIDEBAR_BOTTOM_NAVIGATION.map(renderNavItem)}
-        </List>
-      </Box>
-    </Drawer>
+          {/* Tiers */}
+          <Accordion
+            type="single"
+            collapsible
+            value={expandedGroups['tiers'] ? 'tiers' : undefined}
+            onValueChange={(v) => toggleGroup('tiers')}
+            className="w-full"
+          >
+            <AccordionItem value="tiers">
+              <AccordionTrigger className="px-3">
+                <span className="flex items-center gap-2">
+                  <Layers className="h-4 w-4" />
+                  Tiers
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-1">
+                  <NavLink
+                    href={leaguePrefix ? `${leaguePrefix}/tiers/classic` : '#'}
+                    disabled={!leaguePrefix}
+                  >
+                    Classic
+                  </NavLink>
+                  <NavLink href={leaguePrefix ? `${leaguePrefix}/tiers/type` : '#'} disabled={!leaguePrefix}>
+                    Type
+                  </NavLink>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          {/* Rank */}
+          <Accordion
+            type="single"
+            collapsible
+            value={expandedGroups['rank'] ? 'rank' : undefined}
+            onValueChange={(v) => toggleGroup('rank')}
+            className="w-full"
+          >
+            <AccordionItem value="rank">
+              <AccordionTrigger className="px-3">
+                <span className="flex items-center gap-2">
+                  <ListOrdered className="h-4 w-4" />
+                  Rank
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-1">
+                  <NavLink href={leaguePrefix ? `${leaguePrefix}/rank/team` : '#'} disabled={!leaguePrefix}>
+                    Team
+                  </NavLink>
+                  <NavLink
+                    href={leaguePrefix ? `${leaguePrefix}/rank/pokemon` : '#'}
+                    disabled={!leaguePrefix}
+                  >
+                    Pokemon
+                  </NavLink>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          {/* Tools */}
+          <Accordion
+            type="single"
+            collapsible
+            value={expandedGroups['tools'] ? 'tools' : undefined}
+            onValueChange={(v) => toggleGroup('tools')}
+            className="w-full"
+          >
+            <AccordionItem value="tools">
+              <AccordionTrigger className="px-3">
+                <span className="flex items-center gap-2">
+                  <Wrench className="h-4 w-4" />
+                  Tools
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-1">
+                  <NavLink
+                    href={leaguePrefix ? `${leaguePrefix}/tools/schedule` : '#'}
+                    disabled={!leaguePrefix}
+                  >
+                    Schedule
+                  </NavLink>
+                  <NavLink href={leaguePrefix ? `${leaguePrefix}/tools/rules` : '#'} disabled={!leaguePrefix}>
+                    Rules
+                  </NavLink>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          <div className="mt-auto px-3 pb-3 text-xs text-muted-foreground">v0.1.0</div>
+        </nav>
+      </aside>
+    </>
   );
-};
+}

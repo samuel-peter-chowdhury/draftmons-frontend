@@ -1,144 +1,42 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import {
-  AppBar,
-  Toolbar,
-  IconButton,
-  Box,
-  Tooltip,
-  Switch,
-  Typography,
-  Button,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import LogoutIcon from "@mui/icons-material/Logout";
-import HomeIcon from "@mui/icons-material/Home";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import CatchingPokemonIcon from "@mui/icons-material/CatchingPokemon";
-import { useColorMode } from "@/contexts/ColorModeContext";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { authLogout, selectUser } from "@/store/slices/authSlice";
-import { useRouter } from "next/navigation";
-import { LeagueInputDto } from "../../dtos/league.dto";
-import leagueService from "../../services/api/league.service";
+import { useRouter } from 'next/navigation';
+import { Home, LogOut, Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuthStore, useUiStore } from '@/stores';
 
-interface HeaderProps {
-  onMenuClick?: () => void;
-  showMenuButton?: boolean;
-}
-
-export const Header: React.FC<HeaderProps> = ({
-  onMenuClick,
-  showMenuButton = false,
-}) => {
-  const { mode, toggleColorMode } = useColorMode();
-  const dispatch = useAppDispatch();
+export default function Header() {
   const router = useRouter();
-  const user = useAppSelector(selectUser);
-  const [leagues, setLeagues] = useState<Array<LeagueInputDto>>(
-    new Array<LeagueInputDto>()
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const logout = useAuthStore((s) => s.logout);
 
-  const handleLogout = async () => {
-    await dispatch(authLogout());
-    router.push("/");
-  };
-
-  const handleHomeClick = () => {
-    router.push("/home");
-  };
-
-  const handleLeagueClick = (id: number) => {
-    router.push("/league/" + id);
-  };
-
-  const handleAddLeagueClick = () => {
-    router.push("/league/create");
-  };
-
-  useEffect(() => {
-    fetchLeagues();
-  }, []);
-
-  const fetchLeagues = async () => {
+  const onLogout = async () => {
     try {
-      const response = await leagueService.getAll(false, 1, 10, {
-        ids: user?.leagueUsers?.map((lu) => lu.leagueId),
-      });
-      setLeagues(response.data);
-    } catch (err) {
-      setError("Failed to load leagues");
-    } finally {
-      setLoading(false);
+      await logout();
+      router.replace('/');
+    } catch {
+      // swallow; ErrorAlert components on pages will show if needed
     }
   };
 
   return (
-    <AppBar
-      position="fixed"
-      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-    >
-      <Toolbar>
-        <Box display="flex" alignItems="center" flexGrow={1} gap={1}>
-          {showMenuButton && (
-            <IconButton
-              color="inherit"
-              onClick={onMenuClick}
-              aria-label="menu"
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-          <IconButton
-            color="inherit"
-            onClick={handleHomeClick}
-            aria-label="home"
-          >
-            <HomeIcon />
-          </IconButton>
-          <IconButton
-            color="inherit"
-            onClick={handleAddLeagueClick}
-            aria-label="add-league"
-          >
-            <AddCircleIcon />
-          </IconButton>
-          {leagues.map((league) => (
-            <Button
-              color="inherit"
-              sx={{ textTransform: "none" }}
-              onClick={() => handleLeagueClick(league.id)}
-              aria-label={league.abbreviation}
-            >
-              <CatchingPokemonIcon />
-              <Typography marginLeft={1} key={league.id}>
-                {league.abbreviation}
-              </Typography>
-            </Button>
-          ))}
-        </Box>
-
-        <Box display="flex" alignItems="center" gap={1}>
-          <Tooltip title={mode === "light" ? "Light Mode" : "Dark Mode"}>
-            <Switch
-              checked={mode === "dark"}
-              onChange={toggleColorMode}
-              color="default"
-              inputProps={{ "aria-label": "theme toggle" }}
-            />
-          </Tooltip>
-          <IconButton
-            color="inherit"
-            onClick={handleLogout}
-            aria-label="logout"
-          >
-            <LogoutIcon />
-          </IconButton>
-        </Box>
-      </Toolbar>
-    </AppBar>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur header-h">
+      <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" aria-label="Open menu" onClick={toggleSidebar}>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" aria-label="Home" onClick={() => router.push('/home')}>
+            <Home className="h-5 w-5" />
+          </Button>
+        </div>
+        <div className="text-sm font-medium">Draftmons</div>
+        <div>
+          <Button variant="ghost" size="icon" aria-label="Logout" onClick={onLogout}>
+            <LogOut className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+    </header>
   );
-};
+}
