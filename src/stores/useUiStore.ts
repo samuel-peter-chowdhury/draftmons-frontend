@@ -12,6 +12,7 @@ type UiActions = {
   toggleSidebar: () => void;
   setSidebar: (open: boolean) => void;
   toggleGroup: (key: string) => void;
+  setGroup: (key: string, expanded: boolean) => void;
   setActiveLeagueId: (id: string | null) => void;
 };
 
@@ -24,5 +25,7 @@ export const useUiStore = create<UiState & UiActions>((set) => ({
   setSidebar: (open) => set({ sidebarOpen: open }),
   toggleGroup: (key) =>
     set((s) => ({ expandedGroups: { ...s.expandedGroups, [key]: !s.expandedGroups[key] } })),
+  setGroup: (key, expanded) =>
+    set((s) => ({ expandedGroups: { ...s.expandedGroups, [key]: expanded } })),
   setActiveLeagueId: (id) => set({ activeLeagueId: id })
 }));

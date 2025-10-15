@@ -38,8 +38,49 @@ function NavLink({
   );
 }
 
+function NavGroup({
+  href,
+  icon: Icon,
+  children,
+  disabled
+}: {
+  href: string | '#';
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  disabled?: boolean;
+}) {
+  const pathname = usePathname();
+  const active = pathname === href || pathname?.startsWith(href + '/');
+
+  const content = (
+    <div
+      className={cn(
+        'flex items-center justify-between py-2 px-3 text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground rounded-md',
+        active && 'bg-accent text-accent-foreground',
+        disabled && 'opacity-50 cursor-not-allowed'
+      )}
+    >
+      <span className="flex items-center gap-2">
+        <Icon className="h-4 w-4" />
+        {children}
+      </span>
+      <ChevronRight className="h-4 w-4" />
+    </div>
+  );
+
+  if (disabled) {
+    return <div className="w-full">{content}</div>;
+  }
+
+  return (
+    <Link href={href as any} className="block w-full">
+      {content}
+    </Link>
+  );
+}
+
 export default function Sidebar() {
-  const { sidebarOpen, setSidebar, expandedGroups, toggleGroup, activeLeagueId } = useUiStore();
+  const { sidebarOpen, setSidebar, expandedGroups, setGroup, activeLeagueId } = useUiStore();
 
   const leaguePrefix = activeLeagueId ? `/league/${activeLeagueId}` : null;
 
@@ -70,13 +111,12 @@ export default function Sidebar() {
         <nav className="flex h-full flex-col gap-2 p-2" role="navigation">
           {/* Team Matchup */}
           <div className="mt-2">
-            <div className="flex items-center gap-2 px-3 py-2 text-sm font-semibold">
-              <Swords className="h-4 w-4" />
+            <NavGroup
+              href={leaguePrefix ? `${leaguePrefix}/team-matchup` : '#'}
+              icon={Swords}
+            >
               Team Matchup
-            </div>
-            <NavLink href={leaguePrefix ? `${leaguePrefix}/team-matchup` : '#'} disabled={!leaguePrefix}>
-              Open
-            </NavLink>
+            </NavGroup>
           </div>
 
           {/* Tiers */}
@@ -84,7 +124,7 @@ export default function Sidebar() {
             type="single"
             collapsible
             value={expandedGroups['tiers'] ? 'tiers' : undefined}
-            onValueChange={(v) => toggleGroup('tiers')}
+            onValueChange={(v) => setGroup('tiers', !!v)}
             className="w-full"
           >
             <AccordionItem value="tiers">
@@ -115,7 +155,7 @@ export default function Sidebar() {
             type="single"
             collapsible
             value={expandedGroups['rank'] ? 'rank' : undefined}
-            onValueChange={(v) => toggleGroup('rank')}
+            onValueChange={(v) => setGroup('rank', !!v)}
             className="w-full"
           >
             <AccordionItem value="rank">
@@ -146,7 +186,7 @@ export default function Sidebar() {
             type="single"
             collapsible
             value={expandedGroups['tools'] ? 'tools' : undefined}
-            onValueChange={(v) => toggleGroup('tools')}
+            onValueChange={(v) => setGroup('tools', !!v)}
             className="w-full"
           >
             <AccordionItem value="tools">
