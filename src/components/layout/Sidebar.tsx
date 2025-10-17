@@ -80,9 +80,9 @@ function NavGroup({
 }
 
 export default function Sidebar() {
-  const { sidebarOpen, setSidebar, expandedGroups, setGroup, activeLeagueId } = useUiStore();
+  const { sidebarOpen, setSidebar } = useUiStore();
 
-  const leaguePrefix = activeLeagueId ? `/league/${activeLeagueId}` : null;
+  const leaguePrefix = null;
 
   return (
     <>
@@ -123,8 +123,6 @@ export default function Sidebar() {
           <Accordion
             type="single"
             collapsible
-            value={expandedGroups['tiers'] ? 'tiers' : undefined}
-            onValueChange={(v) => setGroup('tiers', !!v)}
             className="w-full"
           >
             <AccordionItem value="tiers">
@@ -154,8 +152,6 @@ export default function Sidebar() {
           <Accordion
             type="single"
             collapsible
-            value={expandedGroups['rank'] ? 'rank' : undefined}
-            onValueChange={(v) => setGroup('rank', !!v)}
             className="w-full"
           >
             <AccordionItem value="rank">
@@ -185,8 +181,6 @@ export default function Sidebar() {
           <Accordion
             type="single"
             collapsible
-            value={expandedGroups['tools'] ? 'tools' : undefined}
-            onValueChange={(v) => setGroup('tools', !!v)}
             className="w-full"
           >
             <AccordionItem value="tools">

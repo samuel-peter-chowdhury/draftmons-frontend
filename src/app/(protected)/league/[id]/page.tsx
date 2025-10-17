@@ -1,24 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
 import { useFetch } from '@/hooks';
 import { ENDPOINTS } from '@/lib/constants';
 import type { LeagueInputDto } from '@/types';
-import { useUiStore } from '@/stores';
 
 export default function LeagueDetailPage() {
   const params = useParams<{ id: string }>();
-  const { setActiveLeagueId } = useUiStore();
   const { data, loading, error } = useFetch<LeagueInputDto>(`${ENDPOINTS.LEAGUE_BASE}/${params.id}?full=true`);
-
-  useEffect(() => {
-    setActiveLeagueId(params.id);
-    return () => {
-      setActiveLeagueId(null);
-    };
-  }, [params.id, setActiveLeagueId]);
 
   return (
     <div className="mx-auto max-w-7xl p-4">

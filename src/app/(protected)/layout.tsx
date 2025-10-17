@@ -1,3 +1,5 @@
+'use client';
+
 import { Header, Sidebar } from '@/components';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
