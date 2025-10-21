@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
+import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
 import { useFetch } from '@/hooks';
 import { ENDPOINTS } from '@/lib/constants';
 import type { LeagueInputDto, PaginatedResponse } from '@/types';
@@ -12,6 +13,7 @@ export default function LeagueListPage() {
   const [pageSize, setPageSize] = useState(10);
   const [sortBy, setSortBy] = useState<'name' | 'createdAt'>('name');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const url = useMemo(() => {
     const params = new URLSearchParams({
@@ -29,10 +31,14 @@ export default function LeagueListPage() {
     <div className="mx-auto max-w-7xl p-4">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Leagues</h1>
-        <Link href="/league/create">
-          <Button>Create League</Button>
-        </Link>
+        <Button onClick={() => setIsCreateModalOpen(true)}>Create League</Button>
       </div>
+
+      <CreateLeagueModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSuccess={refetch}
+      />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <label htmlFor="sort-by" className="text-sm">Sort by:</label>
