@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,19 +11,34 @@ import {
   Spinner,
 } from '@/components';
 import { Api } from '@/lib/api';
-import { ENDPOINTS } from '@/lib/constants';
+import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { LeagueInputDto, LeagueOutputDto } from '@/types';
 
 interface CreateLeagueModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  league?: LeagueInputDto | null;
   onSuccess?: () => void;
 }
 
-export function CreateLeagueModal({ open, onOpenChange, onSuccess }: CreateLeagueModalProps) {
+export function CreateLeagueModal({
+  open,
+  onOpenChange,
+  league,
+  onSuccess,
+}: CreateLeagueModalProps) {
+  const isEditMode = !!league;
   const [form, setForm] = useState<LeagueOutputDto>({ name: '', abbreviation: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (league) {
+      setForm({ name: league.name, abbreviation: league.abbreviation });
+    } else {
+      setForm({ name: '', abbreviation: '' });
+    }
+  }, [league, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,13 +46,21 @@ export function CreateLeagueModal({ open, onOpenChange, onSuccess }: CreateLeagu
     setError(null);
 
     try {
-      await Api.post<LeagueInputDto>(ENDPOINTS.LEAGUE_BASE, form);
+      if (isEditMode && league) {
+        await Api.put<LeagueInputDto>(`${BASE_ENDPOINTS.LEAGUE_BASE}/${league.id}`, form);
+      } else {
+        await Api.post<LeagueInputDto>(BASE_ENDPOINTS.LEAGUE_BASE, form);
+      }
       setForm({ name: '', abbreviation: '' });
       onOpenChange(false);
       onSuccess?.();
     } catch (e) {
       const error = e as { body?: { message?: string }; message?: string };
-      setError(error?.body?.message || error?.message || 'Failed to create league');
+      setError(
+        error?.body?.message ||
+          error?.message ||
+          `Failed to ${isEditMode ? 'update' : 'create'} league`,
+      );
     } finally {
       setLoading(false);
     }
@@ -57,7 +80,7 @@ export function CreateLeagueModal({ open, onOpenChange, onSuccess }: CreateLeagu
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create League</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit League' : 'Create League'}</DialogTitle>
         </DialogHeader>
 
         {error && <ErrorAlert message={error} />}
@@ -94,7 +117,7 @@ export function CreateLeagueModal({ open, onOpenChange, onSuccess }: CreateLeagu
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? <Spinner size={18} /> : 'Create'}
+              {loading ? <Spinner size={18} /> : isEditMode ? 'Save' : 'Create'}
             </Button>
           </div>
         </form>

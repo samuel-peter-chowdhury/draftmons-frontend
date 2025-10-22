@@ -20,6 +20,10 @@ export default function UserPage() {
     );
   }
 
+  const displayName = user?.firstName && user?.lastName
+    ? `${user.firstName} ${user.lastName}`.trim()
+    : user?.firstName || user?.lastName || '—';
+
   return (
     <div className="mx-auto max-w-3xl p-4">
       <Card>
@@ -29,7 +33,7 @@ export default function UserPage() {
         <CardContent className="space-y-2 text-sm">
           {user ? (
             <>
-              <div><span className="text-muted-foreground">Name:</span> {user.fullName || `${user.firstName} ${user.lastName}`}</div>
+              <div><span className="text-muted-foreground">Name:</span> {displayName}</div>
               <div><span className="text-muted-foreground">Timezone:</span> {user.timezone || '—'}</div>
               <div><span className="text-muted-foreground">Showdown:</span> {user.showdownUsername || '—'}</div>
               <div><span className="text-muted-foreground">Discord:</span> {user.discordUsername || '—'}</div>

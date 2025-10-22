@@ -5,7 +5,6 @@ import { TeamInputDto } from './team.type';
 export interface UserInputDto extends BaseInputDto {
   firstName: string;
   lastName: string;
-  fullName: string;
   email: string;
   isAdmin: boolean;
   googleId: string;

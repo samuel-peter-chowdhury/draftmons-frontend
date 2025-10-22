@@ -2,10 +2,18 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  ErrorAlert,
+  Spinner,
+} from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
 import { useFetch } from '@/hooks';
-import { ENDPOINTS } from '@/lib/constants';
+import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { LeagueInputDto, PaginatedResponse } from '@/types';
 
 export default function LeagueListPage() {
@@ -20,9 +28,9 @@ export default function LeagueListPage() {
       page: String(page),
       pageSize: String(pageSize),
       sortBy,
-      sortOrder
+      sortOrder,
     });
-    return `${ENDPOINTS.LEAGUE_BASE}?${params.toString()}`;
+    return `${BASE_ENDPOINTS.LEAGUE_BASE}?${params.toString()}`;
   }, [page, pageSize, sortBy, sortOrder]);
 
   const { data, loading, error, refetch } = useFetch<PaginatedResponse<LeagueInputDto>>(url);
@@ -41,7 +49,9 @@ export default function LeagueListPage() {
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <label htmlFor="sort-by" className="text-sm">Sort by:</label>
+        <label htmlFor="sort-by" className="text-sm">
+          Sort by:
+        </label>
         <select
           id="sort-by"
           className="rounded-md border border-input bg-background p-2 text-sm"
@@ -52,7 +62,9 @@ export default function LeagueListPage() {
           <option value="name">Name</option>
           <option value="createdAt">Created At</option>
         </select>
-        <label htmlFor="sort-order" className="sr-only">Sort order</label>
+        <label htmlFor="sort-order" className="sr-only">
+          Sort order
+        </label>
         <select
           id="sort-order"
           className="rounded-md border border-input bg-background p-2 text-sm"
@@ -63,7 +75,9 @@ export default function LeagueListPage() {
           <option value="ASC">ASC</option>
           <option value="DESC">DESC</option>
         </select>
-        <label htmlFor="page-size" className="ml-4 text-sm">Page size:</label>
+        <label htmlFor="page-size" className="ml-4 text-sm">
+          Page size:
+        </label>
         <select
           id="page-size"
           className="rounded-md border border-input bg-background p-2 text-sm"
@@ -87,7 +101,7 @@ export default function LeagueListPage() {
 
       {data && (
         <>
-          <div className={loading ? 'opacity-50 pointer-events-none' : ''}>
+          <div className={loading ? 'pointer-events-none opacity-50' : ''}>
             <div className="grid gap-3 md:grid-cols-2">
               {data.data.map((league) => (
                 <Card key={league.id}>
@@ -108,26 +122,26 @@ export default function LeagueListPage() {
           </div>
 
           <div className="mt-6 flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            aria-label="Go to previous page"
-          >
-            Previous
-          </Button>
-          <div className="text-sm text-muted-foreground" role="status" aria-live="polite">
-            Page {data.page} of {data.totalPages} • {data.total} total
+            <Button
+              variant="outline"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              aria-label="Go to previous page"
+            >
+              Previous
+            </Button>
+            <div className="text-sm text-muted-foreground" role="status" aria-live="polite">
+              Page {data.page} of {data.totalPages} • {data.total} total
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setPage((p) => (data && p < data.totalPages ? p + 1 : p))}
+              disabled={data && page >= data.totalPages}
+              aria-label="Go to next page"
+            >
+              Next
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => setPage((p) => (data && p < data.totalPages ? p + 1 : p))}
-            disabled={data && page >= data.totalPages}
-            aria-label="Go to next page"
-          >
-            Next
-          </Button>
-        </div>
         </>
       )}
     </div>

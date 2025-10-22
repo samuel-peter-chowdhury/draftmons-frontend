@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect } from 'react';
 import { useAuthStore } from '@/stores';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components';
-import { ENDPOINTS } from '@/lib/constants';
+import { BASE_ENDPOINTS } from '@/lib/constants';
 
 export default function HomePage() {
   const { user, isAuthenticated, checkAuth } = useAuthStore();
@@ -15,9 +15,16 @@ export default function HomePage() {
     }
   }, [isAuthenticated, checkAuth]);
 
+  const displayName =
+    user?.firstName && user?.lastName
+      ? `${user.firstName} ${user.lastName}`.trim()
+      : user?.firstName || user?.lastName || '';
+
   return (
     <div className="mx-auto max-w-7xl p-4">
-      <h1 className="mb-4 text-2xl font-semibold">Welcome{user ? `, ${user.fullName || user.firstName}` : ''} 👋</h1>
+      <h1 className="mb-4 text-2xl font-semibold">
+        Welcome{displayName ? `, ${displayName}` : ''} 👋
+      </h1>
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
