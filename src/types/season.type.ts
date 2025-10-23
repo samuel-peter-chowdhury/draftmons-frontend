@@ -1,4 +1,5 @@
 import { BaseInputDto, BaseOutputDto } from './base.type';
+import { GenerationInputDto } from './generation.type';
 import { LeagueInputDto } from './league.type';
 import { SeasonPokemonInputDto } from './seasonPokemon.type';
 import { TeamInputDto } from './team.type';
@@ -15,13 +16,14 @@ export enum SeasonStatus {
 
 export interface SeasonInputDto extends BaseInputDto {
   name: string;
-  gen: string;
   status: SeasonStatus;
   rules: string;
   pointLimit: number;
   maxPointValue: number;
   leagueId: number;
+  generationId: number;
   league?: LeagueInputDto;
+  generation?: GenerationInputDto;
   teams?: TeamInputDto[];
   weeks?: WeekInputDto[];
   seasonPokemon?: SeasonPokemonInputDto[];
@@ -29,10 +31,10 @@ export interface SeasonInputDto extends BaseInputDto {
 
 export interface SeasonOutputDto extends BaseOutputDto {
   name: string;
-  gen: string;
   status: SeasonStatus;
   rules?: string;
   pointLimit: number;
   maxPointValue: number;
   leagueId: number;
+  generationId: number;
 }

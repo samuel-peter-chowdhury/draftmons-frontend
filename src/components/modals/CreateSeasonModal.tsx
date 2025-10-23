@@ -10,9 +10,11 @@ import {
   ErrorAlert,
   Spinner,
 } from '@/components';
+import { useFetch } from '@/hooks';
 import { Api } from '@/lib/api';
-import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { SeasonInputDto, SeasonOutputDto, SeasonStatus } from '@/types';
+import { BASE_ENDPOINTS, LEAGUE_ENDPOINTS } from '@/lib/constants';
+import { formatGenerationName } from '@/lib/utils';
+import type { SeasonInputDto, SeasonOutputDto, SeasonStatus, GenerationOutputDto, PaginatedResponse } from '@/types';
 
 interface CreateSeasonModalProps {
   open: boolean;
@@ -27,13 +29,19 @@ export function CreateSeasonModal({
   leagueId,
   onSuccess,
 }: CreateSeasonModalProps) {
-  const [form, setForm] = useState<SeasonOutputDto>({
+  const { data: generationsResponse, loading: generationsLoading, error: generationsError } = useFetch<PaginatedResponse<GenerationOutputDto>>(
+    BASE_ENDPOINTS.GENERATION_BASE,
+  );
+
+  const generations = generationsResponse?.data;
+
+  const [form, setForm] = useState<Omit<SeasonOutputDto, 'id' | 'createdAt' | 'updatedAt'>>({
     name: '',
-    gen: '',
     status: 'PRE_DRAFT' as SeasonStatus,
     rules: '',
-    pointLimit: 0,
-    maxPointValue: 0,
+    pointLimit: 100,
+    maxPointValue: 20,
+    generationId: 0,
     leagueId,
   });
   const [loading, setLoading] = useState(false);
@@ -45,17 +53,17 @@ export function CreateSeasonModal({
     setError(null);
 
     try {
-      await Api.post<SeasonInputDto>(BASE_ENDPOINTS.SEASON_BASE, {
+      await Api.post<SeasonInputDto>(BASE_ENDPOINTS.LEAGUE_BASE + `/${leagueId}` + LEAGUE_ENDPOINTS.SEASON, {
         ...form,
         leagueId,
       });
       setForm({
         name: '',
-        gen: '',
         status: 'PRE_DRAFT' as SeasonStatus,
         rules: '',
-        pointLimit: 0,
-        maxPointValue: 0,
+        pointLimit: 100,
+        maxPointValue: 20,
+        generationId: 0,
         leagueId,
       });
       onOpenChange(false);
@@ -73,11 +81,11 @@ export function CreateSeasonModal({
       if (!newOpen) {
         setForm({
           name: '',
-          gen: '',
           status: 'PRE_DRAFT' as SeasonStatus,
           rules: '',
-          pointLimit: 0,
-          maxPointValue: 0,
+          pointLimit: 100,
+          maxPointValue: 20,
+          generationId: 0,
           leagueId,
         });
         setError(null);
@@ -109,15 +117,32 @@ export function CreateSeasonModal({
           </div>
 
           <div>
-            <Label htmlFor="season-gen">Generation</Label>
-            <Input
-              id="season-gen"
-              value={form.gen}
-              onChange={(e) => setForm((f) => ({ ...f, gen: e.target.value }))}
-              required
-              disabled={loading}
-              placeholder="e.g., Gen 9"
-            />
+            <Label htmlFor="season-generation">Generation</Label>
+            {generationsLoading ? (
+              <div className="flex h-10 items-center justify-center rounded-md border border-input bg-background">
+                <Spinner size={16} />
+              </div>
+            ) : generationsError ? (
+              <ErrorAlert message="Failed to load generations" />
+            ) : (
+              <select
+                id="season-generation"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={form.generationId}
+                onChange={(e) => setForm((f) => ({ ...f, generationId: Number(e.target.value) }))}
+                required
+                disabled={loading || !generations || generations.length === 0}
+              >
+                <option value={0} disabled>
+                  Select a generation
+                </option>
+                {generations?.map((generation) => (
+                  <option key={generation.id} value={generation.id}>
+                    {formatGenerationName(generation.name)}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>

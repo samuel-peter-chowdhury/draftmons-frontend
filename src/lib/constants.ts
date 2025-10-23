@@ -34,6 +34,7 @@ export const BASE_ENDPOINTS = {
   AUTH_STATUS: `${API_BASE_URL}/api/auth/status`,
   AUTH_GOOGLE: `${API_BASE_URL}/api/auth/google`,
   AUTH_LOGOUT: `${API_BASE_URL}/api/auth/logout`,
+  GENERATION_BASE: `${API_BASE_URL}/api/generation`,
   LEAGUE_BASE: `${API_BASE_URL}/api/league`,
   LEAGUE_USER_BASE: `${API_BASE_URL}/api/league-user`,
   SEASON_BASE: `${API_BASE_URL}/api/season`,
@@ -42,4 +43,5 @@ export const BASE_ENDPOINTS = {
 
 export const LEAGUE_ENDPOINTS = {
   LEAGUE_USER: '/league-user',
+  SEASON: '/season',
 } as const;

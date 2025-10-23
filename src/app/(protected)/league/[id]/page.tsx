@@ -28,6 +28,7 @@ import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
 import { useFetch } from '@/hooks';
 import { Api } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
+import { formatGenerationName } from '@/lib/utils';
 import type { LeagueInputDto } from '@/types';
 
 export default function LeagueDetailPage() {
@@ -166,7 +167,9 @@ export default function LeagueDetailPage() {
                     <div key={season.id} className="rounded-md border border-border bg-card p-3">
                       <div className="mb-2 flex items-center justify-between">
                         <div className="font-medium">{season.name}</div>
-                        <div className="text-xs text-muted-foreground">{season.gen}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {season.generation?.name ? formatGenerationName(season.generation.name) : 'Unknown Generation'}
+                        </div>
                       </div>
                       <div className="space-y-1 text-sm text-muted-foreground">
                         <div>Status: {season.status.replace(/_/g, ' ')}</div>

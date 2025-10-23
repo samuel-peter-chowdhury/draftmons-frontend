@@ -9,5 +9,6 @@ export interface GenerationInputDto extends BaseInputDto {
 }
 
 export interface GenerationOutputDto extends BaseOutputDto {
+  id: number;
   name: string;
 }
