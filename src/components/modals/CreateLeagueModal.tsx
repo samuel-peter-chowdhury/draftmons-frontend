@@ -18,7 +18,7 @@ interface CreateLeagueModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   league?: LeagueInputDto | null;
-  onSuccess?: () => void;
+  onSuccess?: (league?: LeagueInputDto) => void;
 }
 
 export function CreateLeagueModal({
@@ -46,14 +46,15 @@ export function CreateLeagueModal({
     setError(null);
 
     try {
+      let result: LeagueInputDto;
       if (isEditMode && league) {
-        await Api.put<LeagueInputDto>(`${BASE_ENDPOINTS.LEAGUE_BASE}/${league.id}`, form);
+        result = await Api.put<LeagueInputDto>(`${BASE_ENDPOINTS.LEAGUE_BASE}/${league.id}`, form);
       } else {
-        await Api.post<LeagueInputDto>(BASE_ENDPOINTS.LEAGUE_BASE, form);
+        result = await Api.post<LeagueInputDto>(BASE_ENDPOINTS.LEAGUE_BASE, form);
       }
       setForm({ name: '', abbreviation: '' });
       onOpenChange(false);
-      onSuccess?.();
+      onSuccess?.(result);
     } catch (e) {
       const error = e as { body?: { message?: string }; message?: string };
       setError(

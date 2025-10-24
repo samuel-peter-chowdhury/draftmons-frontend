@@ -27,7 +27,7 @@ import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
 import { useFetch } from '@/hooks';
 import { Api } from '@/lib/api';
-import { BASE_ENDPOINTS } from '@/lib/constants';
+import { BASE_ENDPOINTS, LEAGUE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
 import type { LeagueInputDto } from '@/types';
 
@@ -48,7 +48,9 @@ export default function LeagueDetailPage() {
 
     setDeletingLeagueUser(true);
     try {
-      await Api.delete(`${BASE_ENDPOINTS.LEAGUE_USER_BASE}/${leagueUserToDelete}`);
+      await Api.delete(
+        `${BASE_ENDPOINTS.LEAGUE_BASE + `/${params.id}` + LEAGUE_ENDPOINTS.LEAGUE_USER}/${leagueUserToDelete}`,
+      );
       await refetch();
       setLeagueUserToDelete(null);
     } catch (e) {
@@ -168,7 +170,9 @@ export default function LeagueDetailPage() {
                       <div className="mb-2 flex items-center justify-between">
                         <div className="font-medium">{season.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {season.generation?.name ? formatGenerationName(season.generation.name) : 'Unknown Generation'}
+                          {season.generation?.name
+                            ? formatGenerationName(season.generation.name)
+                            : 'Unknown Generation'}
                         </div>
                       </div>
                       <div className="space-y-1 text-sm text-muted-foreground">

@@ -1,19 +1,29 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components';
-import { BASE_ENDPOINTS } from '@/lib/constants';
+import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
+import type { LeagueInputDto } from '@/types';
 
 export default function HomePage() {
+  const router = useRouter();
   const { user, isAuthenticated, checkAuth } = useAuthStore();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
       checkAuth();
     }
   }, [isAuthenticated, checkAuth]);
+
+  const handleLeagueCreated = (league?: LeagueInputDto) => {
+    if (league?.id) {
+      router.push(`/league/${league.id}`);
+    }
+  };
 
   const displayName =
     user?.firstName && user?.lastName
@@ -34,9 +44,9 @@ export default function HomePage() {
             <Link href="/league">
               <Button>Browse Leagues</Button>
             </Link>
-            <Link href="/league/create">
-              <Button variant="secondary">Create League</Button>
-            </Link>
+            <Button variant="secondary" onClick={() => setIsCreateModalOpen(true)}>
+              Create League
+            </Button>
           </CardContent>
         </Card>
 
@@ -51,6 +61,12 @@ export default function HomePage() {
           </CardContent>
         </Card>
       </div>
+
+      <CreateLeagueModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSuccess={handleLeagueCreated}
+      />
     </div>
   );
 }

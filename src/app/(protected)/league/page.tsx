@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Button,
   Card,
@@ -19,6 +20,7 @@ import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { LeagueInputDto, PaginatedResponse } from '@/types';
 
 export default function LeagueListPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [sortBy, setSortBy] = useState<'name' | 'createdAt'>('name');
@@ -35,7 +37,13 @@ export default function LeagueListPage() {
     return `${BASE_ENDPOINTS.LEAGUE_BASE}?${params.toString()}`;
   }, [page, pageSize, sortBy, sortOrder]);
 
-  const { data, loading, error, refetch } = useFetch<PaginatedResponse<LeagueInputDto>>(url);
+  const { data, loading, error } = useFetch<PaginatedResponse<LeagueInputDto>>(url);
+
+  const handleLeagueCreated = (league?: LeagueInputDto) => {
+    if (league?.id) {
+      router.push(`/league/${league.id}`);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -47,7 +55,7 @@ export default function LeagueListPage() {
       <CreateLeagueModal
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
-        onSuccess={refetch}
+        onSuccess={handleLeagueCreated}
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
