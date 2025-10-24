@@ -10,6 +10,8 @@ import {
   CardTitle,
   ErrorAlert,
   Spinner,
+  Label,
+  Select,
 } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
 import { useFetch } from '@/hooks';
@@ -49,38 +51,38 @@ export default function LeagueListPage() {
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <label htmlFor="sort-by" className="text-sm">
+        <Label htmlFor="sort-by" className="text-sm">
           Sort by:
-        </label>
-        <select
+        </Label>
+        <Select
           id="sort-by"
-          className="rounded-md border border-input bg-background p-2 text-sm"
+          className="h-auto w-auto p-2 text-sm"
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as 'name' | 'createdAt')}
           aria-label="Sort leagues by field"
         >
           <option value="name">Name</option>
           <option value="createdAt">Created At</option>
-        </select>
-        <label htmlFor="sort-order" className="sr-only">
+        </Select>
+        <Label htmlFor="sort-order" className="sr-only">
           Sort order
-        </label>
-        <select
+        </Label>
+        <Select
           id="sort-order"
-          className="rounded-md border border-input bg-background p-2 text-sm"
+          className="h-auto w-auto p-2 text-sm"
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value as 'ASC' | 'DESC')}
           aria-label="Sort order ascending or descending"
         >
           <option value="ASC">ASC</option>
           <option value="DESC">DESC</option>
-        </select>
-        <label htmlFor="page-size" className="ml-4 text-sm">
+        </Select>
+        <Label htmlFor="page-size" className="ml-4 text-sm">
           Page size:
-        </label>
-        <select
+        </Label>
+        <Select
           id="page-size"
-          className="rounded-md border border-input bg-background p-2 text-sm"
+          className="h-auto w-auto p-2 text-sm"
           value={pageSize}
           onChange={(e) => setPageSize(Number(e.target.value))}
           aria-label="Number of items per page"
@@ -88,7 +90,7 @@ export default function LeagueListPage() {
           <option>5</option>
           <option>10</option>
           <option>20</option>
-        </select>
+        </Select>
       </div>
 
       {error && <ErrorAlert message={error} />}

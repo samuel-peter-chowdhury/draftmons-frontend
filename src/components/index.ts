@@ -10,6 +10,8 @@ export * from './ui/alert-dialog';
 export * from './ui/popover';
 export * from './ui/command';
 export * from './ui/combobox';
+export * from './ui/select';
+export * from './ui/textarea';
 export { default as Spinner } from './feedback/Spinner';
 export { default as ErrorAlert } from './feedback/ErrorAlert';
 export { default as Header } from './layout/Header';

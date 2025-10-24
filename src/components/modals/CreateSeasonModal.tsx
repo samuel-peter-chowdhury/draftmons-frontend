@@ -9,6 +9,8 @@ import {
   Label,
   ErrorAlert,
   Spinner,
+  Select,
+  Textarea,
 } from '@/components';
 import { useFetch } from '@/hooks';
 import { Api } from '@/lib/api';
@@ -125,9 +127,8 @@ export function CreateSeasonModal({
             ) : generationsError ? (
               <ErrorAlert message="Failed to load generations" />
             ) : (
-              <select
+              <Select
                 id="season-generation"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={form.generationId}
                 onChange={(e) => setForm((f) => ({ ...f, generationId: Number(e.target.value) }))}
                 required
@@ -141,15 +142,14 @@ export function CreateSeasonModal({
                     {formatGenerationName(generation.name)}
                   </option>
                 ))}
-              </select>
+              </Select>
             )}
           </div>
 
           <div>
             <Label htmlFor="season-status">Status</Label>
-            <select
+            <Select
               id="season-status"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as SeasonStatus }))}
               required
@@ -161,7 +161,7 @@ export function CreateSeasonModal({
               <option value="REGULAR_SEASON">Regular Season</option>
               <option value="POST_SEASON">Post-Season</option>
               <option value="PLAYOFFS">Playoffs</option>
-            </select>
+            </Select>
           </div>
 
           <div>
@@ -192,9 +192,8 @@ export function CreateSeasonModal({
 
           <div>
             <Label htmlFor="season-rules">Rules</Label>
-            <textarea
+            <Textarea
               id="season-rules"
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={form.rules}
               onChange={(e) => setForm((f) => ({ ...f, rules: e.target.value }))}
               disabled={loading}
