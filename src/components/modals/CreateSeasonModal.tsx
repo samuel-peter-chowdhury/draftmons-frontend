@@ -12,11 +12,11 @@ import {
   Select,
   Textarea,
 } from '@/components';
-import { useFetch } from '@/hooks';
-import { Api } from '@/lib/api';
-import { BASE_ENDPOINTS, LEAGUE_ENDPOINTS } from '@/lib/constants';
+import { useFetch, useMutation } from '@/hooks';
+import { LeagueApi } from '@/lib/api';
+import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
-import type { SeasonInputDto, SeasonOutputDto, SeasonStatus, GenerationOutputDto, PaginatedResponse } from '@/types';
+import type { SeasonOutputDto, SeasonStatus, GenerationOutputDto, PaginatedResponse } from '@/types';
 
 interface CreateSeasonModalProps {
   open: boolean;
@@ -31,13 +31,12 @@ export function CreateSeasonModal({
   leagueId,
   onSuccess,
 }: CreateSeasonModalProps) {
-  const { data: generationsResponse, loading: generationsLoading, error: generationsError } = useFetch<PaginatedResponse<GenerationOutputDto>>(
-    BASE_ENDPOINTS.GENERATION_BASE,
-  );
+  const { data: generationsResponse, loading: generationsLoading, error: generationsError } =
+    useFetch<PaginatedResponse<GenerationOutputDto>>(open ? BASE_ENDPOINTS.GENERATION_BASE : null);
 
   const generations = generationsResponse?.data;
 
-  const [form, setForm] = useState<Omit<SeasonOutputDto, 'id' | 'createdAt' | 'updatedAt'>>({
+  const defaultForm = {
     name: '',
     status: 'PRE_DRAFT' as SeasonStatus,
     rules: '',
@@ -45,52 +44,28 @@ export function CreateSeasonModal({
     maxPointValue: 20,
     generationId: 0,
     leagueId,
+  };
+
+  const [form, setForm] = useState<SeasonOutputDto>(defaultForm);
+
+  const createSeasonMutation = useMutation((data: SeasonOutputDto) => LeagueApi.createSeason(leagueId, data), {
+    onSuccess: () => {
+      setForm(defaultForm);
+      onOpenChange(false);
+      onSuccess?.();
+    },
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      await Api.post<SeasonInputDto>(BASE_ENDPOINTS.LEAGUE_BASE + `/${leagueId}` + LEAGUE_ENDPOINTS.SEASON, {
-        ...form,
-        leagueId,
-      });
-      setForm({
-        name: '',
-        status: 'PRE_DRAFT' as SeasonStatus,
-        rules: '',
-        pointLimit: 100,
-        maxPointValue: 20,
-        generationId: 0,
-        leagueId,
-      });
-      onOpenChange(false);
-      onSuccess?.();
-    } catch (e) {
-      const error = e as { body?: { message?: string }; message?: string };
-      setError(error?.body?.message || error?.message || 'Failed to create season');
-    } finally {
-      setLoading(false);
-    }
+    await createSeasonMutation.mutate({ ...form, leagueId });
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!loading) {
+    if (!createSeasonMutation.loading) {
       if (!newOpen) {
-        setForm({
-          name: '',
-          status: 'PRE_DRAFT' as SeasonStatus,
-          rules: '',
-          pointLimit: 100,
-          maxPointValue: 20,
-          generationId: 0,
-          leagueId,
-        });
-        setError(null);
+        setForm(defaultForm);
+        createSeasonMutation.reset();
       }
       onOpenChange(newOpen);
     }
@@ -103,7 +78,7 @@ export function CreateSeasonModal({
           <DialogTitle>Create Season</DialogTitle>
         </DialogHeader>
 
-        {error && <ErrorAlert message={error} />}
+        {createSeasonMutation.error && <ErrorAlert message={createSeasonMutation.error} />}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -113,7 +88,7 @@ export function CreateSeasonModal({
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               required
-              disabled={loading}
+              disabled={createSeasonMutation.loading}
               placeholder="e.g., Season 1"
             />
           </div>
@@ -132,7 +107,7 @@ export function CreateSeasonModal({
                 value={form.generationId}
                 onChange={(e) => setForm((f) => ({ ...f, generationId: Number(e.target.value) }))}
                 required
-                disabled={loading || !generations || generations.length === 0}
+                disabled={createSeasonMutation.loading || !generations || generations.length === 0}
               >
                 <option value={0} disabled>
                   Select a generation
@@ -153,7 +128,7 @@ export function CreateSeasonModal({
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as SeasonStatus }))}
               required
-              disabled={loading}
+              disabled={createSeasonMutation.loading}
             >
               <option value="PRE_DRAFT">Pre-Draft</option>
               <option value="DRAFT">Draft</option>
@@ -172,7 +147,7 @@ export function CreateSeasonModal({
               value={form.pointLimit}
               onChange={(e) => setForm((f) => ({ ...f, pointLimit: Number(e.target.value) }))}
               required
-              disabled={loading}
+              disabled={createSeasonMutation.loading}
               min="0"
             />
           </div>
@@ -185,7 +160,7 @@ export function CreateSeasonModal({
               value={form.maxPointValue}
               onChange={(e) => setForm((f) => ({ ...f, maxPointValue: Number(e.target.value) }))}
               required
-              disabled={loading}
+              disabled={createSeasonMutation.loading}
               min="0"
             />
           </div>
@@ -196,7 +171,7 @@ export function CreateSeasonModal({
               id="season-rules"
               value={form.rules}
               onChange={(e) => setForm((f) => ({ ...f, rules: e.target.value }))}
-              disabled={loading}
+              disabled={createSeasonMutation.loading}
               placeholder="Enter season rules..."
             />
           </div>
@@ -206,12 +181,12 @@ export function CreateSeasonModal({
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
-              disabled={loading}
+              disabled={createSeasonMutation.loading}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? <Spinner size={18} /> : 'Create'}
+            <Button type="submit" disabled={createSeasonMutation.loading}>
+              {createSeasonMutation.loading ? <Spinner size={18} /> : 'Create'}
             </Button>
           </div>
         </form>

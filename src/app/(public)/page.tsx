@@ -13,7 +13,8 @@ import {
   Spinner,
 } from '@/components';
 import { useAuthStore } from '@/stores';
-import { BASE_ENDPOINTS, CLIENT_URL } from '@/lib/constants';
+import { AuthApi } from '@/lib/api';
+import { CLIENT_URL } from '@/lib/constants';
 import { LogIn } from 'lucide-react';
 
 export default function LandingPage() {
@@ -36,7 +37,7 @@ export default function LandingPage() {
 
   const next = search.get('next') || '/home';
   const redirectUrl = `${CLIENT_URL}${next}`;
-  const googleUrl = `${BASE_ENDPOINTS.AUTH_GOOGLE}?redirect=${encodeURIComponent(redirectUrl)}&state=${encodeURIComponent(redirectUrl)}`;
+  const googleUrl = AuthApi.getGoogleAuthUrl(redirectUrl);
 
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4">

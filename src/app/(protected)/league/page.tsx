@@ -16,6 +16,7 @@ import {
 } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
 import { useFetch } from '@/hooks';
+import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { LeagueInputDto, PaginatedResponse } from '@/types';
 
@@ -27,15 +28,10 @@ export default function LeagueListPage() {
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const url = useMemo(() => {
-    const params = new URLSearchParams({
-      page: String(page),
-      pageSize: String(pageSize),
-      sortBy,
-      sortOrder,
-    });
-    return `${BASE_ENDPOINTS.LEAGUE_BASE}?${params.toString()}`;
-  }, [page, pageSize, sortBy, sortOrder]);
+  const url = useMemo(
+    () => buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [], { page, pageSize, sortBy, sortOrder }),
+    [page, pageSize, sortBy, sortOrder],
+  );
 
   const { data, loading, error } = useFetch<PaginatedResponse<LeagueInputDto>>(url);
 

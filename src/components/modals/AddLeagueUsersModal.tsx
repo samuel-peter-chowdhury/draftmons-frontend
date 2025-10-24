@@ -11,10 +11,9 @@ import {
   Spinner,
 } from '@/components';
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
-
-import { Api } from '@/lib/api';
-import { BASE_ENDPOINTS, LEAGUE_ENDPOINTS } from '@/lib/constants';
-import type { UserInputDto, LeagueUserInputDto, PaginatedResponse } from '@/types';
+import { useMutation } from '@/hooks';
+import { UserApi, LeagueApi } from '@/lib/api';
+import type { UserInputDto, LeagueUserInputDto } from '@/types';
 
 interface AddLeagueUsersModalProps {
   open: boolean;
@@ -34,9 +33,23 @@ export function AddLeagueUsersModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState<UserInputDto[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<UserInputDto[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const addUsersMutation = useMutation(
+    async (userIds: number[]) => {
+      return Promise.all(
+        userIds.map((userId) => LeagueApi.addUser(leagueId, { userId, isModerator: false })),
+      );
+    },
+    {
+      onSuccess: () => {
+        setSelectedUsers([]);
+        setSearchQuery('');
+        onOpenChange(false);
+        onSuccess?.();
+      },
+    },
+  );
 
   // Get list of existing user IDs in the league
   const existingUserIds = existingLeagueUsers.map((lu) => lu.userId);
@@ -49,17 +62,13 @@ export function AddLeagueUsersModal({
 
     setSearching(true);
     try {
-      const params = new URLSearchParams({
+      const response = await UserApi.search({
         nameLike: query,
-        page: '1',
-        pageSize: '10',
+        page: 1,
+        pageSize: 10,
         sortBy: 'lastName',
         sortOrder: 'ASC',
       });
-      const response = await Api.get<PaginatedResponse<UserInputDto>>(
-        `${BASE_ENDPOINTS.USER_BASE}?${params.toString()}`,
-      );
-      // Keep as-is since this is already working for you:
       setUsers(response.data || []);
     } catch (e) {
       console.error('Failed to search users:', e);
@@ -92,42 +101,20 @@ export function AddLeagueUsersModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedUsers.length === 0) {
-      setError('Please select at least one user');
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      await Promise.all(
-        selectedUsers.map((user) =>
-          Api.post<LeagueUserInputDto>(BASE_ENDPOINTS.LEAGUE_BASE + `/${leagueId}` + LEAGUE_ENDPOINTS.LEAGUE_USER, {
-            leagueId,
-            userId: user.id,
-            isModerator: false,
-          }),
-        ),
-      );
-      setSelectedUsers([]);
-      setSearchQuery('');
-      onOpenChange(false);
-      onSuccess?.();
-    } catch (e) {
-      const error = e as { body?: { message?: string }; message?: string };
-      setError(error?.body?.message || error?.message || 'Failed to add league users');
-    } finally {
-      setLoading(false);
-    }
+    const userIds = selectedUsers.map((u) => u.id);
+    await addUsersMutation.mutate(userIds);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!loading) {
+    if (!addUsersMutation.loading) {
       if (!newOpen) {
         setSelectedUsers([]);
         setSearchQuery('');
         setUsers([]);
-        setError(null);
+        addUsersMutation.reset();
       }
       onOpenChange(newOpen);
     }
@@ -155,7 +142,7 @@ export function AddLeagueUsersModal({
           <DialogTitle>Add League Users</DialogTitle>
         </DialogHeader>
 
-        {error && <ErrorAlert message={error} />}
+        {addUsersMutation.error && <ErrorAlert message={addUsersMutation.error} />}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -171,7 +158,7 @@ export function AddLeagueUsersModal({
               searchValue={searchQuery}
               onSearchChange={setSearchQuery}
               loading={searching}
-              disabled={loading}
+              disabled={addUsersMutation.loading}
             />
           </div>
 
@@ -196,7 +183,7 @@ export function AddLeagueUsersModal({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveUser(user.id)}
-                        disabled={loading}
+                        disabled={addUsersMutation.loading}
                         aria-label={`Remove ${displayName}`}
                       >
                         <X className="h-4 w-4" />
@@ -213,12 +200,12 @@ export function AddLeagueUsersModal({
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
-              disabled={loading}
+              disabled={addUsersMutation.loading}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || selectedUsers.length === 0}>
-              {loading ? (
+            <Button type="submit" disabled={addUsersMutation.loading || selectedUsers.length === 0}>
+              {addUsersMutation.loading ? (
                 <Spinner size={18} />
               ) : (
                 `Add ${selectedUsers.length} User${selectedUsers.length !== 1 ? 's' : ''}`

@@ -1,9 +1,8 @@
 'use client';
 
 import { create } from 'zustand';
-import { BASE_ENDPOINTS } from '@/lib/constants';
-import { AuthResponse, UserInputDto } from '@/types';
-import { Api, ApiError } from '@/lib/api';
+import { AuthApi, ApiError } from '@/lib/api';
+import type { AuthResponse, UserInputDto } from '@/types';
 
 type AuthState = {
   user: UserInputDto | null;
@@ -29,7 +28,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   checkAuth: async () => {
     set({ loading: true, error: null });
     try {
-      const data = await Api.get<AuthResponse>(BASE_ENDPOINTS.AUTH_STATUS);
+      const data = await AuthApi.checkStatus();
       set({
         user: data.user || null,
         isAuthenticated: !!data.isAuthenticated,
@@ -49,7 +48,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   logout: async () => {
     set({ loading: true, error: null });
     try {
-      await Api.post(BASE_ENDPOINTS.AUTH_LOGOUT);
+      await AuthApi.logout();
       set({ user: null, isAuthenticated: false, loading: false });
     } catch (e) {
       const error = e as ApiError;

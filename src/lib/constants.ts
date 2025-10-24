@@ -40,8 +40,3 @@ export const BASE_ENDPOINTS = {
   SEASON_BASE: `${API_BASE_URL}/api/season`,
   USER_BASE: `${API_BASE_URL}/api/user`,
 } as const;
-
-export const LEAGUE_ENDPOINTS = {
-  LEAGUE_USER: '/league-user',
-  SEASON: '/season',
-} as const;

@@ -10,8 +10,8 @@ import {
   ErrorAlert,
   Spinner,
 } from '@/components';
-import { Api } from '@/lib/api';
-import { BASE_ENDPOINTS } from '@/lib/constants';
+import { useMutation } from '@/hooks';
+import { LeagueApi } from '@/lib/api';
 import type { LeagueInputDto, LeagueOutputDto } from '@/types';
 
 interface CreateLeagueModalProps {
@@ -29,8 +29,22 @@ export function CreateLeagueModal({
 }: CreateLeagueModalProps) {
   const isEditMode = !!league;
   const [form, setForm] = useState<LeagueOutputDto>({ name: '', abbreviation: '' });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const createMutation = useMutation((data: LeagueOutputDto) => LeagueApi.create(data), {
+    onSuccess: (result) => {
+      setForm({ name: '', abbreviation: '' });
+      onOpenChange(false);
+      onSuccess?.(result);
+    },
+  });
+
+  const updateMutation = useMutation((data: LeagueOutputDto) => LeagueApi.update(league!.id, data), {
+    onSuccess: (result) => {
+      setForm({ name: '', abbreviation: '' });
+      onOpenChange(false);
+      onSuccess?.(result);
+    },
+  });
 
   useEffect(() => {
     if (league) {
@@ -42,36 +56,22 @@ export function CreateLeagueModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      let result: LeagueInputDto;
-      if (isEditMode && league) {
-        result = await Api.put<LeagueInputDto>(`${BASE_ENDPOINTS.LEAGUE_BASE}/${league.id}`, form);
-      } else {
-        result = await Api.post<LeagueInputDto>(BASE_ENDPOINTS.LEAGUE_BASE, form);
-      }
-      setForm({ name: '', abbreviation: '' });
-      onOpenChange(false);
-      onSuccess?.(result);
-    } catch (e) {
-      const error = e as { body?: { message?: string }; message?: string };
-      setError(
-        error?.body?.message ||
-          error?.message ||
-          `Failed to ${isEditMode ? 'update' : 'create'} league`,
-      );
-    } finally {
-      setLoading(false);
+    if (isEditMode && league) {
+      await updateMutation.mutate(form);
+    } else {
+      await createMutation.mutate(form);
     }
   };
+
+  const loading = createMutation.loading || updateMutation.loading;
+  const error = createMutation.error || updateMutation.error;
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!loading) {
       if (!newOpen) {
         setForm({ name: '', abbreviation: '' });
-        setError(null);
+        createMutation.reset();
+        updateMutation.reset();
       }
       onOpenChange(newOpen);
     }

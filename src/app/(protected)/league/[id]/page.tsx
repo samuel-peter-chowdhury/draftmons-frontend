@@ -25,39 +25,36 @@ import {
 import { AddLeagueUsersModal } from '@/components/modals/AddLeagueUsersModal';
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import { useFetch } from '@/hooks';
-import { Api } from '@/lib/api';
-import { BASE_ENDPOINTS, LEAGUE_ENDPOINTS } from '@/lib/constants';
+import { useFetch, useMutation } from '@/hooks';
+import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
+import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
 import type { LeagueInputDto } from '@/types';
 
 export default function LeagueDetailPage() {
   const params = useParams<{ id: string }>();
   const { data, loading, error, refetch } = useFetch<LeagueInputDto>(
-    `${BASE_ENDPOINTS.LEAGUE_BASE}/${params.id}?full=true`,
+    buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [params.id], { full: true }),
   );
 
   const [isAddUsersModalOpen, setIsAddUsersModalOpen] = useState(false);
   const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
   const [isEditLeagueModalOpen, setIsEditLeagueModalOpen] = useState(false);
   const [leagueUserToDelete, setLeagueUserToDelete] = useState<number | null>(null);
-  const [deletingLeagueUser, setDeletingLeagueUser] = useState(false);
+
+  const deleteUserMutation = useMutation(
+    (leagueUserId: number) => LeagueApi.removeUser(Number(params.id), leagueUserId),
+    {
+      onSuccess: () => {
+        refetch();
+        setLeagueUserToDelete(null);
+      },
+    },
+  );
 
   const handleDeleteLeagueUser = async () => {
     if (!leagueUserToDelete) return;
-
-    setDeletingLeagueUser(true);
-    try {
-      await Api.delete(
-        `${BASE_ENDPOINTS.LEAGUE_BASE + `/${params.id}` + LEAGUE_ENDPOINTS.LEAGUE_USER}/${leagueUserToDelete}`,
-      );
-      await refetch();
-      setLeagueUserToDelete(null);
-    } catch (e) {
-      console.error('Failed to delete league user:', e);
-    } finally {
-      setDeletingLeagueUser(false);
-    }
+    await deleteUserMutation.mutate(leagueUserToDelete);
   };
 
   return (
@@ -224,9 +221,9 @@ export default function LeagueDetailPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deletingLeagueUser}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteLeagueUser} disabled={deletingLeagueUser}>
-              {deletingLeagueUser ? <Spinner size={18} /> : 'Remove'}
+            <AlertDialogCancel disabled={deleteUserMutation.loading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteLeagueUser} disabled={deleteUserMutation.loading}>
+              {deleteUserMutation.loading ? <Spinner size={18} /> : 'Remove'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
