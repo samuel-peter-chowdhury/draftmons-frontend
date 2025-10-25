@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { X, Pencil } from 'lucide-react';
 import {
@@ -29,10 +29,12 @@ import { useFetch, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
+import { useAuthStore } from '@/stores';
 import type { LeagueInput } from '@/types';
 
 export default function LeagueDetailPage() {
   const params = useParams<{ id: string }>();
+  const { user: currentUser, isAuthenticated, checkAuth } = useAuthStore();
   const { data, loading, error, refetch } = useFetch<LeagueInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [params.id], { full: true }),
   );
@@ -41,6 +43,18 @@ export default function LeagueDetailPage() {
   const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
   const [isEditLeagueModalOpen, setIsEditLeagueModalOpen] = useState(false);
   const [leagueUserToDelete, setLeagueUserToDelete] = useState<number | null>(null);
+
+  // Ensure auth store is populated on mount
+  useEffect(() => {
+    if (!isAuthenticated) {
+      checkAuth();
+    }
+  }, [isAuthenticated, checkAuth]);
+
+  // Check if the current user is a moderator of this league
+  const isModerator = data?.leagueUsers?.some(
+    (leagueUser) => leagueUser.userId === currentUser?.id && leagueUser.isModerator
+  ) ?? false;
 
   const deleteUserMutation = useMutation(
     (leagueUserId: number) => LeagueApi.removeUser(Number(params.id), leagueUserId),
@@ -78,14 +92,16 @@ export default function LeagueDetailPage() {
                     {data.abbreviation}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsEditLeagueModalOpen(true)}
-                  aria-label="Edit league"
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                {isModerator && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditLeagueModalOpen(true)}
+                    aria-label="Edit league"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
@@ -104,9 +120,11 @@ export default function LeagueDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>League Users</span>
-                <Button onClick={() => setIsAddUsersModalOpen(true)} size="sm">
-                  Add Users
-                </Button>
+                {isModerator && (
+                  <Button onClick={() => setIsAddUsersModalOpen(true)} size="sm">
+                    Add Users
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -132,14 +150,16 @@ export default function LeagueDetailPage() {
                             <div className="text-xs text-muted-foreground">Moderator</div>
                           )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setLeagueUserToDelete(leagueUser.id)}
-                          aria-label={`Remove ${displayName}`}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        {isModerator && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setLeagueUserToDelete(leagueUser.id)}
+                            aria-label={`Remove ${displayName}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     );
                   })}
@@ -152,9 +172,11 @@ export default function LeagueDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Seasons</span>
-                <Button onClick={() => setIsCreateSeasonModalOpen(true)} size="sm">
-                  Add Season
-                </Button>
+                {isModerator && (
+                  <Button onClick={() => setIsCreateSeasonModalOpen(true)} size="sm">
+                    Add Season
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -186,48 +208,52 @@ export default function LeagueDetailPage() {
         </div>
       )}
 
-      <CreateLeagueModal
-        open={isEditLeagueModalOpen}
-        onOpenChange={setIsEditLeagueModalOpen}
-        league={data}
-        onSuccess={refetch}
-      />
+      {isModerator && (
+        <>
+          <CreateLeagueModal
+            open={isEditLeagueModalOpen}
+            onOpenChange={setIsEditLeagueModalOpen}
+            league={data}
+            onSuccess={refetch}
+          />
 
-      <AddLeagueUsersModal
-        open={isAddUsersModalOpen}
-        onOpenChange={setIsAddUsersModalOpen}
-        leagueId={Number(params.id)}
-        existingLeagueUsers={data?.leagueUsers || []}
-        onSuccess={refetch}
-      />
+          <AddLeagueUsersModal
+            open={isAddUsersModalOpen}
+            onOpenChange={setIsAddUsersModalOpen}
+            leagueId={Number(params.id)}
+            existingLeagueUsers={data?.leagueUsers || []}
+            onSuccess={refetch}
+          />
 
-      <CreateSeasonModal
-        open={isCreateSeasonModalOpen}
-        onOpenChange={setIsCreateSeasonModalOpen}
-        leagueId={Number(params.id)}
-        onSuccess={refetch}
-      />
+          <CreateSeasonModal
+            open={isCreateSeasonModalOpen}
+            onOpenChange={setIsCreateSeasonModalOpen}
+            leagueId={Number(params.id)}
+            onSuccess={refetch}
+          />
 
-      <AlertDialog
-        open={leagueUserToDelete !== null}
-        onOpenChange={(open) => !open && setLeagueUserToDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove League User</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove this user from the league? This action cannot be
-              undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteUserMutation.loading}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteLeagueUser} disabled={deleteUserMutation.loading}>
-              {deleteUserMutation.loading ? <Spinner size={18} /> : 'Remove'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          <AlertDialog
+            open={leagueUserToDelete !== null}
+            onOpenChange={(open) => !open && setLeagueUserToDelete(null)}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remove League User</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to remove this user from the league? This action cannot be
+                  undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleteUserMutation.loading}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteLeagueUser} disabled={deleteUserMutation.loading}>
+                  {deleteUserMutation.loading ? <Spinner size={18} /> : 'Remove'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </>
+      )}
     </div>
   );
 }
