@@ -1,20 +1,20 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { GameInputDto } from './game.type';
-import { TeamInputDto } from './team.type';
-import { WeekInputDto } from './week.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { GameInput } from './game.type';
+import { TeamInput } from './team.type';
+import { WeekInput } from './week.type';
 
-export interface MatchInputDto extends BaseInputDto {
+export interface MatchInput extends BaseInput {
   weekId: number;
   losingTeamId: number;
   winningTeamId: number;
-  week?: WeekInputDto;
-  teams?: TeamInputDto[];
-  losingTeam?: TeamInputDto;
-  winningTeam?: TeamInputDto;
-  games?: GameInputDto[];
+  week?: WeekInput;
+  teams?: TeamInput[];
+  losingTeam?: TeamInput;
+  winningTeam?: TeamInput;
+  games?: GameInput[];
 }
 
-export interface MatchOutputDto extends BaseOutputDto {
+export interface MatchOutput extends BaseOutput {
   weekId: number;
   losingTeamId?: number;
   winningTeamId?: number;

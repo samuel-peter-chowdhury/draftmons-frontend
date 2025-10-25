@@ -29,11 +29,11 @@ import { useFetch, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
-import type { LeagueInputDto } from '@/types';
+import type { LeagueInput } from '@/types';
 
 export default function LeagueDetailPage() {
   const params = useParams<{ id: string }>();
-  const { data, loading, error, refetch } = useFetch<LeagueInputDto>(
+  const { data, loading, error, refetch } = useFetch<LeagueInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [params.id], { full: true }),
   );
 

@@ -18,7 +18,7 @@ import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
 import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { LeagueInputDto, PaginatedResponse } from '@/types';
+import type { LeagueInput, PaginatedResponse } from '@/types';
 
 export default function LeagueListPage() {
   const router = useRouter();
@@ -33,9 +33,9 @@ export default function LeagueListPage() {
     [page, pageSize, sortBy, sortOrder],
   );
 
-  const { data, loading, error } = useFetch<PaginatedResponse<LeagueInputDto>>(url);
+  const { data, loading, error } = useFetch<PaginatedResponse<LeagueInput>>(url);
 
-  const handleLeagueCreated = (league?: LeagueInputDto) => {
+  const handleLeagueCreated = (league?: LeagueInput) => {
     if (league?.id) {
       router.push(`/league/${league.id}`);
     }

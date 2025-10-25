@@ -1,18 +1,18 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { GameInputDto } from './game.type';
-import { SeasonPokemonInputDto } from './seasonPokemon.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { GameInput } from './game.type';
+import { SeasonPokemonInput } from './seasonPokemon.type';
 
-export interface GameStatInputDto extends BaseInputDto {
+export interface GameStatInput extends BaseInput {
   gameId: number;
   seasonPokemonId: number;
   directKills: number;
   indirectKills: number;
   deaths: number;
-  game?: GameInputDto;
-  seasonPokemon?: SeasonPokemonInputDto;
+  game?: GameInput;
+  seasonPokemon?: SeasonPokemonInput;
 }
 
-export interface GameStatOutputDto extends BaseOutputDto {
+export interface GameStatOutput extends BaseOutput {
   gameId: number;
   seasonPokemonId: number;
   directKills: number;

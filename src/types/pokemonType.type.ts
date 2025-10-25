@@ -1,17 +1,17 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { MoveInputDto } from './move.type';
-import { PokemonInputDto } from './pokemon.type';
-import { TypeEffectiveInputDto } from './typeEffective.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { MoveInput } from './move.type';
+import { PokemonInput } from './pokemon.type';
+import { TypeEffectiveInput } from './typeEffective.type';
 
-export interface PokemonTypeInputDto extends BaseInputDto {
+export interface PokemonTypeInput extends BaseInput {
   name: string;
   color: string;
-  moves?: MoveInputDto[];
-  pokemon?: PokemonInputDto[];
-  typeEffectiveness?: TypeEffectiveInputDto[];
+  moves?: MoveInput[];
+  pokemon?: PokemonInput[];
+  typeEffectiveness?: TypeEffectiveInput[];
 }
 
-export interface PokemonTypeOutputDto extends BaseOutputDto {
+export interface PokemonTypeOutput extends BaseOutput {
   name: string;
   color: string;
 }

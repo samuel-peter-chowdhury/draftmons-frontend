@@ -1,6 +1,6 @@
 import { Api, buildUrl, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { UserInputDto, PaginatedResponse } from '@/types';
+import type { UserInput, PaginatedResponse } from '@/types';
 
 /**
  * User API - handles all /api/user endpoints
@@ -22,7 +22,7 @@ export const UserApi = {
       page: params.page ?? 1,
       pageSize: params.pageSize ?? 10,
     });
-    return Api.get<PaginatedResponse<UserInputDto>>(url);
+    return Api.get<PaginatedResponse<UserInput>>(url);
   },
 
   /**
@@ -31,7 +31,7 @@ export const UserApi = {
    */
   getById: (id: number) => {
     const url = buildUrl(BASE_ENDPOINTS.USER_BASE, id);
-    return Api.get<UserInputDto>(url);
+    return Api.get<UserInput>(url);
   },
 
   /**
@@ -45,6 +45,6 @@ export const UserApi = {
     sortOrder?: 'ASC' | 'DESC';
   }) => {
     const url = params ? buildUrlWithQuery(BASE_ENDPOINTS.USER_BASE, [], params) : BASE_ENDPOINTS.USER_BASE;
-    return Api.get<PaginatedResponse<UserInputDto>>(url);
+    return Api.get<PaginatedResponse<UserInput>>(url);
   },
 };

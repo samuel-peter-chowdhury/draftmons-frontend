@@ -1,18 +1,18 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { GenerationInputDto } from './generation.type';
-import { MoveInputDto } from './move.type';
-import { PokemonInputDto } from './pokemon.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { GenerationInput } from './generation.type';
+import { MoveInput } from './move.type';
+import { PokemonInput } from './pokemon.type';
 
-export interface PokemonMoveInputDto extends BaseInputDto {
+export interface PokemonMoveInput extends BaseInput {
   pokemonId: number;
   moveId: number;
   generationId: number;
-  pokemon?: PokemonInputDto;
-  move?: MoveInputDto;
-  generation?: GenerationInputDto;
+  pokemon?: PokemonInput;
+  move?: MoveInput;
+  generation?: GenerationInput;
 }
 
-export interface PokemonMoveOutputDto extends BaseOutputDto {
+export interface PokemonMoveOutput extends BaseOutput {
   pokemonId: number;
   moveId: number;
   generationId: number;

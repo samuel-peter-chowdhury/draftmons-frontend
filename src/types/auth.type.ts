@@ -1,6 +1,6 @@
-import { UserInputDto } from './user.type';
+import { UserInput } from './user.type';
 
 export interface AuthResponse {
   isAuthenticated: boolean;
-  user?: UserInputDto;
+  user?: UserInput;
 }

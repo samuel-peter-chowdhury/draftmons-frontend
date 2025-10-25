@@ -1,15 +1,15 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { LeagueUserInputDto } from './leagueUser.type';
-import { SeasonInputDto } from './season.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { LeagueUserInput } from './leagueUser.type';
+import { SeasonInput } from './season.type';
 
-export interface LeagueInputDto extends BaseInputDto {
+export interface LeagueInput extends BaseInput {
   name: string;
   abbreviation: string;
-  leagueUsers?: LeagueUserInputDto[];
-  seasons?: SeasonInputDto[];
+  leagueUsers?: LeagueUserInput[];
+  seasons?: SeasonInput[];
 }
 
-export interface LeagueOutputDto extends BaseOutputDto {
+export interface LeagueOutput extends BaseOutput {
   name: string;
   abbreviation: string;
 }

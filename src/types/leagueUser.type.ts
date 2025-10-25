@@ -1,16 +1,16 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { LeagueInputDto } from './league.type';
-import { UserInputDto } from './user.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { LeagueInput } from './league.type';
+import { UserInput } from './user.type';
 
-export interface LeagueUserInputDto extends BaseInputDto {
+export interface LeagueUserInput extends BaseInput {
   leagueId: number;
   userId: number;
   isModerator: boolean;
-  league?: LeagueInputDto;
-  user?: UserInputDto;
+  league?: LeagueInput;
+  user?: UserInput;
 }
 
-export interface LeagueUserOutputDto extends BaseOutputDto {
+export interface LeagueUserOutput extends BaseOutput {
   leagueId: number;
   userId: number;
   isModerator: boolean;

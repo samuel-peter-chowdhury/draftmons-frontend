@@ -1,8 +1,8 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { LeagueUserInputDto } from './leagueUser.type';
-import { TeamInputDto } from './team.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { LeagueUserInput } from './leagueUser.type';
+import { TeamInput } from './team.type';
 
-export interface UserInputDto extends BaseInputDto {
+export interface UserInput extends BaseInput {
   firstName: string;
   lastName: string;
   email: string;
@@ -11,11 +11,11 @@ export interface UserInputDto extends BaseInputDto {
   showdownUsername: string;
   discordUsername: string;
   timezone: string;
-  leagueUsers?: LeagueUserInputDto[];
-  teams?: TeamInputDto[];
+  leagueUsers?: LeagueUserInput[];
+  teams?: TeamInput[];
 }
 
-export interface UserOutputDto extends BaseOutputDto {
+export interface UserOutput extends BaseOutput {
   firstName?: string;
   lastName?: string;
   email?: string;

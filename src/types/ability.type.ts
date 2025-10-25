@@ -1,13 +1,13 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { PokemonInputDto } from './pokemon.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { PokemonInput } from './pokemon.type';
 
-export interface AbilityInputDto extends BaseInputDto {
+export interface AbilityInput extends BaseInput {
   name: string;
   description: string;
-  pokemon?: PokemonInputDto[];
+  pokemon?: PokemonInput[];
 }
 
-export interface AbilityOutputDto extends BaseOutputDto {
+export interface AbilityOutput extends BaseOutput {
   name: string;
   description: string;
 }

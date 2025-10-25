@@ -1,9 +1,9 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { GenerationInputDto } from './generation.type';
-import { LeagueInputDto } from './league.type';
-import { SeasonPokemonInputDto } from './seasonPokemon.type';
-import { TeamInputDto } from './team.type';
-import { WeekInputDto } from './week.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { GenerationInput } from './generation.type';
+import { LeagueInput } from './league.type';
+import { SeasonPokemonInput } from './seasonPokemon.type';
+import { TeamInput } from './team.type';
+import { WeekInput } from './week.type';
 
 export enum SeasonStatus {
   PRE_DRAFT = 'PRE_DRAFT',
@@ -14,7 +14,7 @@ export enum SeasonStatus {
   PLAYOFFS = 'PLAYOFFS',
 }
 
-export interface SeasonInputDto extends BaseInputDto {
+export interface SeasonInput extends BaseInput {
   name: string;
   status: SeasonStatus;
   rules: string;
@@ -22,14 +22,14 @@ export interface SeasonInputDto extends BaseInputDto {
   maxPointValue: number;
   leagueId: number;
   generationId: number;
-  league?: LeagueInputDto;
-  generation?: GenerationInputDto;
-  teams?: TeamInputDto[];
-  weeks?: WeekInputDto[];
-  seasonPokemon?: SeasonPokemonInputDto[];
+  league?: LeagueInput;
+  generation?: GenerationInput;
+  teams?: TeamInput[];
+  weeks?: WeekInput[];
+  seasonPokemon?: SeasonPokemonInput[];
 }
 
-export interface SeasonOutputDto extends BaseOutputDto {
+export interface SeasonOutput extends BaseOutput {
   name: string;
   status: SeasonStatus;
   rules?: string;

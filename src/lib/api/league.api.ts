@@ -1,17 +1,17 @@
 import { Api, buildUrl, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type {
-  LeagueInputDto,
-  LeagueOutputDto,
-  LeagueUserInputDto,
-  GameStatInputDto,
-  GameInputDto,
-  MatchInputDto,
-  SeasonPokemonInputDto,
-  SeasonInputDto,
-  SeasonOutputDto,
-  TeamInputDto,
-  WeekInputDto,
+  LeagueInput,
+  LeagueOutput,
+  LeagueUserInput,
+  GameStatInput,
+  GameInput,
+  MatchInput,
+  SeasonPokemonInput,
+  SeasonInput,
+  SeasonOutput,
+  TeamInput,
+  WeekInput,
   PaginatedResponse,
 } from '@/types';
 
@@ -32,7 +32,7 @@ export const LeagueApi = {
     sortOrder?: 'ASC' | 'DESC';
   }) => {
     const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [], params);
-    return Api.get<PaginatedResponse<LeagueInputDto>>(url);
+    return Api.get<PaginatedResponse<LeagueInput>>(url);
   },
 
   /**
@@ -45,24 +45,24 @@ export const LeagueApi = {
       [id],
       full ? { full: 'true' } : undefined,
     );
-    return Api.get<LeagueInputDto>(url);
+    return Api.get<LeagueInput>(url);
   },
 
   /**
    * POST /api/league
    * Create a new league
    */
-  create: (data: LeagueOutputDto) => {
-    return Api.post<LeagueInputDto>(BASE_ENDPOINTS.LEAGUE_BASE, data);
+  create: (data: LeagueOutput) => {
+    return Api.post<LeagueInput>(BASE_ENDPOINTS.LEAGUE_BASE, data);
   },
 
   /**
    * PUT /api/league/:id
    * Update an existing league
    */
-  update: (id: number, data: LeagueOutputDto) => {
+  update: (id: number, data: LeagueOutput) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, id);
-    return Api.put<LeagueInputDto>(url, data);
+    return Api.put<LeagueInput>(url, data);
   },
 
   /**
@@ -82,7 +82,7 @@ export const LeagueApi = {
    */
   getLeagueUsers: (leagueId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'league-user');
-    return Api.get<LeagueUserInputDto[]>(url);
+    return Api.get<LeagueUserInput[]>(url);
   },
 
   /**
@@ -91,7 +91,7 @@ export const LeagueApi = {
    */
   getLeagueUser: (leagueId: number, leagueUserId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'league-user', leagueUserId);
-    return Api.get<LeagueUserInputDto>(url);
+    return Api.get<LeagueUserInput>(url);
   },
 
   /**
@@ -100,7 +100,7 @@ export const LeagueApi = {
    */
   addUser: (leagueId: number, data: { userId: number; isModerator: boolean }) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'league-user');
-    return Api.post<LeagueUserInputDto>(url, { ...data, leagueId });
+    return Api.post<LeagueUserInput>(url, { ...data, leagueId });
   },
 
   /**
@@ -110,10 +110,10 @@ export const LeagueApi = {
   updateLeagueUser: (
     leagueId: number,
     leagueUserId: number,
-    data: Partial<LeagueUserInputDto>,
+    data: Partial<LeagueUserInput>,
   ) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'league-user', leagueUserId);
-    return Api.put<LeagueUserInputDto>(url, data);
+    return Api.put<LeagueUserInput>(url, data);
   },
 
   /**
@@ -133,7 +133,7 @@ export const LeagueApi = {
    */
   getSeasons: (leagueId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season');
-    return Api.get<SeasonInputDto[]>(url);
+    return Api.get<SeasonInput[]>(url);
   },
 
   /**
@@ -142,25 +142,25 @@ export const LeagueApi = {
    */
   getSeason: (leagueId: number, seasonId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season', seasonId);
-    return Api.get<SeasonInputDto>(url);
+    return Api.get<SeasonInput>(url);
   },
 
   /**
    * POST /api/league/:leagueId/season
    * Create a new season in a league
    */
-  createSeason: (leagueId: number, data: SeasonOutputDto) => {
+  createSeason: (leagueId: number, data: SeasonOutput) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season');
-    return Api.post<SeasonInputDto>(url, { ...data, leagueId });
+    return Api.post<SeasonInput>(url, { ...data, leagueId });
   },
 
   /**
    * PUT /api/league/:leagueId/season/:seasonId
    * Update a season
    */
-  updateSeason: (leagueId: number, seasonId: number, data: Partial<SeasonOutputDto>) => {
+  updateSeason: (leagueId: number, seasonId: number, data: Partial<SeasonOutput>) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season', seasonId);
-    return Api.put<SeasonInputDto>(url, data);
+    return Api.put<SeasonInput>(url, data);
   },
 
   /**
@@ -180,7 +180,7 @@ export const LeagueApi = {
    */
   getTeams: (leagueId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'team');
-    return Api.get<TeamInputDto[]>(url);
+    return Api.get<TeamInput[]>(url);
   },
 
   /**
@@ -189,7 +189,7 @@ export const LeagueApi = {
    */
   getTeam: (leagueId: number, teamId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'team', teamId);
-    return Api.get<TeamInputDto>(url);
+    return Api.get<TeamInput>(url);
   },
 
   /**
@@ -198,7 +198,7 @@ export const LeagueApi = {
    */
   createTeam: (leagueId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'team');
-    return Api.post<TeamInputDto>(url, data);
+    return Api.post<TeamInput>(url, data);
   },
 
   /**
@@ -207,7 +207,7 @@ export const LeagueApi = {
    */
   updateTeam: (leagueId: number, teamId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'team', teamId);
-    return Api.put<TeamInputDto>(url, data);
+    return Api.put<TeamInput>(url, data);
   },
 
   /**
@@ -227,7 +227,7 @@ export const LeagueApi = {
    */
   getWeeks: (leagueId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'week');
-    return Api.get<WeekInputDto[]>(url);
+    return Api.get<WeekInput[]>(url);
   },
 
   /**
@@ -236,7 +236,7 @@ export const LeagueApi = {
    */
   getWeek: (leagueId: number, weekId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'week', weekId);
-    return Api.get<WeekInputDto>(url);
+    return Api.get<WeekInput>(url);
   },
 
   /**
@@ -245,7 +245,7 @@ export const LeagueApi = {
    */
   createWeek: (leagueId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'week');
-    return Api.post<WeekInputDto>(url, data);
+    return Api.post<WeekInput>(url, data);
   },
 
   /**
@@ -254,7 +254,7 @@ export const LeagueApi = {
    */
   updateWeek: (leagueId: number, weekId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'week', weekId);
-    return Api.put<WeekInputDto>(url, data);
+    return Api.put<WeekInput>(url, data);
   },
 
   /**
@@ -274,7 +274,7 @@ export const LeagueApi = {
    */
   getMatches: (leagueId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'match');
-    return Api.get<MatchInputDto[]>(url);
+    return Api.get<MatchInput[]>(url);
   },
 
   /**
@@ -283,7 +283,7 @@ export const LeagueApi = {
    */
   getMatch: (leagueId: number, matchId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'match', matchId);
-    return Api.get<MatchInputDto>(url);
+    return Api.get<MatchInput>(url);
   },
 
   /**
@@ -292,7 +292,7 @@ export const LeagueApi = {
    */
   createMatch: (leagueId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'match');
-    return Api.post<MatchInputDto>(url, data);
+    return Api.post<MatchInput>(url, data);
   },
 
   /**
@@ -301,7 +301,7 @@ export const LeagueApi = {
    */
   updateMatch: (leagueId: number, matchId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'match', matchId);
-    return Api.put<MatchInputDto>(url, data);
+    return Api.put<MatchInput>(url, data);
   },
 
   /**
@@ -321,7 +321,7 @@ export const LeagueApi = {
    */
   getGames: (leagueId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'game');
-    return Api.get<GameInputDto[]>(url);
+    return Api.get<GameInput[]>(url);
   },
 
   /**
@@ -330,7 +330,7 @@ export const LeagueApi = {
    */
   getGame: (leagueId: number, gameId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'game', gameId);
-    return Api.get<GameInputDto>(url);
+    return Api.get<GameInput>(url);
   },
 
   /**
@@ -339,7 +339,7 @@ export const LeagueApi = {
    */
   createGame: (leagueId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'game');
-    return Api.post<GameInputDto>(url, data);
+    return Api.post<GameInput>(url, data);
   },
 
   /**
@@ -348,7 +348,7 @@ export const LeagueApi = {
    */
   updateGame: (leagueId: number, gameId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'game', gameId);
-    return Api.put<GameInputDto>(url, data);
+    return Api.put<GameInput>(url, data);
   },
 
   /**
@@ -368,7 +368,7 @@ export const LeagueApi = {
    */
   getGameStats: (leagueId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'game-stat');
-    return Api.get<GameStatInputDto[]>(url);
+    return Api.get<GameStatInput[]>(url);
   },
 
   /**
@@ -377,7 +377,7 @@ export const LeagueApi = {
    */
   getGameStat: (leagueId: number, gameStatId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'game-stat', gameStatId);
-    return Api.get<GameStatInputDto>(url);
+    return Api.get<GameStatInput>(url);
   },
 
   /**
@@ -386,7 +386,7 @@ export const LeagueApi = {
    */
   createGameStat: (leagueId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'game-stat');
-    return Api.post<GameStatInputDto>(url, data);
+    return Api.post<GameStatInput>(url, data);
   },
 
   /**
@@ -395,7 +395,7 @@ export const LeagueApi = {
    */
   updateGameStat: (leagueId: number, gameStatId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'game-stat', gameStatId);
-    return Api.put<GameStatInputDto>(url, data);
+    return Api.put<GameStatInput>(url, data);
   },
 
   /**
@@ -415,7 +415,7 @@ export const LeagueApi = {
    */
   getSeasonPokemon: (leagueId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon');
-    return Api.get<SeasonPokemonInputDto[]>(url);
+    return Api.get<SeasonPokemonInput[]>(url);
   },
 
   /**
@@ -424,7 +424,7 @@ export const LeagueApi = {
    */
   getSeasonPokemonById: (leagueId: number, seasonPokemonId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon', seasonPokemonId);
-    return Api.get<SeasonPokemonInputDto>(url);
+    return Api.get<SeasonPokemonInput>(url);
   },
 
   /**
@@ -433,7 +433,7 @@ export const LeagueApi = {
    */
   createSeasonPokemon: (leagueId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon');
-    return Api.post<SeasonPokemonInputDto>(url, data);
+    return Api.post<SeasonPokemonInput>(url, data);
   },
 
   /**
@@ -442,7 +442,7 @@ export const LeagueApi = {
    */
   updateSeasonPokemon: (leagueId: number, seasonPokemonId: number, data: unknown) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon', seasonPokemonId);
-    return Api.put<SeasonPokemonInputDto>(url, data);
+    return Api.put<SeasonPokemonInput>(url, data);
   },
 
   /**

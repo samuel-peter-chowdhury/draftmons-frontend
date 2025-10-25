@@ -1,12 +1,12 @@
-import { AbilityInputDto } from './ability.type';
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { GenerationInputDto } from './generation.type';
-import { PokemonMoveInputDto } from './pokemonMove.type';
-import { PokemonTypeInputDto } from './pokemonType.type';
-import { SeasonPokemonInputDto } from './seasonPokemon.type';
-import { TypeEffectiveInputDto } from './typeEffective.type';
+import { AbilityInput } from './ability.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { GenerationInput } from './generation.type';
+import { PokemonMoveInput } from './pokemonMove.type';
+import { PokemonTypeInput } from './pokemonType.type';
+import { SeasonPokemonInput } from './seasonPokemon.type';
+import { TypeEffectiveInput } from './typeEffective.type';
 
-export interface PokemonInputDto extends BaseInputDto {
+export interface PokemonInput extends BaseInput {
   dexId: number;
   name: string;
   hp: number;
@@ -19,15 +19,15 @@ export interface PokemonInputDto extends BaseInputDto {
   height: number;
   weight: number;
   sprite: string;
-  pokemonTypes: PokemonTypeInputDto[];
-  pokemonMoves?: PokemonMoveInputDto[];
-  abilities: AbilityInputDto[];
-  typeEffectiveness?: TypeEffectiveInputDto[];
-  seasonPokemon?: SeasonPokemonInputDto[];
-  generations?: GenerationInputDto[];
+  pokemonTypes: PokemonTypeInput[];
+  pokemonMoves?: PokemonMoveInput[];
+  abilities: AbilityInput[];
+  typeEffectiveness?: TypeEffectiveInput[];
+  seasonPokemon?: SeasonPokemonInput[];
+  generations?: GenerationInput[];
 }
 
-export interface PokemonOutputDto extends BaseOutputDto {
+export interface PokemonOutput extends BaseOutput {
   dexId: number;
   name: string;
   hp: number;

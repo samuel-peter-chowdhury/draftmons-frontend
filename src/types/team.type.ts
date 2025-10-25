@@ -1,25 +1,25 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { GameInputDto } from './game.type';
-import { MatchInputDto } from './match.type';
-import { SeasonPokemonInputDto } from './seasonPokemon.type';
-import { SeasonInputDto } from './season.type';
-import { UserInputDto } from './user.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { GameInput } from './game.type';
+import { MatchInput } from './match.type';
+import { SeasonPokemonInput } from './seasonPokemon.type';
+import { SeasonInput } from './season.type';
+import { UserInput } from './user.type';
 
-export interface TeamInputDto extends BaseInputDto {
+export interface TeamInput extends BaseInput {
   name: string;
   seasonId: number;
   userId: number;
-  season?: SeasonInputDto;
-  user?: UserInputDto;
-  seasonPokemon?: SeasonPokemonInputDto[];
-  lostGames?: GameInputDto[];
-  wonGames?: GameInputDto[];
-  matches?: MatchInputDto[];
-  lostMatches?: MatchInputDto[];
-  wonMatches?: MatchInputDto[];
+  season?: SeasonInput;
+  user?: UserInput;
+  seasonPokemon?: SeasonPokemonInput[];
+  lostGames?: GameInput[];
+  wonGames?: GameInput[];
+  matches?: MatchInput[];
+  lostMatches?: MatchInput[];
+  wonMatches?: MatchInput[];
 }
 
-export interface TeamOutputDto extends BaseOutputDto {
+export interface TeamOutput extends BaseOutput {
   name: string;
   seasonId: number;
   userId: number;

@@ -2,10 +2,10 @@
 
 import { create } from 'zustand';
 import { AuthApi, ApiError } from '@/lib/api';
-import type { AuthResponse, UserInputDto } from '@/types';
+import type { AuthResponse, UserInput } from '@/types';
 
 type AuthState = {
-  user: UserInputDto | null;
+  user: UserInput | null;
   isAuthenticated: boolean;
   loading: boolean;
   error?: string | null;
@@ -14,7 +14,7 @@ type AuthState = {
 type AuthActions = {
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
-  setUser: (user: UserInputDto | null) => void;
+  setUser: (user: UserInput | null) => void;
 };
 
 export const useAuthStore = create<AuthState & AuthActions>((set) => ({

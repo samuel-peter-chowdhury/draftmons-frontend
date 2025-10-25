@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import type { LeagueInputDto } from '@/types';
+import type { LeagueInput } from '@/types';
 
 export default function HomePage() {
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function HomePage() {
     }
   }, [isAuthenticated, checkAuth]);
 
-  const handleLeagueCreated = (league?: LeagueInputDto) => {
+  const handleLeagueCreated = (league?: LeagueInput) => {
     if (league?.id) {
       router.push(`/league/${league.id}`);
     }

@@ -16,7 +16,7 @@ import { useFetch, useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
-import type { SeasonOutputDto, SeasonStatus, GenerationOutputDto, PaginatedResponse } from '@/types';
+import type { SeasonOutput, SeasonStatus, GenerationOutput, PaginatedResponse } from '@/types';
 
 interface CreateSeasonModalProps {
   open: boolean;
@@ -32,7 +32,7 @@ export function CreateSeasonModal({
   onSuccess,
 }: CreateSeasonModalProps) {
   const { data: generationsResponse, loading: generationsLoading, error: generationsError } =
-    useFetch<PaginatedResponse<GenerationOutputDto>>(open ? BASE_ENDPOINTS.GENERATION_BASE : null);
+    useFetch<PaginatedResponse<GenerationOutput>>(open ? BASE_ENDPOINTS.GENERATION_BASE : null);
 
   const generations = generationsResponse?.data;
 
@@ -46,9 +46,9 @@ export function CreateSeasonModal({
     leagueId,
   };
 
-  const [form, setForm] = useState<SeasonOutputDto>(defaultForm);
+  const [form, setForm] = useState<SeasonOutput>(defaultForm);
 
-  const createSeasonMutation = useMutation((data: SeasonOutputDto) => LeagueApi.createSeason(leagueId, data), {
+  const createSeasonMutation = useMutation((data: SeasonOutput) => LeagueApi.createSeason(leagueId, data), {
     onSuccess: () => {
       setForm(defaultForm);
       onOpenChange(false);

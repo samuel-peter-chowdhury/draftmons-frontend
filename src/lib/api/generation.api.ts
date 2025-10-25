@@ -1,6 +1,6 @@
 import { Api, buildUrl, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { GenerationOutputDto, PaginatedResponse } from '@/types';
+import type { GenerationOutput, PaginatedResponse } from '@/types';
 
 /**
  * Generation API - handles all /api/generation endpoints
@@ -19,7 +19,7 @@ export const GenerationApi = {
     const url = params
       ? buildUrlWithQuery(BASE_ENDPOINTS.GENERATION_BASE, [], params)
       : BASE_ENDPOINTS.GENERATION_BASE;
-    return Api.get<PaginatedResponse<GenerationOutputDto>>(url);
+    return Api.get<PaginatedResponse<GenerationOutput>>(url);
   },
 
   /**
@@ -28,6 +28,6 @@ export const GenerationApi = {
    */
   getById: (id: number) => {
     const url = buildUrl(BASE_ENDPOINTS.GENERATION_BASE, id);
-    return Api.get<GenerationOutputDto>(url);
+    return Api.get<GenerationOutput>(url);
   },
 };

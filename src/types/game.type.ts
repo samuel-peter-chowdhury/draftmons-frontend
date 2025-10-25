@@ -1,21 +1,21 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { GameStatInputDto } from './gameStat.type';
-import { MatchInputDto } from './match.type';
-import { TeamInputDto } from './team.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { GameStatInput } from './gameStat.type';
+import { MatchInput } from './match.type';
+import { TeamInput } from './team.type';
 
-export interface GameInputDto extends BaseInputDto {
+export interface GameInput extends BaseInput {
   matchId: number;
   losingTeamId: number;
   winningTeamId: number;
   differential: number;
   replayLink: string;
-  match?: MatchInputDto;
-  losingTeam?: TeamInputDto;
-  winningTeam?: TeamInputDto;
-  gameStats?: GameStatInputDto[];
+  match?: MatchInput;
+  losingTeam?: TeamInput;
+  winningTeam?: TeamInput;
+  gameStats?: GameStatInput[];
 }
 
-export interface GameOutputDto extends BaseOutputDto {
+export interface GameOutput extends BaseOutput {
   matchId: number;
   losingTeamId: number;
   winningTeamId: number;

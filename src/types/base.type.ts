@@ -1,8 +1,8 @@
-export interface BaseInputDto {
+export interface BaseInput {
   id: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface BaseOutputDto {}
+export interface BaseOutput {}

@@ -1,15 +1,15 @@
-import { BaseInputDto, BaseOutputDto } from './base.type';
-import { MatchInputDto } from './match.type';
-import { SeasonInputDto } from './season.type';
+import { BaseInput, BaseOutput } from './base.type';
+import { MatchInput } from './match.type';
+import { SeasonInput } from './season.type';
 
-export interface WeekInputDto extends BaseInputDto {
+export interface WeekInput extends BaseInput {
   name: string;
   seasonId: number;
-  season?: SeasonInputDto;
-  matches?: MatchInputDto[];
+  season?: SeasonInput;
+  matches?: MatchInput[];
 }
 
-export interface WeekOutputDto extends BaseOutputDto {
+export interface WeekOutput extends BaseOutput {
   name: string;
   seasonId: number;
 }

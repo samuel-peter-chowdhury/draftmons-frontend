@@ -12,13 +12,13 @@ import {
 } from '@/components';
 import { useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
-import type { LeagueInputDto, LeagueOutputDto } from '@/types';
+import type { LeagueInput, LeagueOutput } from '@/types';
 
 interface CreateLeagueModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  league?: LeagueInputDto | null;
-  onSuccess?: (league?: LeagueInputDto) => void;
+  league?: LeagueInput | null;
+  onSuccess?: (league?: LeagueInput) => void;
 }
 
 export function CreateLeagueModal({
@@ -28,9 +28,9 @@ export function CreateLeagueModal({
   onSuccess,
 }: CreateLeagueModalProps) {
   const isEditMode = !!league;
-  const [form, setForm] = useState<LeagueOutputDto>({ name: '', abbreviation: '' });
+  const [form, setForm] = useState<LeagueOutput>({ name: '', abbreviation: '' });
 
-  const createMutation = useMutation((data: LeagueOutputDto) => LeagueApi.create(data), {
+  const createMutation = useMutation((data: LeagueOutput) => LeagueApi.create(data), {
     onSuccess: (result) => {
       setForm({ name: '', abbreviation: '' });
       onOpenChange(false);
@@ -38,7 +38,7 @@ export function CreateLeagueModal({
     },
   });
 
-  const updateMutation = useMutation((data: LeagueOutputDto) => LeagueApi.update(league!.id, data), {
+  const updateMutation = useMutation((data: LeagueOutput) => LeagueApi.update(league!.id, data), {
     onSuccess: (result) => {
       setForm({ name: '', abbreviation: '' });
       onOpenChange(false);

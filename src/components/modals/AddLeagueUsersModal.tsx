@@ -13,13 +13,13 @@ import {
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { useMutation } from '@/hooks';
 import { UserApi, LeagueApi } from '@/lib/api';
-import type { UserInputDto, LeagueUserInputDto } from '@/types';
+import type { UserInput, LeagueUserInput } from '@/types';
 
 interface AddLeagueUsersModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leagueId: number;
-  existingLeagueUsers?: LeagueUserInputDto[];
+  existingLeagueUsers?: LeagueUserInput[];
   onSuccess?: () => void;
 }
 
@@ -31,8 +31,8 @@ export function AddLeagueUsersModal({
   onSuccess,
 }: AddLeagueUsersModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [users, setUsers] = useState<UserInputDto[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<UserInputDto[]>([]);
+  const [users, setUsers] = useState<UserInput[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<UserInput[]>([]);
   const [searching, setSearching] = useState(false);
 
   const addUsersMutation = useMutation(
