@@ -1,6 +1,6 @@
 import { Api, buildUrl, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { UserInput, PaginatedResponse } from '@/types';
+import type { UserInput, UserOutput, PaginatedResponse } from '@/types';
 
 /**
  * User API - handles all /api/user endpoints
@@ -46,5 +46,14 @@ export const UserApi = {
   }) => {
     const url = params ? buildUrlWithQuery(BASE_ENDPOINTS.USER_BASE, [], params) : BASE_ENDPOINTS.USER_BASE;
     return Api.get<PaginatedResponse<UserInput>>(url);
+  },
+
+  /**
+   * PUT /api/user/:id
+   * Update a user's profile
+   */
+  update: (id: number, data: Partial<UserOutput>) => {
+    const url = buildUrl(BASE_ENDPOINTS.USER_BASE, id);
+    return Api.put<UserInput>(url, data);
   },
 };

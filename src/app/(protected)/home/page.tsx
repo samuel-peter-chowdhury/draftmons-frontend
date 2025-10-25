@@ -52,11 +52,11 @@ export default function HomePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
+            <CardTitle>Users</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center gap-2">
             <Link href="/user">
-              <Button>View User</Button>
+              <Button>Browse Users</Button>
             </Link>
           </CardContent>
         </Card>

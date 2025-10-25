@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, LogOut, Menu } from 'lucide-react';
+import { Home, LogOut, Menu, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore, useUiStore } from '@/stores';
 
@@ -13,6 +13,7 @@ export default function Header() {
   const pathname = usePathname();
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const logout = useAuthStore((s) => s.logout);
+  const user = useAuthStore((s) => s.user);
 
   // Check if current path matches the regex pattern
   const shouldShowMenu = MENU_VISIBLE_PATH_REGEX
@@ -25,6 +26,12 @@ export default function Header() {
       router.replace('/');
     } catch {
       // swallow; ErrorAlert components on pages will show if needed
+    }
+  };
+
+  const onNavigateToProfile = () => {
+    if (user?.id) {
+      router.push(`/user/${user.id}` as any);
     }
   };
 
@@ -42,7 +49,16 @@ export default function Header() {
           </Button>
         </div>
         <div className="text-sm font-medium">Draftmons</div>
-        <div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="My Profile"
+            onClick={onNavigateToProfile}
+            disabled={!user?.id}
+          >
+            <User className="h-5 w-5" />
+          </Button>
           <Button variant="ghost" size="icon" aria-label="Logout" onClick={onLogout}>
             <LogOut className="h-5 w-5" />
           </Button>
