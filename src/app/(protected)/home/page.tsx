@@ -35,7 +35,7 @@ export default function HomePage() {
       <h1 className="mb-4 text-2xl font-semibold">
         Welcome{displayName ? `, ${displayName}` : ''} 👋
       </h1>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Leagues</CardTitle>
@@ -57,6 +57,17 @@ export default function HomePage() {
           <CardContent className="flex items-center gap-2">
             <Link href="/user">
               <Button>Browse Users</Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Pokemon</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center gap-2">
+            <Link href="/pokemon">
+              <Button>Browse Pokemon</Button>
             </Link>
           </CardContent>
         </Card>

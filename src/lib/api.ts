@@ -97,7 +97,10 @@ export const Api = {
 };
 
 // Re-export resource API clients
+export * from './api/ability.api';
 export * from './api/auth.api';
 export * from './api/generation.api';
 export * from './api/league.api';
+export * from './api/pokemon.api';
+export * from './api/pokemonType.api';
 export * from './api/user.api';

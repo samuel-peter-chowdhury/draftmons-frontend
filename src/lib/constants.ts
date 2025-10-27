@@ -31,12 +31,15 @@ export const API_BASE_URL = getApiBaseUrl();
 export const CLIENT_URL = getClientUrl();
 
 export const BASE_ENDPOINTS = {
+  ABILITY_BASE: `${API_BASE_URL}/api/ability`,
   AUTH_STATUS: `${API_BASE_URL}/api/auth/status`,
   AUTH_GOOGLE: `${API_BASE_URL}/api/auth/google`,
   AUTH_LOGOUT: `${API_BASE_URL}/api/auth/logout`,
   GENERATION_BASE: `${API_BASE_URL}/api/generation`,
   LEAGUE_BASE: `${API_BASE_URL}/api/league`,
   LEAGUE_USER_BASE: `${API_BASE_URL}/api/league-user`,
+  POKEMON_BASE: `${API_BASE_URL}/api/pokemon`,
+  POKEMON_TYPE_BASE: `${API_BASE_URL}/api/pokemon-type`,
   SEASON_BASE: `${API_BASE_URL}/api/season`,
   USER_BASE: `${API_BASE_URL}/api/user`,
 } as const;
