@@ -190,13 +190,14 @@ export default function PokemonPage() {
     }
   };
 
-  const SortButton = ({ column }: { column: SortableColumn }) => {
+  const SortableHeader = ({ column, children }: { column: SortableColumn; children: React.ReactNode }) => {
     const isActive = sortBy === column;
     return (
       <button
         onClick={() => handleSort(column)}
-        className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+        className="inline-flex items-center gap-1 hover:text-foreground transition-colors font-medium"
       >
+        {children}
         {isActive && sortOrder === 'ASC' && <ChevronUp className="h-4 w-4" />}
         {isActive && sortOrder === 'DESC' && <ChevronDown className="h-4 w-4" />}
         {!isActive && <div className="h-4 w-4" />}
@@ -526,54 +527,30 @@ export default function PokemonPage() {
                     <TableRow>
                       <TableHead className="w-20"></TableHead>
                       <TableHead>
-                        <div className="flex items-center gap-1">
-                          Name
-                          <SortButton column="name" />
-                        </div>
+                        <SortableHeader column="name">Name</SortableHeader>
                       </TableHead>
                       <TableHead>Types</TableHead>
                       <TableHead>Abilities</TableHead>
                       <TableHead>
-                        <div className="flex items-center gap-1">
-                          HP
-                          <SortButton column="hp" />
-                        </div>
+                        <SortableHeader column="hp">HP</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <div className="flex items-center gap-1">
-                          Atk
-                          <SortButton column="attack" />
-                        </div>
+                        <SortableHeader column="attack">Atk</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <div className="flex items-center gap-1">
-                          Def
-                          <SortButton column="defense" />
-                        </div>
+                        <SortableHeader column="defense">Def</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <div className="flex items-center gap-1">
-                          Sp.Atk
-                          <SortButton column="specialAttack" />
-                        </div>
+                        <SortableHeader column="specialAttack">Sp.Atk</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <div className="flex items-center gap-1">
-                          Sp.Def
-                          <SortButton column="specialDefense" />
-                        </div>
+                        <SortableHeader column="specialDefense">Sp.Def</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <div className="flex items-center gap-1">
-                          Spd
-                          <SortButton column="speed" />
-                        </div>
+                        <SortableHeader column="speed">Spd</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <div className="flex items-center gap-1">
-                          BST
-                          <SortButton column="baseStatTotal" />
-                        </div>
+                        <SortableHeader column="baseStatTotal">BST</SortableHeader>
                       </TableHead>
                     </TableRow>
                   </TableHeader>
