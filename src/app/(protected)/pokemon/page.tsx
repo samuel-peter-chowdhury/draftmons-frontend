@@ -588,11 +588,15 @@ export default function PokemonPage() {
                       data.data.map((pokemon) => (
                         <TableRow key={pokemon.id}>
                           <TableCell className="w-20">
-                            <img
-                              src={pokemon.sprite}
-                              alt={pokemon.name}
-                              className="h-16 w-16 object-contain"
-                            />
+                            {pokemon.sprite ? (
+                              <img
+                                src={pokemon.sprite}
+                                alt={pokemon.name}
+                                className="h-16 w-16 object-contain"
+                              />
+                            ) : (
+                              <div className="h-16 w-16" />
+                            )}
                           </TableCell>
                           <TableCell className="font-medium">{pokemon.name}</TableCell>
                           <TableCell>
