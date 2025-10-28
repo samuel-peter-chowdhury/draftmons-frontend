@@ -565,9 +565,9 @@ export default function PokemonPage() {
                       data.data.map((pokemon) => (
                         <TableRow key={pokemon.id}>
                           <TableCell className="w-20">
-                            {pokemon.sprite ? (
+                            {pokemon.spriteUrl ? (
                               <img
-                                src={pokemon.sprite}
+                                src={pokemon.spriteUrl}
                                 alt={pokemon.name}
                                 className="h-16 w-16 object-contain"
                               />

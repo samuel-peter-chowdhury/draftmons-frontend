@@ -18,7 +18,7 @@ export interface PokemonInput extends BaseInput {
   baseStatTotal: number;
   height: number;
   weight: number;
-  sprite: string;
+  spriteUrl: string;
   pokemonTypes: PokemonTypeInput[];
   pokemonMoves?: PokemonMoveInput[];
   abilities: AbilityInput[];
@@ -39,5 +39,5 @@ export interface PokemonOutput extends BaseOutput {
   baseStatTotal: number;
   height: number;
   weight: number;
-  sprite: string;
+  spriteUrl: string;
 }
