@@ -33,14 +33,22 @@ export function buildUrl(base: string, ...segments: (string | number)[]): string
 /**
  * Build a query string from an object
  * @example buildQueryString({ page: 1, sortBy: 'name' }) // 'page=1&sortBy=name'
+ * @example buildQueryString({ ids: [1, 2, 3] }) // 'ids=1&ids=2&ids=3'
  */
 export function buildQueryString(
-  params: Record<string, string | number | boolean | undefined | null>,
+  params: Record<string, string | number | boolean | undefined | null | (string | number)[]>,
 ): string {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value !== null && value !== undefined) {
-      searchParams.append(key, String(value));
+      if (Array.isArray(value)) {
+        // For arrays, append each value separately with the same key
+        value.forEach((item) => {
+          searchParams.append(key, String(item));
+        });
+      } else {
+        searchParams.append(key, String(value));
+      }
     }
   });
   return searchParams.toString();
@@ -49,11 +57,12 @@ export function buildQueryString(
 /**
  * Build a URL with path segments and optional query parameters
  * @example buildUrlWithQuery('/api/league', [1], { full: true }) // '/api/league/1?full=true'
+ * @example buildUrlWithQuery('/api/pokemon', [], { pokemonTypeIds: [1, 2] }) // '/api/pokemon?pokemonTypeIds=1&pokemonTypeIds=2'
  */
 export function buildUrlWithQuery(
   base: string,
   segments: (string | number)[],
-  params?: Record<string, string | number | boolean | undefined | null>,
+  params?: Record<string, string | number | boolean | undefined | null | (string | number)[]>,
 ): string {
   const url = buildUrl(base, ...segments);
   if (params) {

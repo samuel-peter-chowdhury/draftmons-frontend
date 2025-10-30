@@ -38,6 +38,7 @@ export const BASE_ENDPOINTS = {
   GENERATION_BASE: `${API_BASE_URL}/api/generation`,
   LEAGUE_BASE: `${API_BASE_URL}/api/league`,
   LEAGUE_USER_BASE: `${API_BASE_URL}/api/league-user`,
+  MOVE_BASE: `${API_BASE_URL}/api/move`,
   POKEMON_BASE: `${API_BASE_URL}/api/pokemon`,
   POKEMON_TYPE_BASE: `${API_BASE_URL}/api/pokemon-type`,
   SEASON_BASE: `${API_BASE_URL}/api/season`,

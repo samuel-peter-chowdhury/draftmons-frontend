@@ -25,7 +25,15 @@ import { Badge } from '@/components/ui/badge';
 import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { AbilityInput, PokemonInput, PokemonTypeInput, PaginatedResponse } from '@/types';
+import { formatGenerationName } from '@/lib/utils';
+import type {
+  AbilityInput,
+  PokemonInput,
+  PokemonTypeInput,
+  MoveInput,
+  GenerationInput,
+  PaginatedResponse,
+} from '@/types';
 
 type SortableColumn =
   | 'name'
@@ -60,16 +68,30 @@ export default function PokemonPage() {
   const [maxSpeed, setMaxSpeed] = useState<string>('');
   const [minBaseStatTotal, setMinBaseStatTotal] = useState<string>('');
   const [maxBaseStatTotal, setMaxBaseStatTotal] = useState<string>('');
+  const [minPhysicalBulk, setMinPhysicalBulk] = useState<string>('');
+  const [maxPhysicalBulk, setMaxPhysicalBulk] = useState<string>('');
+  const [minSpecialBulk, setMinSpecialBulk] = useState<string>('');
+  const [maxSpecialBulk, setMaxSpecialBulk] = useState<string>('');
 
   // Selected filters
   const [selectedAbilities, setSelectedAbilities] = useState<AbilityInput[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<PokemonTypeInput[]>([]);
+  const [selectedMoves, setSelectedMoves] = useState<MoveInput[]>([]);
+  const [selectedGenerations, setSelectedGenerations] = useState<GenerationInput[]>([]);
 
   // Dropdown selections
   const [abilitySearch, setAbilitySearch] = useState('');
   const [typeSearch, setTypeSearch] = useState('');
+  const [moveSearch, setMoveSearch] = useState('');
+  const [generationSearch, setGenerationSearch] = useState('');
 
-  // Fetch abilities and types for dropdowns
+  // Dropdown focus states
+  const [abilityFocused, setAbilityFocused] = useState(false);
+  const [typeFocused, setTypeFocused] = useState(false);
+  const [moveFocused, setMoveFocused] = useState(false);
+  const [generationFocused, setGenerationFocused] = useState(false);
+
+  // Fetch abilities, types, and generations for dropdowns
   const abilitiesUrl = useMemo(
     () => buildUrlWithQuery(BASE_ENDPOINTS.ABILITY_BASE, [], { page: 1, pageSize: 1000 }),
     [],
@@ -78,12 +100,32 @@ export default function PokemonPage() {
     () => buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_TYPE_BASE, [], { page: 1, pageSize: 100 }),
     [],
   );
+  const generationsUrl = useMemo(
+    () => buildUrlWithQuery(BASE_ENDPOINTS.GENERATION_BASE, [], { page: 1, pageSize: 100 }),
+    [],
+  );
 
   const { data: abilitiesData } = useFetch<PaginatedResponse<AbilityInput>>(abilitiesUrl);
   const { data: typesData } = useFetch<PaginatedResponse<PokemonTypeInput>>(typesUrl);
+  const { data: generationsData } = useFetch<PaginatedResponse<GenerationInput>>(generationsUrl);
 
   const abilities = abilitiesData?.data || [];
   const types = typesData?.data || [];
+  const generations = generationsData?.data || [];
+
+  // Find nat_dex generation and fetch moves with that generationId
+  const natDexGeneration = generations.find((g) => g.name === 'nat_dex');
+  const movesUrl = useMemo(() => {
+    if (!natDexGeneration) return null;
+    return buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], {
+      page: 1,
+      pageSize: 10000,
+      generationId: natDexGeneration.id,
+    });
+  }, [natDexGeneration]);
+
+  const { data: movesData } = useFetch<PaginatedResponse<MoveInput>>(movesUrl || '');
+  const moves = movesData?.data || [];
 
   // Build params for API call
   const params = useMemo(() => {
@@ -109,12 +151,22 @@ export default function PokemonPage() {
     if (maxSpeed) p.maxSpeed = parseInt(maxSpeed);
     if (minBaseStatTotal) p.minBaseStatTotal = parseInt(minBaseStatTotal);
     if (maxBaseStatTotal) p.maxBaseStatTotal = parseInt(maxBaseStatTotal);
+    if (minPhysicalBulk) p.minPhysicalBulk = parseInt(minPhysicalBulk);
+    if (maxPhysicalBulk) p.maxPhysicalBulk = parseInt(maxPhysicalBulk);
+    if (minSpecialBulk) p.minSpecialBulk = parseInt(minSpecialBulk);
+    if (maxSpecialBulk) p.maxSpecialBulk = parseInt(maxSpecialBulk);
 
     if (selectedAbilities.length > 0) {
-      p.abilityIds = selectedAbilities.map(a => a.id);
+      p.abilityIds = selectedAbilities.map((a) => a.id);
     }
     if (selectedTypes.length > 0) {
-      p.pokemonTypeIds = selectedTypes.map(t => t.id);
+      p.pokemonTypeIds = selectedTypes.map((t) => t.id);
+    }
+    if (selectedMoves.length > 0) {
+      p.moveIds = selectedMoves.map((m) => m.id);
+    }
+    if (selectedGenerations.length > 0) {
+      p.generationIds = selectedGenerations.map((g) => g.id);
     }
 
     return p;
@@ -138,21 +190,19 @@ export default function PokemonPage() {
     maxSpeed,
     minBaseStatTotal,
     maxBaseStatTotal,
+    minPhysicalBulk,
+    maxPhysicalBulk,
+    minSpecialBulk,
+    maxSpecialBulk,
     selectedAbilities,
     selectedTypes,
+    selectedMoves,
+    selectedGenerations,
   ]);
 
   // Build URL for pokemon fetch
   const pokemonUrl = useMemo(() => {
-    const queryParams: Record<string, any> = { ...params };
-    // Convert arrays to comma-separated strings for query params
-    if (params.abilityIds) {
-      queryParams.abilityIds = params.abilityIds.join(',');
-    }
-    if (params.pokemonTypeIds) {
-      queryParams.pokemonTypeIds = params.pokemonTypeIds.join(',');
-    }
-    return buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_BASE, [], queryParams);
+    return buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_BASE, [], params);
   }, [params]);
 
   // Fetch pokemon data
@@ -177,8 +227,14 @@ export default function PokemonPage() {
     maxSpeed,
     minBaseStatTotal,
     maxBaseStatTotal,
+    minPhysicalBulk,
+    maxPhysicalBulk,
+    minSpecialBulk,
+    maxSpecialBulk,
     selectedAbilities,
     selectedTypes,
+    selectedMoves,
+    selectedGenerations,
   ]);
 
   const handleSort = (column: SortableColumn) => {
@@ -190,12 +246,18 @@ export default function PokemonPage() {
     }
   };
 
-  const SortableHeader = ({ column, children }: { column: SortableColumn; children: React.ReactNode }) => {
+  const SortableHeader = ({
+    column,
+    children,
+  }: {
+    column: SortableColumn;
+    children: React.ReactNode;
+  }) => {
     const isActive = sortBy === column;
     return (
       <button
         onClick={() => handleSort(column)}
-        className="inline-flex items-center gap-1 hover:text-foreground transition-colors font-medium"
+        className="inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground"
       >
         {children}
         {isActive && sortOrder === 'ASC' && <ChevronUp className="h-4 w-4" />}
@@ -206,39 +268,79 @@ export default function PokemonPage() {
   };
 
   const handleAddAbility = (abilityId: number) => {
-    const ability = abilities.find(a => a.id === abilityId);
-    if (ability && !selectedAbilities.find(a => a.id === abilityId)) {
+    const ability = abilities.find((a) => a.id === abilityId);
+    if (ability && !selectedAbilities.find((a) => a.id === abilityId)) {
       setSelectedAbilities([...selectedAbilities, ability]);
       setAbilitySearch('');
+      setAbilityFocused(false);
     }
   };
 
   const handleRemoveAbility = (abilityId: number) => {
-    setSelectedAbilities(selectedAbilities.filter(a => a.id !== abilityId));
+    setSelectedAbilities(selectedAbilities.filter((a) => a.id !== abilityId));
   };
 
   const handleAddType = (typeId: number) => {
-    const type = types.find(t => t.id === typeId);
-    if (type && !selectedTypes.find(t => t.id === typeId)) {
+    const type = types.find((t) => t.id === typeId);
+    if (type && !selectedTypes.find((t) => t.id === typeId)) {
       setSelectedTypes([...selectedTypes, type]);
       setTypeSearch('');
+      setTypeFocused(false);
     }
   };
 
   const handleRemoveType = (typeId: number) => {
-    setSelectedTypes(selectedTypes.filter(t => t.id !== typeId));
+    setSelectedTypes(selectedTypes.filter((t) => t.id !== typeId));
+  };
+
+  const handleAddMove = (moveId: number) => {
+    const move = moves.find((m) => m.id === moveId);
+    if (move && !selectedMoves.find((m) => m.id === moveId)) {
+      setSelectedMoves([...selectedMoves, move]);
+      setMoveSearch('');
+      setMoveFocused(false);
+    }
+  };
+
+  const handleRemoveMove = (moveId: number) => {
+    setSelectedMoves(selectedMoves.filter((m) => m.id !== moveId));
+  };
+
+  const handleAddGeneration = (generationId: number) => {
+    const generation = generations.find((g) => g.id === generationId);
+    if (generation && !selectedGenerations.find((g) => g.id === generationId)) {
+      setSelectedGenerations([...selectedGenerations, generation]);
+      setGenerationSearch('');
+      setGenerationFocused(false);
+    }
+  };
+
+  const handleRemoveGeneration = (generationId: number) => {
+    setSelectedGenerations(selectedGenerations.filter((g) => g.id !== generationId));
   };
 
   const filteredAbilities = abilities.filter(
-    a =>
-      !selectedAbilities.find(sa => sa.id === a.id) &&
+    (a) =>
+      !selectedAbilities.find((sa) => sa.id === a.id) &&
       a.name.toLowerCase().includes(abilitySearch.toLowerCase()),
   );
 
   const filteredTypes = types.filter(
-    t =>
-      !selectedTypes.find(st => st.id === t.id) &&
+    (t) =>
+      !selectedTypes.find((st) => st.id === t.id) &&
       t.name.toLowerCase().includes(typeSearch.toLowerCase()),
+  );
+
+  const filteredMoves = moves.filter(
+    (m) =>
+      !selectedMoves.find((sm) => sm.id === m.id) &&
+      m.name.toLowerCase().includes(moveSearch.toLowerCase()),
+  );
+
+  const filteredGenerations = generations.filter(
+    (g) =>
+      !selectedGenerations.find((sg) => sg.id === g.id) &&
+      g.name.toLowerCase().includes(generationSearch.toLowerCase()),
   );
 
   return (
@@ -410,6 +512,48 @@ export default function PokemonPage() {
                 />
               </div>
             </div>
+
+            {/* Physical Bulk */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Physical Bulk</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Min"
+                  value={minPhysicalBulk}
+                  onChange={(e) => setMinPhysicalBulk(e.target.value)}
+                  className="text-sm"
+                />
+                <Input
+                  type="number"
+                  placeholder="Max"
+                  value={maxPhysicalBulk}
+                  onChange={(e) => setMaxPhysicalBulk(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Special Bulk */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Special Bulk</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Min"
+                  value={minSpecialBulk}
+                  onChange={(e) => setMinSpecialBulk(e.target.value)}
+                  className="text-sm"
+                />
+                <Input
+                  type="number"
+                  placeholder="Max"
+                  value={maxSpecialBulk}
+                  onChange={(e) => setMaxSpecialBulk(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Abilities Filter */}
@@ -421,14 +565,20 @@ export default function PokemonPage() {
                 placeholder="Search abilities..."
                 value={abilitySearch}
                 onChange={(e) => setAbilitySearch(e.target.value)}
+                onFocus={() => setAbilityFocused(true)}
+                onClick={() => setAbilityFocused(true)}
+                onBlur={() => setAbilityFocused(false)}
               />
-              {abilitySearch && filteredAbilities.length > 0 && (
+              {abilityFocused && filteredAbilities.length > 0 && (
                 <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
                   {filteredAbilities.slice(0, 10).map((ability) => (
                     <button
                       key={ability.id}
-                      onClick={() => handleAddAbility(ability.id)}
-                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleAddAbility(ability.id);
+                      }}
+                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm capitalize hover:bg-accent hover:text-accent-foreground"
                     >
                       {ability.name}
                     </button>
@@ -439,7 +589,7 @@ export default function PokemonPage() {
             {selectedAbilities.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {selectedAbilities.map((ability) => (
-                  <Badge key={ability.id} variant="secondary" className="gap-1">
+                  <Badge key={ability.id} variant="secondary" className="gap-1 capitalize">
                     {ability.name}
                     <button
                       onClick={() => handleRemoveAbility(ability.id)}
@@ -463,14 +613,20 @@ export default function PokemonPage() {
                 placeholder="Search types..."
                 value={typeSearch}
                 onChange={(e) => setTypeSearch(e.target.value)}
+                onFocus={() => setTypeFocused(true)}
+                onClick={() => setTypeFocused(true)}
+                onBlur={() => setTypeFocused(false)}
               />
-              {typeSearch && filteredTypes.length > 0 && (
+              {typeFocused && filteredTypes.length > 0 && (
                 <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
                   {filteredTypes.map((type) => (
                     <button
                       key={type.id}
-                      onClick={() => handleAddType(type.id)}
-                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleAddType(type.id);
+                      }}
+                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm capitalize hover:bg-accent hover:text-accent-foreground"
                     >
                       {type.name}
                     </button>
@@ -483,7 +639,7 @@ export default function PokemonPage() {
                 {selectedTypes.map((type) => (
                   <Badge
                     key={type.id}
-                    className="gap-1"
+                    className="gap-1 capitalize"
                     style={{
                       backgroundColor: type.color,
                       color: '#fff',
@@ -495,6 +651,102 @@ export default function PokemonPage() {
                       onClick={() => handleRemoveType(type.id)}
                       className="ml-1 rounded-full hover:bg-black/20"
                       aria-label={`Remove ${type.name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Moves Filter */}
+          <div>
+            <Label htmlFor="moves">Moves</Label>
+            <div className="relative">
+              <Input
+                id="moves"
+                placeholder="Search moves..."
+                value={moveSearch}
+                onChange={(e) => setMoveSearch(e.target.value)}
+                onFocus={() => setMoveFocused(true)}
+                onClick={() => setMoveFocused(true)}
+                onBlur={() => setMoveFocused(false)}
+              />
+              {moveFocused && filteredMoves.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
+                  {filteredMoves.slice(0, 10).map((move) => (
+                    <button
+                      key={move.id}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleAddMove(move.id);
+                      }}
+                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm capitalize hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {move.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {selectedMoves.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedMoves.map((move) => (
+                  <Badge key={move.id} variant="secondary" className="gap-1 capitalize">
+                    {move.name}
+                    <button
+                      onClick={() => handleRemoveMove(move.id)}
+                      className="ml-1 rounded-full hover:bg-background/20"
+                      aria-label={`Remove ${move.name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Generations Filter */}
+          <div>
+            <Label htmlFor="generations">Generations</Label>
+            <div className="relative">
+              <Input
+                id="generations"
+                placeholder="Search generations..."
+                value={generationSearch}
+                onChange={(e) => setGenerationSearch(e.target.value)}
+                onFocus={() => setGenerationFocused(true)}
+                onClick={() => setGenerationFocused(true)}
+                onBlur={() => setGenerationFocused(false)}
+              />
+              {generationFocused && filteredGenerations.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
+                  {filteredGenerations.map((generation) => (
+                    <button
+                      key={generation.id}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleAddGeneration(generation.id);
+                      }}
+                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {formatGenerationName(generation.name)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {selectedGenerations.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedGenerations.map((generation) => (
+                  <Badge key={generation.id} variant="secondary" className="gap-1">
+                    {formatGenerationName(generation.name)}
+                    <button
+                      onClick={() => handleRemoveGeneration(generation.id)}
+                      className="ml-1 rounded-full hover:bg-background/20"
+                      aria-label={`Remove ${formatGenerationName(generation.name)}`}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -575,12 +827,13 @@ export default function PokemonPage() {
                               <div className="h-16 w-16" />
                             )}
                           </TableCell>
-                          <TableCell className="font-medium">{pokemon.name}</TableCell>
+                          <TableCell className="font-medium capitalize">{pokemon.name}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
                               {pokemon.pokemonTypes.map((type) => (
                                 <Badge
                                   key={type.id}
+                                  className="capitalize"
                                   style={{
                                     backgroundColor: type.color,
                                     color: '#fff',
@@ -595,7 +848,7 @@ export default function PokemonPage() {
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
                               {pokemon.abilities.map((ability) => (
-                                <Badge key={ability.id} variant="secondary">
+                                <Badge key={ability.id} variant="secondary" className="capitalize">
                                   {ability.name}
                                 </Badge>
                               ))}
