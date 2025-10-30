@@ -100,6 +100,10 @@ export default function PokemonPage() {
     () => buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_TYPE_BASE, [], { page: 1, pageSize: 100 }),
     [],
   );
+  const movesUrl = useMemo(
+    () => buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], { page: 1, pageSize: 10000 }),
+    [],
+  );
   const generationsUrl = useMemo(
     () => buildUrlWithQuery(BASE_ENDPOINTS.GENERATION_BASE, [], { page: 1, pageSize: 100 }),
     [],
@@ -107,25 +111,13 @@ export default function PokemonPage() {
 
   const { data: abilitiesData } = useFetch<PaginatedResponse<AbilityInput>>(abilitiesUrl);
   const { data: typesData } = useFetch<PaginatedResponse<PokemonTypeInput>>(typesUrl);
+  const { data: movesData } = useFetch<PaginatedResponse<MoveInput>>(movesUrl);
   const { data: generationsData } = useFetch<PaginatedResponse<GenerationInput>>(generationsUrl);
 
   const abilities = abilitiesData?.data || [];
   const types = typesData?.data || [];
+  const moves = movesData?.data || []
   const generations = generationsData?.data || [];
-
-  // Find nat_dex generation and fetch moves with that generationId
-  const natDexGeneration = generations.find((g) => g.name === 'nat_dex');
-  const movesUrl = useMemo(() => {
-    if (!natDexGeneration) return null;
-    return buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], {
-      page: 1,
-      pageSize: 10000,
-      generationId: natDexGeneration.id,
-    });
-  }, [natDexGeneration]);
-
-  const { data: movesData } = useFetch<PaginatedResponse<MoveInput>>(movesUrl || '');
-  const moves = movesData?.data || [];
 
   // Build params for API call
   const params = useMemo(() => {
