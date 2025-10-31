@@ -42,6 +42,7 @@ export const BASE_ENDPOINTS = {
   POKEMON_BASE: `${API_BASE_URL}/api/pokemon`,
   POKEMON_TYPE_BASE: `${API_BASE_URL}/api/pokemon-type`,
   SEASON_BASE: `${API_BASE_URL}/api/season`,
+  SPECIAL_MOVE_CATEGORY_BASE: `${API_BASE_URL}/api/special-move-category`,
   USER_BASE: `${API_BASE_URL}/api/user`,
 } as const;
 

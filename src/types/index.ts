@@ -13,6 +13,7 @@ export * from './pokemonMove.type';
 export * from './pokemonType.type';
 export * from './season.type';
 export * from './seasonPokemon.type';
+export * from './specialMoveCategory.type';
 export * from './team.type';
 export * from './typeEffective.type';
 export * from './user.type';

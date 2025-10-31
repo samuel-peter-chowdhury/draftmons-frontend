@@ -28,11 +28,12 @@ import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
 import type {
   AbilityInput,
+  GenerationInput,
+  MoveInput,
+  PaginatedResponse,
   PokemonInput,
   PokemonTypeInput,
-  MoveInput,
-  GenerationInput,
-  PaginatedResponse,
+  SpecialMoveCategoryInput,
 } from '@/types';
 
 type SortableColumn =
@@ -78,20 +79,25 @@ export default function PokemonPage() {
   const [selectedTypes, setSelectedTypes] = useState<PokemonTypeInput[]>([]);
   const [selectedMoves, setSelectedMoves] = useState<MoveInput[]>([]);
   const [selectedGenerations, setSelectedGenerations] = useState<GenerationInput[]>([]);
+  const [selectedSpecialMoveCategories, setSelectedSpecialMoveCategories] = useState<
+    SpecialMoveCategoryInput[]
+  >([]);
 
   // Dropdown selections
   const [abilitySearch, setAbilitySearch] = useState('');
   const [typeSearch, setTypeSearch] = useState('');
   const [moveSearch, setMoveSearch] = useState('');
   const [generationSearch, setGenerationSearch] = useState('');
+  const [specialMoveCategorySearch, setSpecialMoveCategorySearch] = useState('');
 
   // Dropdown focus states
   const [abilityFocused, setAbilityFocused] = useState(false);
   const [typeFocused, setTypeFocused] = useState(false);
   const [moveFocused, setMoveFocused] = useState(false);
   const [generationFocused, setGenerationFocused] = useState(false);
+  const [specialMoveCategoryFocused, setSpecialMoveCategoryFocused] = useState(false);
 
-  // Fetch abilities, types, and generations for dropdowns
+  // Fetch abilities, types, moves, generations, and special move categories for dropdowns
   const abilitiesUrl = useMemo(
     () => buildUrlWithQuery(BASE_ENDPOINTS.ABILITY_BASE, [], { page: 1, pageSize: 1000 }),
     [],
@@ -108,16 +114,28 @@ export default function PokemonPage() {
     () => buildUrlWithQuery(BASE_ENDPOINTS.GENERATION_BASE, [], { page: 1, pageSize: 100 }),
     [],
   );
+  const specialMoveCategoriesUrl = useMemo(
+    () =>
+      buildUrlWithQuery(BASE_ENDPOINTS.SPECIAL_MOVE_CATEGORY_BASE, [], {
+        page: 1,
+        pageSize: 100,
+      }),
+    [],
+  );
 
   const { data: abilitiesData } = useFetch<PaginatedResponse<AbilityInput>>(abilitiesUrl);
   const { data: typesData } = useFetch<PaginatedResponse<PokemonTypeInput>>(typesUrl);
   const { data: movesData } = useFetch<PaginatedResponse<MoveInput>>(movesUrl);
   const { data: generationsData } = useFetch<PaginatedResponse<GenerationInput>>(generationsUrl);
+  const { data: specialMoveCategoriesData } = useFetch<
+    PaginatedResponse<SpecialMoveCategoryInput>
+  >(specialMoveCategoriesUrl);
 
   const abilities = abilitiesData?.data || [];
   const types = typesData?.data || [];
   const moves = movesData?.data || []
   const generations = generationsData?.data || [];
+  const specialMoveCategories = specialMoveCategoriesData?.data || [];
 
   // Build params for API call
   const params = useMemo(() => {
@@ -160,6 +178,9 @@ export default function PokemonPage() {
     if (selectedGenerations.length > 0) {
       p.generationIds = selectedGenerations.map((g) => g.id);
     }
+    if (selectedSpecialMoveCategories.length > 0) {
+      p.specialMoveCategoryIds = selectedSpecialMoveCategories.map((smc) => smc.id);
+    }
 
     return p;
   }, [
@@ -190,6 +211,7 @@ export default function PokemonPage() {
     selectedTypes,
     selectedMoves,
     selectedGenerations,
+    selectedSpecialMoveCategories,
   ]);
 
   // Build URL for pokemon fetch
@@ -227,6 +249,7 @@ export default function PokemonPage() {
     selectedTypes,
     selectedMoves,
     selectedGenerations,
+    selectedSpecialMoveCategories,
   ]);
 
   const handleSort = (column: SortableColumn) => {
@@ -311,6 +334,26 @@ export default function PokemonPage() {
     setSelectedGenerations(selectedGenerations.filter((g) => g.id !== generationId));
   };
 
+  const handleAddSpecialMoveCategory = (specialMoveCategoryId: number) => {
+    const specialMoveCategory = specialMoveCategories.find(
+      (smc) => smc.id === specialMoveCategoryId,
+    );
+    if (
+      specialMoveCategory &&
+      !selectedSpecialMoveCategories.find((smc) => smc.id === specialMoveCategoryId)
+    ) {
+      setSelectedSpecialMoveCategories([...selectedSpecialMoveCategories, specialMoveCategory]);
+      setSpecialMoveCategorySearch('');
+      setSpecialMoveCategoryFocused(false);
+    }
+  };
+
+  const handleRemoveSpecialMoveCategory = (specialMoveCategoryId: number) => {
+    setSelectedSpecialMoveCategories(
+      selectedSpecialMoveCategories.filter((smc) => smc.id !== specialMoveCategoryId),
+    );
+  };
+
   const filteredAbilities = abilities.filter(
     (a) =>
       !selectedAbilities.find((sa) => sa.id === a.id) &&
@@ -333,6 +376,12 @@ export default function PokemonPage() {
     (g) =>
       !selectedGenerations.find((sg) => sg.id === g.id) &&
       g.name.toLowerCase().includes(generationSearch.toLowerCase()),
+  );
+
+  const filteredSpecialMoveCategories = specialMoveCategories.filter(
+    (smc) =>
+      !selectedSpecialMoveCategories.find((ssmc) => ssmc.id === smc.id) &&
+      smc.name.toLowerCase().includes(specialMoveCategorySearch.toLowerCase()),
   );
 
   return (
@@ -739,6 +788,54 @@ export default function PokemonPage() {
                       onClick={() => handleRemoveGeneration(generation.id)}
                       className="ml-1 rounded-full hover:bg-background/20"
                       aria-label={`Remove ${formatGenerationName(generation.name)}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Special Move Categories Filter */}
+          <div>
+            <Label htmlFor="specialMoveCategories">Special Move Categories</Label>
+            <div className="relative">
+              <Input
+                id="specialMoveCategories"
+                placeholder="Search special move categories..."
+                value={specialMoveCategorySearch}
+                onChange={(e) => setSpecialMoveCategorySearch(e.target.value)}
+                onFocus={() => setSpecialMoveCategoryFocused(true)}
+                onClick={() => setSpecialMoveCategoryFocused(true)}
+                onBlur={() => setSpecialMoveCategoryFocused(false)}
+              />
+              {specialMoveCategoryFocused && filteredSpecialMoveCategories.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
+                  {filteredSpecialMoveCategories.map((specialMoveCategory) => (
+                    <button
+                      key={specialMoveCategory.id}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleAddSpecialMoveCategory(specialMoveCategory.id);
+                      }}
+                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm capitalize hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {specialMoveCategory.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {selectedSpecialMoveCategories.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedSpecialMoveCategories.map((specialMoveCategory) => (
+                  <Badge key={specialMoveCategory.id} variant="secondary" className="gap-1 capitalize">
+                    {specialMoveCategory.name}
+                    <button
+                      onClick={() => handleRemoveSpecialMoveCategory(specialMoveCategory.id)}
+                      className="ml-1 rounded-full hover:bg-background/20"
+                      aria-label={`Remove ${specialMoveCategory.name}`}
                     >
                       <X className="h-3 w-3" />
                     </button>
