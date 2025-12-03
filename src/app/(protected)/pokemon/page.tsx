@@ -77,6 +77,10 @@ export default function PokemonPage() {
   // Selected filters
   const [selectedAbilities, setSelectedAbilities] = useState<AbilityInput[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<PokemonTypeInput[]>([]);
+  const [selectedWeakTypes, setSelectedWeakTypes] = useState<PokemonTypeInput[]>([]);
+  const [selectedNotWeakTypes, setSelectedNotWeakTypes] = useState<PokemonTypeInput[]>([]);
+  const [selectedResistedTypes, setSelectedResistedTypes] = useState<PokemonTypeInput[]>([]);
+  const [selectedImmuneTypes, setSelectedImmuneTypes] = useState<PokemonTypeInput[]>([]);
   const [selectedMoves, setSelectedMoves] = useState<MoveInput[]>([]);
   const [selectedGenerations, setSelectedGenerations] = useState<GenerationInput[]>([]);
   const [selectedSpecialMoveCategories, setSelectedSpecialMoveCategories] = useState<
@@ -86,6 +90,10 @@ export default function PokemonPage() {
   // Dropdown selections
   const [abilitySearch, setAbilitySearch] = useState('');
   const [typeSearch, setTypeSearch] = useState('');
+  const [weakTypeSearch, setWeakTypeSearch] = useState('');
+  const [notWeakTypeSearch, setNotWeakTypeSearch] = useState('');
+  const [resistedTypeSearch, setResistedTypeSearch] = useState('');
+  const [immuneTypeSearch, setImmuneTypeSearch] = useState('');
   const [moveSearch, setMoveSearch] = useState('');
   const [generationSearch, setGenerationSearch] = useState('');
   const [specialMoveCategorySearch, setSpecialMoveCategorySearch] = useState('');
@@ -93,6 +101,10 @@ export default function PokemonPage() {
   // Dropdown focus states
   const [abilityFocused, setAbilityFocused] = useState(false);
   const [typeFocused, setTypeFocused] = useState(false);
+  const [weakTypeFocused, setWeakTypeFocused] = useState(false);
+  const [notWeakTypeFocused, setNotWeakTypeFocused] = useState(false);
+  const [resistedTypeFocused, setResistedTypeFocused] = useState(false);
+  const [immuneTypeFocused, setImmuneTypeFocused] = useState(false);
   const [moveFocused, setMoveFocused] = useState(false);
   const [generationFocused, setGenerationFocused] = useState(false);
   const [specialMoveCategoryFocused, setSpecialMoveCategoryFocused] = useState(false);
@@ -172,6 +184,18 @@ export default function PokemonPage() {
     if (selectedTypes.length > 0) {
       p.pokemonTypeIds = selectedTypes.map((t) => t.id);
     }
+    if (selectedWeakTypes.length > 0) {
+      p.weakPokemonTypeIds = selectedWeakTypes.map((t) => t.id);
+    }
+    if (selectedNotWeakTypes.length > 0) {
+      p.notWeakPokemonTypeIds = selectedNotWeakTypes.map((t) => t.id);
+    }
+    if (selectedResistedTypes.length > 0) {
+      p.resistedPokemonTypeIds = selectedResistedTypes.map((t) => t.id);
+    }
+    if (selectedImmuneTypes.length > 0) {
+      p.immunePokemonTypeIds = selectedImmuneTypes.map((t) => t.id);
+    }
     if (selectedMoves.length > 0) {
       p.moveIds = selectedMoves.map((m) => m.id);
     }
@@ -209,6 +233,10 @@ export default function PokemonPage() {
     maxSpecialBulk,
     selectedAbilities,
     selectedTypes,
+    selectedWeakTypes,
+    selectedNotWeakTypes,
+    selectedResistedTypes,
+    selectedImmuneTypes,
     selectedMoves,
     selectedGenerations,
     selectedSpecialMoveCategories,
@@ -247,6 +275,10 @@ export default function PokemonPage() {
     maxSpecialBulk,
     selectedAbilities,
     selectedTypes,
+    selectedWeakTypes,
+    selectedNotWeakTypes,
+    selectedResistedTypes,
+    selectedImmuneTypes,
     selectedMoves,
     selectedGenerations,
     selectedSpecialMoveCategories,
@@ -308,6 +340,58 @@ export default function PokemonPage() {
     setSelectedTypes(selectedTypes.filter((t) => t.id !== typeId));
   };
 
+  const handleAddWeakType = (typeId: number) => {
+    const type = types.find((t) => t.id === typeId);
+    if (type && !selectedWeakTypes.find((t) => t.id === typeId)) {
+      setSelectedWeakTypes([...selectedWeakTypes, type]);
+      setWeakTypeSearch('');
+      setWeakTypeFocused(false);
+    }
+  };
+
+  const handleRemoveWeakType = (typeId: number) => {
+    setSelectedWeakTypes(selectedWeakTypes.filter((t) => t.id !== typeId));
+  };
+
+  const handleAddNotWeakType = (typeId: number) => {
+    const type = types.find((t) => t.id === typeId);
+    if (type && !selectedNotWeakTypes.find((t) => t.id === typeId)) {
+      setSelectedNotWeakTypes([...selectedNotWeakTypes, type]);
+      setNotWeakTypeSearch('');
+      setNotWeakTypeFocused(false);
+    }
+  };
+
+  const handleRemoveNotWeakType = (typeId: number) => {
+    setSelectedNotWeakTypes(selectedNotWeakTypes.filter((t) => t.id !== typeId));
+  };
+
+  const handleAddResistedType = (typeId: number) => {
+    const type = types.find((t) => t.id === typeId);
+    if (type && !selectedResistedTypes.find((t) => t.id === typeId)) {
+      setSelectedResistedTypes([...selectedResistedTypes, type]);
+      setResistedTypeSearch('');
+      setResistedTypeFocused(false);
+    }
+  };
+
+  const handleRemoveResistedType = (typeId: number) => {
+    setSelectedResistedTypes(selectedResistedTypes.filter((t) => t.id !== typeId));
+  };
+
+  const handleAddImmuneType = (typeId: number) => {
+    const type = types.find((t) => t.id === typeId);
+    if (type && !selectedImmuneTypes.find((t) => t.id === typeId)) {
+      setSelectedImmuneTypes([...selectedImmuneTypes, type]);
+      setImmuneTypeSearch('');
+      setImmuneTypeFocused(false);
+    }
+  };
+
+  const handleRemoveImmuneType = (typeId: number) => {
+    setSelectedImmuneTypes(selectedImmuneTypes.filter((t) => t.id !== typeId));
+  };
+
   const handleAddMove = (moveId: number) => {
     const move = moves.find((m) => m.id === moveId);
     if (move && !selectedMoves.find((m) => m.id === moveId)) {
@@ -364,6 +448,30 @@ export default function PokemonPage() {
     (t) =>
       !selectedTypes.find((st) => st.id === t.id) &&
       t.name.toLowerCase().includes(typeSearch.toLowerCase()),
+  );
+
+  const filteredWeakTypes = types.filter(
+    (t) =>
+      !selectedWeakTypes.find((st) => st.id === t.id) &&
+      t.name.toLowerCase().includes(weakTypeSearch.toLowerCase()),
+  );
+
+  const filteredNotWeakTypes = types.filter(
+    (t) =>
+      !selectedNotWeakTypes.find((st) => st.id === t.id) &&
+      t.name.toLowerCase().includes(notWeakTypeSearch.toLowerCase()),
+  );
+
+  const filteredResistedTypes = types.filter(
+    (t) =>
+      !selectedResistedTypes.find((st) => st.id === t.id) &&
+      t.name.toLowerCase().includes(resistedTypeSearch.toLowerCase()),
+  );
+
+  const filteredImmuneTypes = types.filter(
+    (t) =>
+      !selectedImmuneTypes.find((st) => st.id === t.id) &&
+      t.name.toLowerCase().includes(immuneTypeSearch.toLowerCase()),
   );
 
   const filteredMoves = moves.filter(
@@ -690,6 +798,230 @@ export default function PokemonPage() {
                     {type.name}
                     <button
                       onClick={() => handleRemoveType(type.id)}
+                      className="ml-1 rounded-full hover:bg-black/20"
+                      aria-label={`Remove ${type.name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Weak Types Filter */}
+          <div>
+            <Label htmlFor="weakTypes">Weak Types</Label>
+            <div className="relative">
+              <Input
+                id="weakTypes"
+                placeholder="Search weak types..."
+                value={weakTypeSearch}
+                onChange={(e) => setWeakTypeSearch(e.target.value)}
+                onFocus={() => setWeakTypeFocused(true)}
+                onClick={() => setWeakTypeFocused(true)}
+                onBlur={() => setWeakTypeFocused(false)}
+              />
+              {weakTypeFocused && filteredWeakTypes.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
+                  {filteredWeakTypes.map((type) => (
+                    <button
+                      key={type.id}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleAddWeakType(type.id);
+                      }}
+                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm capitalize hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {type.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {selectedWeakTypes.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedWeakTypes.map((type) => (
+                  <Badge
+                    key={type.id}
+                    className="gap-1 capitalize"
+                    style={{
+                      backgroundColor: type.color,
+                      color: '#fff',
+                      border: 'none',
+                    }}
+                  >
+                    {type.name}
+                    <button
+                      onClick={() => handleRemoveWeakType(type.id)}
+                      className="ml-1 rounded-full hover:bg-black/20"
+                      aria-label={`Remove ${type.name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Not Weak Types Filter */}
+          <div>
+            <Label htmlFor="notWeakTypes">Not Weak Types</Label>
+            <div className="relative">
+              <Input
+                id="notWeakTypes"
+                placeholder="Search not weak types..."
+                value={notWeakTypeSearch}
+                onChange={(e) => setNotWeakTypeSearch(e.target.value)}
+                onFocus={() => setNotWeakTypeFocused(true)}
+                onClick={() => setNotWeakTypeFocused(true)}
+                onBlur={() => setNotWeakTypeFocused(false)}
+              />
+              {notWeakTypeFocused && filteredNotWeakTypes.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
+                  {filteredNotWeakTypes.map((type) => (
+                    <button
+                      key={type.id}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleAddNotWeakType(type.id);
+                      }}
+                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm capitalize hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {type.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {selectedNotWeakTypes.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedNotWeakTypes.map((type) => (
+                  <Badge
+                    key={type.id}
+                    className="gap-1 capitalize"
+                    style={{
+                      backgroundColor: type.color,
+                      color: '#fff',
+                      border: 'none',
+                    }}
+                  >
+                    {type.name}
+                    <button
+                      onClick={() => handleRemoveNotWeakType(type.id)}
+                      className="ml-1 rounded-full hover:bg-black/20"
+                      aria-label={`Remove ${type.name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Resisted Types Filter */}
+          <div>
+            <Label htmlFor="resistedTypes">Resisted Types</Label>
+            <div className="relative">
+              <Input
+                id="resistedTypes"
+                placeholder="Search resisted types..."
+                value={resistedTypeSearch}
+                onChange={(e) => setResistedTypeSearch(e.target.value)}
+                onFocus={() => setResistedTypeFocused(true)}
+                onClick={() => setResistedTypeFocused(true)}
+                onBlur={() => setResistedTypeFocused(false)}
+              />
+              {resistedTypeFocused && filteredResistedTypes.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
+                  {filteredResistedTypes.map((type) => (
+                    <button
+                      key={type.id}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleAddResistedType(type.id);
+                      }}
+                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm capitalize hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {type.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {selectedResistedTypes.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedResistedTypes.map((type) => (
+                  <Badge
+                    key={type.id}
+                    className="gap-1 capitalize"
+                    style={{
+                      backgroundColor: type.color,
+                      color: '#fff',
+                      border: 'none',
+                    }}
+                  >
+                    {type.name}
+                    <button
+                      onClick={() => handleRemoveResistedType(type.id)}
+                      className="ml-1 rounded-full hover:bg-black/20"
+                      aria-label={`Remove ${type.name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Immune Types Filter */}
+          <div>
+            <Label htmlFor="immuneTypes">Immune Types</Label>
+            <div className="relative">
+              <Input
+                id="immuneTypes"
+                placeholder="Search immune types..."
+                value={immuneTypeSearch}
+                onChange={(e) => setImmuneTypeSearch(e.target.value)}
+                onFocus={() => setImmuneTypeFocused(true)}
+                onClick={() => setImmuneTypeFocused(true)}
+                onBlur={() => setImmuneTypeFocused(false)}
+              />
+              {immuneTypeFocused && filteredImmuneTypes.length > 0 && (
+                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
+                  {filteredImmuneTypes.map((type) => (
+                    <button
+                      key={type.id}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleAddImmuneType(type.id);
+                      }}
+                      className="w-full rounded-sm px-2 py-1.5 text-left text-sm capitalize hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {type.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {selectedImmuneTypes.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedImmuneTypes.map((type) => (
+                  <Badge
+                    key={type.id}
+                    className="gap-1 capitalize"
+                    style={{
+                      backgroundColor: type.color,
+                      color: '#fff',
+                      border: 'none',
+                    }}
+                  >
+                    {type.name}
+                    <button
+                      onClick={() => handleRemoveImmuneType(type.id)}
                       className="ml-1 rounded-full hover:bg-black/20"
                       aria-label={`Remove ${type.name}`}
                     >
