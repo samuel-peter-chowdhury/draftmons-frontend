@@ -16,3 +16,5 @@ export { default as Spinner } from './feedback/Spinner';
 export { default as ErrorAlert } from './feedback/ErrorAlert';
 export { default as Header } from './layout/Header';
 export { default as Sidebar } from './layout/Sidebar';
+export * from './pokemon/PokemonFilterPanel';
+export * from './pokemon/PokemonTable';
