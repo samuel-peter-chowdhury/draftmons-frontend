@@ -36,7 +36,7 @@ const AccordionTrigger = React.forwardRef<
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"
         fill="currentColor"
-        className="h-4 w-4 rotate-180 transition-transform duration-200 group-data-[state=open]:rotate-0"
+        className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180"
         aria-hidden="true"
       >
         <path
