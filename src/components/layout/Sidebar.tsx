@@ -79,10 +79,29 @@ function NavGroup({
   );
 }
 
+/**
+ * Extract league and season IDs from the current pathname.
+ * Expected format: /league/{leagueId}/season/{seasonId}/...
+ */
+function useSeasonPrefix(): string | null {
+  const pathname = usePathname();
+
+  if (!pathname) return null;
+
+  // Match /league/{id}/season/{seasonId}
+  const match = pathname.match(/^\/league\/(\d+)\/season\/(\d+)/);
+
+  if (match) {
+    const [, leagueId, seasonId] = match;
+    return `/league/${leagueId}/season/${seasonId}`;
+  }
+
+  return null;
+}
+
 export default function Sidebar() {
   const { sidebarOpen, setSidebar } = useUiStore();
-
-  const leaguePrefix = null;
+  const seasonPrefix = useSeasonPrefix();
 
   return (
     <>
@@ -112,8 +131,9 @@ export default function Sidebar() {
           {/* Team Matchup */}
           <div className="mt-2">
             <NavGroup
-              href={leaguePrefix ? `${leaguePrefix}/team-matchup` : '#'}
+              href={seasonPrefix ? `${seasonPrefix}/team-matchup` : '#'}
               icon={Swords}
+              disabled={!seasonPrefix}
             >
               Team Matchup
             </NavGroup>
@@ -135,12 +155,12 @@ export default function Sidebar() {
               <AccordionContent>
                 <div className="flex flex-col gap-1">
                   <NavLink
-                    href={leaguePrefix ? `${leaguePrefix}/tiers/classic` : '#'}
-                    disabled={!leaguePrefix}
+                    href={seasonPrefix ? `${seasonPrefix}/tiers/classic` : '#'}
+                    disabled={!seasonPrefix}
                   >
                     Classic
                   </NavLink>
-                  <NavLink href={leaguePrefix ? `${leaguePrefix}/tiers/type` : '#'} disabled={!leaguePrefix}>
+                  <NavLink href={seasonPrefix ? `${seasonPrefix}/tiers/type` : '#'} disabled={!seasonPrefix}>
                     Type
                   </NavLink>
                 </div>
@@ -163,12 +183,12 @@ export default function Sidebar() {
               </AccordionTrigger>
               <AccordionContent>
                 <div className="flex flex-col gap-1">
-                  <NavLink href={leaguePrefix ? `${leaguePrefix}/rank/team` : '#'} disabled={!leaguePrefix}>
+                  <NavLink href={seasonPrefix ? `${seasonPrefix}/rank/team` : '#'} disabled={!seasonPrefix}>
                     Team
                   </NavLink>
                   <NavLink
-                    href={leaguePrefix ? `${leaguePrefix}/rank/pokemon` : '#'}
-                    disabled={!leaguePrefix}
+                    href={seasonPrefix ? `${seasonPrefix}/rank/pokemon` : '#'}
+                    disabled={!seasonPrefix}
                   >
                     Pokemon
                   </NavLink>
@@ -193,12 +213,12 @@ export default function Sidebar() {
               <AccordionContent>
                 <div className="flex flex-col gap-1">
                   <NavLink
-                    href={leaguePrefix ? `${leaguePrefix}/tools/schedule` : '#'}
-                    disabled={!leaguePrefix}
+                    href={seasonPrefix ? `${seasonPrefix}/tools/schedule` : '#'}
+                    disabled={!seasonPrefix}
                   >
                     Schedule
                   </NavLink>
-                  <NavLink href={leaguePrefix ? `${leaguePrefix}/tools/rules` : '#'} disabled={!leaguePrefix}>
+                  <NavLink href={seasonPrefix ? `${seasonPrefix}/tools/rules` : '#'} disabled={!seasonPrefix}>
                     Rules
                   </NavLink>
                 </div>

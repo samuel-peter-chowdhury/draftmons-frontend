@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
+import { Card, CardContent, ErrorAlert, Spinner, Pagination } from '@/components';
 import {
   Table,
   TableBody,
@@ -31,8 +31,10 @@ export interface PokemonTableProps {
   sortBy: SortableColumn;
   sortOrder: 'ASC' | 'DESC';
   page: number;
+  pageSize: number;
   onSort: (column: SortableColumn) => void;
   onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
 export function PokemonTable({
@@ -42,8 +44,10 @@ export function PokemonTable({
   sortBy,
   sortOrder,
   page,
+  pageSize,
   onSort,
   onPageChange,
+  onPageSizeChange,
 }: PokemonTableProps) {
   const SortableHeader = ({
     column,
@@ -177,28 +181,16 @@ export function PokemonTable({
             </CardContent>
           </Card>
 
-          {/* Pagination */}
-          <div className="mt-6 flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={() => onPageChange(Math.max(1, page - 1))}
-              disabled={page === 1}
-              aria-label="Go to previous page"
-            >
-              Previous
-            </Button>
-            <div className="text-sm text-muted-foreground" role="status" aria-live="polite">
-              Page {data.page} of {data.totalPages} • {data.total} total
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => onPageChange(page < data.totalPages ? page + 1 : page)}
-              disabled={page >= data.totalPages}
-              aria-label="Go to next page"
-            >
-              Next
-            </Button>
-          </div>
+          <Pagination
+            page={data.page}
+            pageSize={pageSize}
+            totalPages={data.totalPages}
+            total={data.total}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+            disabled={loading}
+            className="mt-4"
+          />
         </>
       )}
     </>

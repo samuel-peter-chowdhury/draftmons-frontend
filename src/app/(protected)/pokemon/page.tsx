@@ -32,7 +32,7 @@ type SortableColumn =
 export default function PokemonPage() {
   // Pagination & sorting state
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(20);
   const [sortBy, setSortBy] = useState<SortableColumn>('name');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
 
@@ -191,7 +191,7 @@ export default function PokemonPage() {
         setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
       } else {
         setSortBy(column);
-        setSortOrder('ASC');
+        setSortOrder('DESC');
       }
     },
     [sortBy, sortOrder],
@@ -199,6 +199,11 @@ export default function PokemonPage() {
 
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
+  }, []);
+
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
   }, []);
 
   return (
@@ -222,8 +227,10 @@ export default function PokemonPage() {
         sortBy={sortBy}
         sortOrder={sortOrder}
         page={page}
+        pageSize={pageSize}
         onSort={handleSort}
         onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
       />
     </div>
   );

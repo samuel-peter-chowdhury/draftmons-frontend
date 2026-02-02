@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { X, Pencil } from 'lucide-react';
 import {
@@ -198,6 +199,13 @@ export default function LeagueDetailPage() {
                         <div>Status: {season.status.replace(/_/g, ' ')}</div>
                         <div>Point Limit: {season.pointLimit}</div>
                         <div>Max Point Value: {season.maxPointValue}</div>
+                      </div>
+                      <div className="mt-3">
+                        <Link href={`/league/${params.id}/season/${season.id}`}>
+                          <Button variant="secondary" size="sm">
+                            Open
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   ))}

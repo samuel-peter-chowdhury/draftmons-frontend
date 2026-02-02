@@ -107,11 +107,7 @@ export const LeagueApi = {
    * PUT /api/league/:leagueId/league-user/:leagueUserId
    * Update a league user
    */
-  updateLeagueUser: (
-    leagueId: number,
-    leagueUserId: number,
-    data: Partial<LeagueUserInput>,
-  ) => {
+  updateLeagueUser: (leagueId: number, leagueUserId: number, data: Partial<LeagueUserInput>) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'league-user', leagueUserId);
     return Api.put<LeagueUserInput>(url, data);
   },
