@@ -1,6 +1,7 @@
 import { BaseInput, BaseOutput } from './base.type';
 import { PokemonMoveInput } from './pokemonMove.type';
 import { PokemonTypeInput } from './pokemonType.type';
+import { SpecialMoveCategoryInput } from './specialMoveCategory.type';
 
 export enum MoveCategory {
   PHYSICAL = 'PHYSICAL',
@@ -19,6 +20,7 @@ export interface MoveInput extends BaseInput {
   pp: number;
   description: string;
   pokemonMoves?: PokemonMoveInput[];
+  specialMoveCategories?: SpecialMoveCategoryInput[];
 }
 
 export interface MoveOutput extends BaseOutput {

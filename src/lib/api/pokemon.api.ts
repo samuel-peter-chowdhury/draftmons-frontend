@@ -1,4 +1,4 @@
-import { Api, buildUrl, buildUrlWithQuery } from '@/lib/api';
+import { Api, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { PokemonInput, PaginatedResponse } from '@/types';
 
@@ -51,9 +51,11 @@ export const PokemonApi = {
   /**
    * GET /api/pokemon/:id
    * Get a single pokemon by ID
+   * @param id - Pokemon ID
+   * @param full - If true, includes full nested data (abilities, types, moves, etc.)
    */
-  getById: (id: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.POKEMON_BASE, id);
+  getById: (id: number, full?: boolean) => {
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_BASE, [id], full ? { full: true } : {});
     return Api.get<PokemonInput>(url);
   },
 };

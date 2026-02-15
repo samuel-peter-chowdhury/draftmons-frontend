@@ -12,6 +12,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { PokemonSprite } from './PokemonSprite';
 import type { PaginatedResponse, PokemonInput } from '@/types';
 
 type SortableColumn =
@@ -128,15 +130,11 @@ export function PokemonTable({
                       data.data.map((pokemon) => (
                         <TableRow key={pokemon.id}>
                           <TableCell className="w-20">
-                            {pokemon.spriteUrl ? (
-                              <img
-                                src={pokemon.spriteUrl}
-                                alt={pokemon.name}
-                                className="h-16 w-16 object-contain"
-                              />
-                            ) : (
-                              <div className="h-16 w-16" />
-                            )}
+                            <PokemonSprite
+                              pokemonId={pokemon.id}
+                              spriteUrl={pokemon.spriteUrl}
+                              name={pokemon.name}
+                            />
                           </TableCell>
                           <TableCell className="font-medium capitalize">{pokemon.name}</TableCell>
                           <TableCell>
@@ -158,11 +156,25 @@ export function PokemonTable({
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {pokemon.abilities.map((ability) => (
-                                <Badge key={ability.id} variant="secondary" className="capitalize">
-                                  {ability.name}
-                                </Badge>
-                              ))}
+                              <TooltipProvider delayDuration={100}>
+                                {pokemon.abilities.map((ability) => (
+                                  <Tooltip key={ability.id}>
+                                    <TooltipTrigger asChild>
+                                      <div>
+                                        <Badge
+                                          variant="secondary"
+                                          className="cursor-help capitalize"
+                                        >
+                                          {ability.name}
+                                        </Badge>
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                      <p className="first-letter:capitalize">{ability.description}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ))}
+                              </TooltipProvider>
                             </div>
                           </TableCell>
                           <TableCell>{pokemon.hp}</TableCell>
