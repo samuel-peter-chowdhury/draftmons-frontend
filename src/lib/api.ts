@@ -111,6 +111,6 @@ export * from './api/auth.api';
 export * from './api/generation.api';
 export * from './api/league.api';
 export * from './api/pokemon.api';
-export * from './api/pokemonMove.api';
+export * from './api/seasonPokemonTeam.api';
 export * from './api/pokemonType.api';
 export * from './api/user.api';

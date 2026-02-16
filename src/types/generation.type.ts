@@ -1,10 +1,12 @@
+import { AbilityInput } from './ability.type';
 import { BaseInput, BaseOutput } from './base.type';
-import { PokemonMoveInput } from './pokemonMove.type';
+import { MoveInput } from './move.type';
 import { PokemonInput } from './pokemon.type';
 
 export interface GenerationInput extends BaseInput {
   name: string;
-  pokemonMoves?: PokemonMoveInput[];
+  moves?: MoveInput[];
+  abilities?: AbilityInput[];
   pokemon?: PokemonInput[];
 }
 

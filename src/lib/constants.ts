@@ -40,7 +40,7 @@ export const BASE_ENDPOINTS = {
   LEAGUE_USER_BASE: `${API_BASE_URL}/api/league-user`,
   MOVE_BASE: `${API_BASE_URL}/api/move`,
   POKEMON_BASE: `${API_BASE_URL}/api/pokemon`,
-  POKEMON_MOVE_BASE: `${API_BASE_URL}/api/pokemon-move`,
+  SEASON_POKEMON_TEAM_BASE: `${API_BASE_URL}/api/season-pokemon-team`,
   POKEMON_TYPE_BASE: `${API_BASE_URL}/api/pokemon-type`,
   SEASON_BASE: `${API_BASE_URL}/api/season`,
   SPECIAL_MOVE_CATEGORY_BASE: `${API_BASE_URL}/api/special-move-category`,

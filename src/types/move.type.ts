@@ -1,5 +1,6 @@
 import { BaseInput, BaseOutput } from './base.type';
-import { PokemonMoveInput } from './pokemonMove.type';
+import { GenerationInput } from './generation.type';
+import { PokemonInput } from './pokemon.type';
 import { PokemonTypeInput } from './pokemonType.type';
 import { SpecialMoveCategoryInput } from './specialMoveCategory.type';
 
@@ -19,7 +20,9 @@ export interface MoveInput extends BaseInput {
   priority: number;
   pp: number;
   description: string;
-  pokemonMoves?: PokemonMoveInput[];
+  generationId: number;
+  pokemon?: PokemonInput[];
+  generation?: GenerationInput;
   specialMoveCategories?: SpecialMoveCategoryInput[];
 }
 
@@ -32,4 +35,5 @@ export interface MoveOutput extends BaseOutput {
   priority: number;
   pp: number;
   description: string;
+  generationId: number;
 }

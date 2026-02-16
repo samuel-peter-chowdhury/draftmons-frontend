@@ -1,7 +1,7 @@
 import { AbilityInput } from './ability.type';
 import { BaseInput, BaseOutput } from './base.type';
 import { GenerationInput } from './generation.type';
-import { PokemonMoveInput } from './pokemonMove.type';
+import { MoveInput } from './move.type';
 import { PokemonTypeInput } from './pokemonType.type';
 import { SeasonPokemonInput } from './seasonPokemon.type';
 import { TypeEffectiveInput } from './typeEffective.type';
@@ -19,12 +19,13 @@ export interface PokemonInput extends BaseInput {
   height: number;
   weight: number;
   spriteUrl: string;
+  generationId: number;
   pokemonTypes: PokemonTypeInput[];
-  pokemonMoves?: PokemonMoveInput[];
+  moves?: MoveInput[];
   abilities: AbilityInput[];
   typeEffectiveness?: TypeEffectiveInput[];
   seasonPokemon?: SeasonPokemonInput[];
-  generations?: GenerationInput[];
+  generation?: GenerationInput;
 }
 
 export interface PokemonOutput extends BaseOutput {
@@ -40,4 +41,5 @@ export interface PokemonOutput extends BaseOutput {
   height: number;
   weight: number;
   spriteUrl: string;
+  generationId: number;
 }

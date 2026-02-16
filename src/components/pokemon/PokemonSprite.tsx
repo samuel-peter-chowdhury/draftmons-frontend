@@ -10,8 +10,6 @@ interface PokemonSpriteProps {
   className?: string;
   /** When true, clicking the sprite will not open the modal */
   disableClick?: boolean;
-  /** Optional generation ID to scope moves in the modal */
-  generationId?: number;
 }
 
 /**
@@ -24,7 +22,6 @@ export function PokemonSprite({
   name,
   className = 'h-16 w-16 object-contain',
   disableClick = false,
-  generationId,
 }: PokemonSpriteProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -53,7 +50,7 @@ export function PokemonSprite({
         }}
         aria-label={`View ${name} details`}
       />
-      <PokemonModal pokemonId={pokemonId} generationId={generationId} open={modalOpen} onOpenChange={setModalOpen} />
+      <PokemonModal pokemonId={pokemonId} open={modalOpen} onOpenChange={setModalOpen} />
     </>
   );
 }

@@ -7,22 +7,12 @@ import {
   DialogHeader,
   DialogTitle,
   ErrorAlert,
-  Select,
   Spinner,
 } from '@/components';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { PokemonApi, PokemonMoveApi } from '@/lib/api';
-import type { PokemonInput, PokemonMoveInput, PokemonTypeInput, SpecialMoveCategoryInput } from '@/types';
-
-const NAT_DEX_NAME = 'nat_dex';
-
-function formatGenerationName(name: string): string {
-  return name
-    .split('_')
-    .map((word) => (word.length <= 2 ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1)))
-    .join(' ');
-}
+import { PokemonApi } from '@/lib/api';
+import type { PokemonInput, MoveInput, PokemonTypeInput, SpecialMoveCategoryInput } from '@/types';
 
 function capitalizeFirst(str: string): string {
   const lower = str.toLowerCase();
@@ -35,7 +25,7 @@ const CATEGORY_ORDER: MoveCategory[] = [MoveCategory.PHYSICAL, MoveCategory.SPEC
 
 interface MovesByCategory {
   category: MoveCategory;
-  moves: PokemonMoveInput[];
+  moves: MoveInput[];
 }
 
 interface MovesByType {
@@ -50,7 +40,6 @@ interface MovesBySpecialCategory {
 
 interface PokemonModalProps {
   pokemonId: number | null;
-  generationId?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -111,32 +100,12 @@ function getStatColor(value: number): string {
   return `hsl(${Math.round(hue)}, ${saturation}%, ${lightness}%)`;
 }
 
-export function PokemonModal({ pokemonId, generationId, open, onOpenChange }: PokemonModalProps) {
+export function PokemonModal({ pokemonId, open, onOpenChange }: PokemonModalProps) {
   const [pokemon, setPokemon] = useState<PokemonInput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Generation state (only used when no generationId prop)
-  const [selectedGenerationId, setSelectedGenerationId] = useState<number | null>(null);
-
-  // Moves state
-  const [moves, setMoves] = useState<PokemonMoveInput[]>([]);
-  const [movesLoading, setMovesLoading] = useState(false);
-  const [movesError, setMovesError] = useState<string | null>(null);
-
-  const generations = (pokemon?.generations ?? []).slice().sort((a, b) => a.id - b.id);
-  const effectiveGenerationId = generationId ?? selectedGenerationId;
-
-  // Set default generation from pokemon data when it loads
-  useEffect(() => {
-    if (generationId != null || !pokemon?.generations?.length) return;
-    const natDex = pokemon.generations.find((g) => g.name === NAT_DEX_NAME);
-    if (natDex) {
-      setSelectedGenerationId(natDex.id);
-    } else {
-      setSelectedGenerationId(pokemon.generations[0].id);
-    }
-  }, [pokemon, generationId]);
+  const moves = pokemon?.moves ?? [];
 
   // Fetch pokemon data
   useEffect(() => {
@@ -158,42 +127,10 @@ export function PokemonModal({ pokemonId, generationId, open, onOpenChange }: Po
     }
   }, [open, pokemonId]);
 
-  // Fetch moves when pokemonId and generationId are available
-  useEffect(() => {
-    if (!open || !pokemonId || effectiveGenerationId == null) {
-      setMoves([]);
-      return;
-    }
-
-    setMovesLoading(true);
-    setMovesError(null);
-
-    PokemonMoveApi.getAll({
-      pokemonId,
-      generationId: effectiveGenerationId,
-      full: true,
-      pageSize: 1000,
-      sortBy: 'moveId',
-      sortOrder: 'ASC',
-    })
-      .then((res) => {
-        setMoves(res.data);
-      })
-      .catch((err) => {
-        setMovesError(err?.body?.message || err?.message || 'Failed to load moves');
-      })
-      .finally(() => {
-        setMovesLoading(false);
-      });
-  }, [open, pokemonId, effectiveGenerationId]);
-
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setPokemon(null);
       setError(null);
-      setMoves([]);
-      setMovesError(null);
-      setSelectedGenerationId(null);
     }
     onOpenChange(newOpen);
   };
@@ -378,50 +315,27 @@ export function PokemonModal({ pokemonId, generationId, open, onOpenChange }: Po
 
             {/* Moves section */}
             <div>
-              <div className="mb-3 flex items-center gap-3">
-                <h3 className="text-sm font-medium text-muted-foreground">Moves</h3>
-                {generationId == null && generations.length > 0 && (
-                  <Select
-                    className="h-8 w-auto text-xs"
-                    value={selectedGenerationId ?? ''}
-                    onChange={(e) => setSelectedGenerationId(Number(e.target.value))}
-                  >
-                    {generations.map((gen) => (
-                      <option key={gen.id} value={gen.id}>
-                        {formatGenerationName(gen.name)}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-              </div>
+              <h3 className="mb-3 text-sm font-medium text-muted-foreground">Moves</h3>
 
-              {movesLoading && (
-                <div className="flex items-center justify-center py-4">
-                  <Spinner size={20} />
-                </div>
-              )}
-
-              {movesError && <ErrorAlert message={movesError} />}
-
-              {!movesLoading && !movesError && moves.length > 0 && (() => {
+              {moves.length > 0 && (() => {
                 // Group moves by special move category
                 const specialGrouped: MovesBySpecialCategory[] = [];
                 const specialMap = new Map<number, MovesBySpecialCategory>();
 
-                for (const pm of moves) {
-                  if (!pm.move?.specialMoveCategories) continue;
-                  for (const smc of pm.move.specialMoveCategories) {
+                for (const move of moves) {
+                  if (!move.specialMoveCategories) continue;
+                  for (const smc of move.specialMoveCategories) {
                     let smcGroup = specialMap.get(smc.id);
                     if (!smcGroup) {
                       smcGroup = { specialMoveCategory: smc, categories: [] };
                       specialMap.set(smc.id, smcGroup);
                       specialGrouped.push(smcGroup);
                     }
-                    const catGroup = smcGroup.categories.find((c) => c.category === pm.move!.category);
+                    const catGroup = smcGroup.categories.find((c) => c.category === move.category);
                     if (catGroup) {
-                      catGroup.moves.push(pm);
+                      catGroup.moves.push(move);
                     } else {
-                      smcGroup.categories.push({ category: pm.move.category, moves: [pm] });
+                      smcGroup.categories.push({ category: move.category, moves: [move] });
                     }
                   }
                 }
@@ -434,7 +348,7 @@ export function PokemonModal({ pokemonId, generationId, open, onOpenChange }: Po
                     (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
                   );
                   for (const cat of smcGroup.categories) {
-                    cat.moves.sort((a, b) => (a.move?.name ?? '').localeCompare(b.move?.name ?? ''));
+                    cat.moves.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
                   }
                 }
 
@@ -442,20 +356,20 @@ export function PokemonModal({ pokemonId, generationId, open, onOpenChange }: Po
                 const grouped: MovesByType[] = [];
                 const typeMap = new Map<number, MovesByType>();
 
-                for (const pm of moves) {
-                  if (!pm.move?.pokemonType) continue;
-                  const typeId = pm.move.pokemonType.id;
+                for (const move of moves) {
+                  if (!move.pokemonType) continue;
+                  const typeId = move.pokemonType.id;
                   let typeGroup = typeMap.get(typeId);
                   if (!typeGroup) {
-                    typeGroup = { pokemonType: pm.move.pokemonType, categories: [] };
+                    typeGroup = { pokemonType: move.pokemonType, categories: [] };
                     typeMap.set(typeId, typeGroup);
                     grouped.push(typeGroup);
                   }
-                  const catGroup = typeGroup.categories.find((c) => c.category === pm.move!.category);
+                  const catGroup = typeGroup.categories.find((c) => c.category === move.category);
                   if (catGroup) {
-                    catGroup.moves.push(pm);
+                    catGroup.moves.push(move);
                   } else {
-                    typeGroup.categories.push({ category: pm.move.category, moves: [pm] });
+                    typeGroup.categories.push({ category: move.category, moves: [move] });
                   }
                 }
 
@@ -466,7 +380,7 @@ export function PokemonModal({ pokemonId, generationId, open, onOpenChange }: Po
                     (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
                   );
                   for (const cat of typeGroup.categories) {
-                    cat.moves.sort((a, b) => (a.move?.name ?? '').localeCompare(b.move?.name ?? ''));
+                    cat.moves.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
                   }
                 }
 
@@ -488,11 +402,10 @@ export function PokemonModal({ pokemonId, generationId, open, onOpenChange }: Po
                                       {capitalizeFirst(category)}
                                     </p>
                                     <div className="flex flex-wrap gap-2">
-                                      {catMoves.map((pm) => {
-                                        const move = pm.move!;
+                                      {catMoves.map((move) => {
                                         const typeColor = move.pokemonType?.color;
                                         return (
-                                          <Tooltip key={pm.id}>
+                                          <Tooltip key={move.id}>
                                             <TooltipTrigger asChild>
                                               <div>
                                                 <Badge
@@ -550,38 +463,35 @@ export function PokemonModal({ pokemonId, generationId, open, onOpenChange }: Po
                                   {capitalizeFirst(category)}
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                  {catMoves.map((pm) => {
-                                    const move = pm.move!;
-                                    return (
-                                      <Tooltip key={pm.id}>
-                                        <TooltipTrigger asChild>
-                                          <div>
-                                            <Badge
-                                              className="cursor-help capitalize"
-                                              style={{
-                                                backgroundColor: pokemonType.color,
-                                                color: '#fff',
-                                                border: 'none',
-                                              }}
-                                            >
-                                              {move.name}
-                                            </Badge>
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="max-w-xs">
-                                          <div className="space-y-1 text-xs">
-                                            <p className="font-medium capitalize">{pokemonType.name} &middot; {capitalizeFirst(move.category)}</p>
-                                            {move.power > 0 && <p>Power: {move.power}</p>}
-                                            {move.accuracy > 0 && <p>Accuracy: {move.accuracy}</p>}
-                                            <p>PP: {move.pp}</p>
-                                            {move.description && (
-                                              <p className="first-letter:capitalize">{move.description}</p>
-                                            )}
-                                          </div>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    );
-                                  })}
+                                  {catMoves.map((move) => (
+                                    <Tooltip key={move.id}>
+                                      <TooltipTrigger asChild>
+                                        <div>
+                                          <Badge
+                                            className="cursor-help capitalize"
+                                            style={{
+                                              backgroundColor: pokemonType.color,
+                                              color: '#fff',
+                                              border: 'none',
+                                            }}
+                                          >
+                                            {move.name}
+                                          </Badge>
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-xs">
+                                        <div className="space-y-1 text-xs">
+                                          <p className="font-medium capitalize">{pokemonType.name} &middot; {capitalizeFirst(move.category)}</p>
+                                          {move.power > 0 && <p>Power: {move.power}</p>}
+                                          {move.accuracy > 0 && <p>Accuracy: {move.accuracy}</p>}
+                                          <p>PP: {move.pp}</p>
+                                          {move.description && (
+                                            <p className="first-letter:capitalize">{move.description}</p>
+                                          )}
+                                        </div>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  ))}
                                 </div>
                               </div>
                             ))}
@@ -593,8 +503,8 @@ export function PokemonModal({ pokemonId, generationId, open, onOpenChange }: Po
                 );
               })()}
 
-              {!movesLoading && !movesError && moves.length === 0 && effectiveGenerationId != null && (
-                <p className="text-sm text-muted-foreground">No moves found for this generation.</p>
+              {moves.length === 0 && !loading && (
+                <p className="text-sm text-muted-foreground">No moves found for this Pokemon.</p>
               )}
             </div>
           </div>
