@@ -17,15 +17,19 @@ type AuthActions = {
   setUser: (user: UserInput | null) => void;
 };
 
+let _checkingAuth = false;
+
 export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   user: null,
   isAuthenticated: false,
-  loading: false,
+  loading: true,
   error: null,
 
   setUser: (user) => set({ user, isAuthenticated: !!user }),
 
   checkAuth: async () => {
+    if (_checkingAuth) return;
+    _checkingAuth = true;
     set({ loading: true, error: null });
     try {
       const data = await AuthApi.checkStatus();
@@ -42,6 +46,8 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
         user: null,
         error: error?.message || 'Auth error',
       });
+    } finally {
+      _checkingAuth = false;
     }
   },
 

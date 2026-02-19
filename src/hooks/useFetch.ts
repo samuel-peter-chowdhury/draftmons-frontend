@@ -2,13 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { apiFetch } from '@/lib/api';
-
-interface ApiError extends Error {
-  status?: number;
-  body?: {
-    message?: string;
-  };
-}
+import type { ApiError } from '@/lib/api';
 
 export function useFetch<T>(url: string | null, options: RequestInit = {}) {
   const [data, setData] = useState<T | null>(null);
@@ -39,10 +33,14 @@ export function useFetch<T>(url: string | null, options: RequestInit = {}) {
   );
 
   useEffect(() => {
+    if (!url) {
+      setLoading(false);
+      return;
+    }
     const controller = new AbortController();
     fetchData(controller.signal);
     return () => controller.abort();
-  }, [fetchData]);
+  }, [fetchData, url]);
 
   const refetch = useCallback(() => {
     const controller = new AbortController();

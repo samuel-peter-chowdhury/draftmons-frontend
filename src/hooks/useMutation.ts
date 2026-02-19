@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { ApiError } from '@/lib/api';
 
 interface UseMutationOptions<TData, TVariables> {
@@ -34,34 +34,39 @@ export function useMutation<TData = unknown, TVariables = unknown>(
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TData | null>(null);
 
-  const mutate = async (variables: TVariables): Promise<TData> => {
+  const mutationFnRef = useRef(mutationFn);
+  mutationFnRef.current = mutationFn;
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  const mutate = useCallback(async (variables: TVariables): Promise<TData> => {
     setLoading(true);
     setError(null);
     try {
-      const result = await mutationFn(variables);
+      const result = await mutationFnRef.current(variables);
       setData(result);
-      await options?.onSuccess?.(result, variables);
+      await optionsRef.current?.onSuccess?.(result, variables);
       return result;
     } catch (e) {
       const apiError = e as ApiError;
       const errorMessage = apiError?.body?.message || apiError?.message || 'Request failed';
       setError(errorMessage);
-      options?.onError?.(apiError);
+      optionsRef.current?.onError?.(apiError);
       throw e;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setError(null);
     setData(null);
     setLoading(false);
-  };
+  }, []);
 
   return {
     mutate,
-    mutateAsync: mutate, // Alias for consistency with react-query
+    mutateAsync: mutate,
     loading,
     error,
     data,

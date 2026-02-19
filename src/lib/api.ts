@@ -73,8 +73,13 @@ export function buildUrlWithQuery(
 }
 
 export async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const signal = options.signal
+    ? options.signal
+    : AbortSignal.timeout(30_000);
+
   const res = await fetch(url, {
     ...options,
+    signal,
     credentials: 'include',
   });
   const contentType = res.headers.get('content-type') || '';
