@@ -9,10 +9,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { FilterDropdown } from '@/components/pokemon/FilterDropdown';
-import { formatGenerationName } from '@/lib/utils';
 import type {
   AbilityInput,
-  GenerationInput,
   MoveInput,
   PokemonTypeInput,
   SpecialMoveCategoryInput,
@@ -45,7 +43,6 @@ export interface PokemonFilters {
   selectedResistedTypes: PokemonTypeInput[];
   selectedImmuneTypes: PokemonTypeInput[];
   selectedMoves: MoveInput[];
-  selectedGenerations: GenerationInput[];
   selectedSpecialMoveCategories: SpecialMoveCategoryInput[];
 }
 
@@ -55,7 +52,6 @@ export interface PokemonFilterPanelProps {
   abilities: AbilityInput[];
   types: PokemonTypeInput[];
   moves: MoveInput[];
-  generations: GenerationInput[];
   specialMoveCategories: SpecialMoveCategoryInput[];
 }
 
@@ -76,16 +72,12 @@ const getMoveName = (m: MoveInput) => m.name;
 const getSmcKey = (smc: SpecialMoveCategoryInput) => smc.id;
 const getSmcName = (smc: SpecialMoveCategoryInput) => smc.name;
 
-const getGenerationKey = (g: GenerationInput) => g.id;
-const getGenerationLabel = (g: GenerationInput) => formatGenerationName(g.name);
-
 export function PokemonFilterPanel({
   filters,
   onFilterChange,
   abilities,
   types,
   moves,
-  generations,
   specialMoveCategories,
 }: PokemonFilterPanelProps) {
   const handleAddTo =
@@ -366,18 +358,6 @@ export function PokemonFilterPanel({
                   }
                   getKey={getSmcKey}
                   getLabel={getSmcName}
-                />
-
-                {/* Generations Filter */}
-                <FilterDropdown
-                  label="Generations"
-                  items={generations}
-                  selectedItems={filters.selectedGenerations}
-                  onAdd={handleAddTo<GenerationInput>('selectedGenerations')}
-                  onRemove={handleRemoveFrom<GenerationInput>('selectedGenerations')}
-                  getKey={getGenerationKey}
-                  getLabel={getGenerationLabel}
-                  capitalize={false}
                 />
 
                 {/* Weak Types Filter */}

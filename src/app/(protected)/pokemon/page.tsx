@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS, NAT_DEX_GENERATION_ID } from '@/lib/constants';
+import { formatGenerationName } from '@/lib/utils';
+import { Label } from '@/components';
+import { Select } from '@/components/ui/select';
 import type {
   AbilityInput,
   GenerationInput,
@@ -36,6 +39,9 @@ export default function PokemonPage() {
   const [sortBy, setSortBy] = useState<SortableColumn>('name');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
 
+  // Generation state (separate from filter panel)
+  const [selectedGenerationId, setSelectedGenerationId] = useState<number>(NAT_DEX_GENERATION_ID);
+
   // Filter state
   const [filters, setFilters] = useState<PokemonFilters>({
     nameLike: '',
@@ -64,22 +70,31 @@ export default function PokemonPage() {
     selectedResistedTypes: [],
     selectedImmuneTypes: [],
     selectedMoves: [],
-    selectedGenerations: [],
     selectedSpecialMoveCategories: [],
   });
 
   // Fetch abilities, types, moves, generations, and special move categories for dropdowns
   const abilitiesUrl = useMemo(
-    () => buildUrlWithQuery(BASE_ENDPOINTS.ABILITY_BASE, [], { page: 1, pageSize: 100 }),
-    [],
+    () =>
+      buildUrlWithQuery(BASE_ENDPOINTS.ABILITY_BASE, [], {
+        page: 1,
+        pageSize: 100,
+        generationId: selectedGenerationId,
+      }),
+    [selectedGenerationId],
   );
   const typesUrl = useMemo(
     () => buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_TYPE_BASE, [], { page: 1, pageSize: 100 }),
     [],
   );
   const movesUrl = useMemo(
-    () => buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], { page: 1, pageSize: 100 }),
-    [],
+    () =>
+      buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], {
+        page: 1,
+        pageSize: 100,
+        generationId: selectedGenerationId,
+      }),
+    [selectedGenerationId],
   );
   const generationsUrl = useMemo(
     () => buildUrlWithQuery(BASE_ENDPOINTS.GENERATION_BASE, [], { page: 1, pageSize: 100 }),
@@ -107,17 +122,6 @@ export default function PokemonPage() {
   const moves = movesData?.data || [];
   const generations = generationsData?.data || [];
   const specialMoveCategories = specialMoveCategoriesData?.data || [];
-
-  // Set Nat Dex as the default generation filter once data loads
-  const hasInitializedGeneration = useRef(false);
-  useEffect(() => {
-    if (hasInitializedGeneration.current || generations.length === 0) return;
-    const natDex = generations.find((g) => g.id === NAT_DEX_GENERATION_ID);
-    if (natDex) {
-      setFilters((prev) => ({ ...prev, selectedGenerations: [natDex] }));
-      hasInitializedGeneration.current = true;
-    }
-  }, [generations]);
 
   // Build params for API call
   const params = useMemo(() => {
@@ -169,15 +173,13 @@ export default function PokemonPage() {
     if (filters.selectedMoves.length > 0) {
       p.moveIds = filters.selectedMoves.map((m) => m.id);
     }
-    if (filters.selectedGenerations.length > 0) {
-      p.generationIds = filters.selectedGenerations.map((g) => g.id);
-    }
+    p.generationIds = [selectedGenerationId];
     if (filters.selectedSpecialMoveCategories.length > 0) {
       p.specialMoveCategoryIds = filters.selectedSpecialMoveCategories.map((smc) => smc.id);
     }
 
     return p;
-  }, [page, pageSize, sortBy, sortOrder, filters]);
+  }, [page, pageSize, sortBy, sortOrder, filters, selectedGenerationId]);
 
   // Build URL for pokemon fetch
   const pokemonUrl = useMemo(() => {
@@ -186,6 +188,12 @@ export default function PokemonPage() {
 
   // Fetch pokemon data
   const { data, loading, error } = useFetch<PaginatedResponse<PokemonInput>>(pokemonUrl);
+
+  const handleGenerationChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedGenerationId(Number(e.target.value));
+    setFilters((prev) => ({ ...prev, selectedAbilities: [], selectedMoves: [] }));
+    setPage(1);
+  }, []);
 
   const handleFilterChange = useCallback((newFilters: Partial<PokemonFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -215,7 +223,27 @@ export default function PokemonPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] p-4">
-      <h1 className="mb-4 text-2xl font-semibold">Pokemon</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Pokemon</h1>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="generation-select" className="text-sm text-muted-foreground">
+            Generation:
+          </Label>
+          <Select
+            id="generation-select"
+            value={selectedGenerationId}
+            onChange={handleGenerationChange}
+            className="h-9 w-auto px-2 py-1"
+            aria-label="Select generation"
+          >
+            {generations.map((g) => (
+              <option key={g.id} value={g.id}>
+                {formatGenerationName(g.name)}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
 
       <PokemonFilterPanel
         filters={filters}
@@ -223,7 +251,6 @@ export default function PokemonPage() {
         abilities={abilities}
         types={types}
         moves={moves}
-        generations={generations}
         specialMoveCategories={specialMoveCategories}
       />
 

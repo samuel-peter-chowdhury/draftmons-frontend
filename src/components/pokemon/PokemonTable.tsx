@@ -103,7 +103,7 @@ export function PokemonTable({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-20"></TableHead>
+                      <TableHead className="min-w-20 w-20"></TableHead>
                       <TableHead>
                         <SortableHeader column="name" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Name</SortableHeader>
                       </TableHead>
@@ -142,7 +142,7 @@ export function PokemonTable({
                     ) : (
                       data.data.map((pokemon) => (
                         <TableRow key={pokemon.id}>
-                          <TableCell className="w-20">
+                          <TableCell className="min-w-20 w-20">
                             <PokemonSprite
                               pokemonId={pokemon.id}
                               spriteUrl={pokemon.spriteUrl}
