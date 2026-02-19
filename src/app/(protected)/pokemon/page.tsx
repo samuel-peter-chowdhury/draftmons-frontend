@@ -70,7 +70,7 @@ export default function PokemonPage() {
 
   // Fetch abilities, types, moves, generations, and special move categories for dropdowns
   const abilitiesUrl = useMemo(
-    () => buildUrlWithQuery(BASE_ENDPOINTS.ABILITY_BASE, [], { page: 1, pageSize: 1000 }),
+    () => buildUrlWithQuery(BASE_ENDPOINTS.ABILITY_BASE, [], { page: 1, pageSize: 100 }),
     [],
   );
   const typesUrl = useMemo(
@@ -78,7 +78,7 @@ export default function PokemonPage() {
     [],
   );
   const movesUrl = useMemo(
-    () => buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], { page: 1, pageSize: 10000 }),
+    () => buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], { page: 1, pageSize: 100 }),
     [],
   );
   const generationsUrl = useMemo(
