@@ -28,6 +28,7 @@ import { EditRulesModal } from '@/components/modals/EditRulesModal';
 import { useCheckAuth, useFetch, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import type { LeagueInput, SeasonInput } from '@/types';
@@ -205,7 +206,7 @@ export default function SeasonDetailPage() {
               {season.rules ? (
                 <div
                   className="prose prose-sm prose-invert max-w-none [&_a]:text-primary [&_a]:underline [&_h1]:mb-2 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:text-base [&_h3]:font-medium [&_li]:mb-1 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-2 [&_p]:leading-relaxed [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-6"
-                  dangerouslySetInnerHTML={{ __html: season.rules }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(season.rules) }}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">

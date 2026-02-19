@@ -18,6 +18,7 @@ export async function middleware(request: NextRequest) {
         headers: {
           cookie: request.headers.get('cookie') || '',
         },
+        signal: AbortSignal.timeout(5000),
       });
 
       if (!response.ok) {

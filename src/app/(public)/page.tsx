@@ -29,13 +29,15 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      // If we arrived here with a "next" param, go there; else /home
-      const next = (search.get('next') as any) || '/home';
+      const raw = search.get('next') || '/home';
+      // Validate: must start with / and not // (prevent open redirect)
+      const next = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/home';
       router.replace(next as any);
     }
   }, [isAuthenticated, search, router]);
 
-  const next = search.get('next') || '/home';
+  const rawNext = search.get('next') || '/home';
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/home';
   const redirectUrl = `${CLIENT_URL}${next}`;
   const googleUrl = AuthApi.getGoogleAuthUrl(redirectUrl);
 

@@ -87,6 +87,11 @@ export async function apiFetch<T>(url: string, options: RequestInit = {}): Promi
   const body = isJson ? await res.json() : await res.text();
 
   if (!res.ok) {
+    // On 401, redirect to login with current path
+    if (res.status === 401 && typeof window !== 'undefined') {
+      const currentPath = window.location.pathname;
+      window.location.href = `/?next=${encodeURIComponent(currentPath)}`;
+    }
     const message = (body && typeof body === 'object' && body.message) || 'Request failed';
     throw new ApiRequestError(message, res.status, typeof body === 'object' ? body : undefined);
   }
