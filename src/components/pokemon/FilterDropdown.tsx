@@ -16,6 +16,9 @@ export interface FilterDropdownProps<T> {
   getBadgeStyle?: (item: T) => React.CSSProperties;
   capitalize?: boolean;
   maxResults?: number;
+  onSearchChange?: (search: string) => void;
+  isAsync?: boolean;
+  loading?: boolean;
 }
 
 export function FilterDropdown<T>({
@@ -29,6 +32,9 @@ export function FilterDropdown<T>({
   getBadgeStyle,
   capitalize = true,
   maxResults,
+  onSearchChange,
+  isAsync = false,
+  loading = false,
 }: FilterDropdownProps<T>) {
   const [search, setSearch] = React.useState('');
   const [focused, setFocused] = React.useState(false);
@@ -38,22 +44,36 @@ export function FilterDropdown<T>({
 
   const filteredItems = React.useMemo(() => {
     const selectedKeys = new Set(selectedItems.map(getKey));
-    const matched = items.filter(
-      (item) =>
-        !selectedKeys.has(getKey(item)) &&
-        getLabel(item).toLowerCase().includes(search.toLowerCase()),
-    );
+    const matched = isAsync
+      ? items.filter((item) => !selectedKeys.has(getKey(item)))
+      : items.filter(
+          (item) =>
+            !selectedKeys.has(getKey(item)) &&
+            getLabel(item).toLowerCase().includes(search.toLowerCase()),
+        );
     return maxResults ? matched.slice(0, maxResults) : matched;
-  }, [items, selectedItems, search, getKey, getLabel, maxResults]);
+  }, [items, selectedItems, search, getKey, getLabel, maxResults, isAsync]);
+
+  const handleInputChange = (value: string) => {
+    setSearch(value);
+    if (onSearchChange) {
+      onSearchChange(value);
+    }
+  };
 
   const handleAdd = (item: T) => {
     onAdd(item);
     setSearch('');
     setFocused(false);
+    if (onSearchChange) {
+      onSearchChange('');
+    }
   };
 
   const hasCustomBadgeStyle = !!getBadgeStyle;
   const capClass = capitalize ? ' capitalize' : '';
+
+  const showDropdown = focused && (filteredItems.length > 0 || (isAsync && loading));
 
   return (
     <div className="w-64 space-y-2">
@@ -63,25 +83,29 @@ export function FilterDropdown<T>({
           id={inputId}
           placeholder={placeholder}
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => handleInputChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onClick={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
-        {focused && filteredItems.length > 0 && (
+        {showDropdown && (
           <div className="fixed z-50 mt-1 max-h-60 w-64 overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
-            {filteredItems.map((item) => (
-              <button
-                key={getKey(item)}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  handleAdd(item);
-                }}
-                className={`w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground${capClass}`}
-              >
-                {getLabel(item)}
-              </button>
-            ))}
+            {isAsync && loading && filteredItems.length === 0 ? (
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">Loading...</div>
+            ) : (
+              filteredItems.map((item) => (
+                <button
+                  key={getKey(item)}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleAdd(item);
+                  }}
+                  className={`w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground${capClass}`}
+                >
+                  {getLabel(item)}
+                </button>
+              ))
+            )}
           </div>
         )}
       </div>

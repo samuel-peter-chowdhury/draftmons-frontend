@@ -49,10 +49,14 @@ export interface PokemonFilters {
 export interface PokemonFilterPanelProps {
   filters: PokemonFilters;
   onFilterChange: (filters: Partial<PokemonFilters>) => void;
-  abilities: AbilityInput[];
   types: PokemonTypeInput[];
-  moves: MoveInput[];
   specialMoveCategories: SpecialMoveCategoryInput[];
+  abilitySearchResults: AbilityInput[];
+  moveSearchResults: MoveInput[];
+  onAbilitySearchChange: (search: string) => void;
+  onMoveSearchChange: (search: string) => void;
+  abilitySearchLoading?: boolean;
+  moveSearchLoading?: boolean;
 }
 
 const getTypeKey = (t: PokemonTypeInput) => t.id;
@@ -75,10 +79,14 @@ const getSmcName = (smc: SpecialMoveCategoryInput) => smc.name;
 export function PokemonFilterPanel({
   filters,
   onFilterChange,
-  abilities,
   types,
-  moves,
   specialMoveCategories,
+  abilitySearchResults,
+  moveSearchResults,
+  onAbilitySearchChange,
+  onMoveSearchChange,
+  abilitySearchLoading,
+  moveSearchLoading,
 }: PokemonFilterPanelProps) {
   const handleAddTo =
     <T,>(key: keyof PokemonFilters) =>
@@ -326,25 +334,31 @@ export function PokemonFilterPanel({
                 {/* Abilities Filter */}
                 <FilterDropdown
                   label="Abilities"
-                  items={abilities}
+                  items={abilitySearchResults}
                   selectedItems={filters.selectedAbilities}
                   onAdd={handleAddTo<AbilityInput>('selectedAbilities')}
                   onRemove={handleRemoveFrom<AbilityInput>('selectedAbilities')}
                   getKey={getAbilityKey}
                   getLabel={getAbilityName}
                   maxResults={10}
+                  isAsync
+                  onSearchChange={onAbilitySearchChange}
+                  loading={abilitySearchLoading}
                 />
 
                 {/* Moves Filter */}
                 <FilterDropdown
                   label="Moves"
-                  items={moves}
+                  items={moveSearchResults}
                   selectedItems={filters.selectedMoves}
                   onAdd={handleAddTo<MoveInput>('selectedMoves')}
                   onRemove={handleRemoveFrom<MoveInput>('selectedMoves')}
                   getKey={getMoveKey}
                   getLabel={getMoveName}
                   maxResults={10}
+                  isAsync
+                  onSearchChange={onMoveSearchChange}
+                  loading={moveSearchLoading}
                 />
 
                 {/* Special Move Categories Filter */}

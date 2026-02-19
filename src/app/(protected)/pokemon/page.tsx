@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { useFetch } from '@/hooks';
+import { useFetch, useDebounce } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS, NAT_DEX_GENERATION_ID } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
@@ -73,28 +73,19 @@ export default function PokemonPage() {
     selectedSpecialMoveCategories: [],
   });
 
-  // Fetch abilities, types, moves, generations, and special move categories for dropdowns
-  const abilitiesUrl = useMemo(
-    () =>
-      buildUrlWithQuery(BASE_ENDPOINTS.ABILITY_BASE, [], {
-        page: 1,
-        pageSize: 100,
-        generationId: selectedGenerationId,
-      }),
-    [selectedGenerationId],
-  );
+  // Ability/Move search state (raw text from FilterDropdown)
+  const [abilitySearch, setAbilitySearch] = useState('');
+  const [moveSearch, setMoveSearch] = useState('');
+
+  // Debounce search terms
+  const debouncedNameLike = useDebounce(filters.nameLike, 300);
+  const debouncedAbilitySearch = useDebounce(abilitySearch, 300);
+  const debouncedMoveSearch = useDebounce(moveSearch, 300);
+
+  // Fetch types, generations, and special move categories (static dropdowns)
   const typesUrl = useMemo(
     () => buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_TYPE_BASE, [], { page: 1, pageSize: 100 }),
     [],
-  );
-  const movesUrl = useMemo(
-    () =>
-      buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], {
-        page: 1,
-        pageSize: 100,
-        generationId: selectedGenerationId,
-      }),
-    [selectedGenerationId],
   );
   const generationsUrl = useMemo(
     () => buildUrlWithQuery(BASE_ENDPOINTS.GENERATION_BASE, [], { page: 1, pageSize: 100 }),
@@ -109,19 +100,52 @@ export default function PokemonPage() {
     [],
   );
 
-  const { data: abilitiesData } = useFetch<PaginatedResponse<AbilityInput>>(abilitiesUrl);
+  // Build ability search URL (always fetch, filtered by generation; add nameLike when typing)
+  const abilitySearchUrl = useMemo(() => {
+    const params: Parameters<typeof buildUrlWithQuery>[2] = {
+      page: 1,
+      pageSize: 10,
+      generationIds: [selectedGenerationId],
+      sortBy: 'name',
+      sortOrder: 'ASC',
+    };
+    if (debouncedAbilitySearch.trim()) {
+      params.nameLike = debouncedAbilitySearch.trim();
+    }
+    return buildUrlWithQuery(BASE_ENDPOINTS.ABILITY_BASE, [], params);
+  }, [selectedGenerationId, debouncedAbilitySearch]);
+
+  // Build move search URL (always fetch, filtered by generation; add nameLike when typing)
+  const moveSearchUrl = useMemo(() => {
+    const params: Parameters<typeof buildUrlWithQuery>[2] = {
+      page: 1,
+      pageSize: 10,
+      generationIds: [selectedGenerationId],
+      sortBy: 'name',
+      sortOrder: 'ASC',
+    };
+    if (debouncedMoveSearch.trim()) {
+      params.nameLike = debouncedMoveSearch.trim();
+    }
+    return buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], params);
+  }, [selectedGenerationId, debouncedMoveSearch]);
+
   const { data: typesData } = useFetch<PaginatedResponse<PokemonTypeInput>>(typesUrl);
-  const { data: movesData } = useFetch<PaginatedResponse<MoveInput>>(movesUrl);
   const { data: generationsData } = useFetch<PaginatedResponse<GenerationInput>>(generationsUrl);
   const { data: specialMoveCategoriesData } = useFetch<
     PaginatedResponse<SpecialMoveCategoryInput>
   >(specialMoveCategoriesUrl);
 
-  const abilities = abilitiesData?.data || [];
+  const { data: abilitySearchData, loading: abilitySearchLoading } =
+    useFetch<PaginatedResponse<AbilityInput>>(abilitySearchUrl);
+  const { data: moveSearchData, loading: moveSearchLoading } =
+    useFetch<PaginatedResponse<MoveInput>>(moveSearchUrl);
+
   const types = typesData?.data || [];
-  const moves = movesData?.data || [];
   const generations = generationsData?.data || [];
   const specialMoveCategories = specialMoveCategoriesData?.data || [];
+  const abilitySearchResults = abilitySearchData?.data || [];
+  const moveSearchResults = moveSearchData?.data || [];
 
   // Build params for API call
   const params = useMemo(() => {
@@ -132,7 +156,7 @@ export default function PokemonPage() {
       sortOrder,
     };
 
-    if (filters.nameLike.trim()) p.nameLike = filters.nameLike.trim();
+    if (debouncedNameLike.trim()) p.nameLike = debouncedNameLike.trim();
     if (filters.minHp) p.minHp = parseInt(filters.minHp);
     if (filters.maxHp) p.maxHp = parseInt(filters.maxHp);
     if (filters.minAttack) p.minAttack = parseInt(filters.minAttack);
@@ -179,7 +203,7 @@ export default function PokemonPage() {
     }
 
     return p;
-  }, [page, pageSize, sortBy, sortOrder, filters, selectedGenerationId]);
+  }, [page, pageSize, sortBy, sortOrder, filters, selectedGenerationId, debouncedNameLike]);
 
   // Build URL for pokemon fetch
   const pokemonUrl = useMemo(() => {
@@ -192,6 +216,8 @@ export default function PokemonPage() {
   const handleGenerationChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedGenerationId(Number(e.target.value));
     setFilters((prev) => ({ ...prev, selectedAbilities: [], selectedMoves: [] }));
+    setAbilitySearch('');
+    setMoveSearch('');
     setPage(1);
   }, []);
 
@@ -248,10 +274,14 @@ export default function PokemonPage() {
       <PokemonFilterPanel
         filters={filters}
         onFilterChange={handleFilterChange}
-        abilities={abilities}
         types={types}
-        moves={moves}
         specialMoveCategories={specialMoveCategories}
+        abilitySearchResults={abilitySearchResults}
+        moveSearchResults={moveSearchResults}
+        onAbilitySearchChange={setAbilitySearch}
+        onMoveSearchChange={setMoveSearch}
+        abilitySearchLoading={abilitySearchLoading}
+        moveSearchLoading={moveSearchLoading}
       />
 
       <PokemonTable
