@@ -17,7 +17,7 @@ export enum SeasonStatus {
 export interface SeasonInput extends BaseInput {
   name: string;
   status: SeasonStatus;
-  rules: string;
+  rules?: string;
   pointLimit: number;
   maxPointValue: number;
   leagueId: number;

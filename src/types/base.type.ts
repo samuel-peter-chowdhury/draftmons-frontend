@@ -1,8 +1,8 @@
 export interface BaseInput {
   id: number;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BaseOutput {}
