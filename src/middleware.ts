@@ -40,10 +40,11 @@ export async function middleware(request: NextRequest) {
       // Authenticated, allow the request to proceed
       return NextResponse.next();
     } catch (error) {
-      // Network error (backend down) — allow request through rather than
-      // redirecting every user to login when the backend is temporarily unavailable.
+      // Backend unreachable — fail closed (redirect to login)
       console.error('Middleware auth check failed:', error);
-      return NextResponse.next();
+      const url = new URL('/', request.url);
+      url.searchParams.set('next', pathname);
+      return NextResponse.redirect(url);
     }
   }
 

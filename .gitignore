@@ -44,7 +44,6 @@ yarn-error.log*
 !.vscode/extensions.json
 .idea
 
-# lockfiles
-package-lock.json
+# lockfiles (keep package-lock.json for reproducible builds)
 pnpm-lock.yaml
 yarn.lock

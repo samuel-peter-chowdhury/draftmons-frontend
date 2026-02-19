@@ -187,13 +187,9 @@ export default function PokemonPage() {
   // Fetch pokemon data
   const { data, loading, error } = useFetch<PaginatedResponse<PokemonInput>>(pokemonUrl);
 
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [filters]);
-
   const handleFilterChange = useCallback((newFilters: Partial<PokemonFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
+    setPage(1);
   }, []);
 
   const handleSort = useCallback(

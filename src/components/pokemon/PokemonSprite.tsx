@@ -1,21 +1,21 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
-import { PokemonModal } from './PokemonModal';
 
 interface PokemonSpriteProps {
   pokemonId: number;
   spriteUrl: string | null | undefined;
   name: string;
   className?: string;
-  /** When true, clicking the sprite will not open the modal */
+  /** When true, clicking the sprite will not trigger onClick */
   disableClick?: boolean;
+  /** Called when the sprite is clicked (unless disableClick is true) */
+  onClick?: (pokemonId: number) => void;
 }
 
 /**
  * Reusable Pokemon sprite component that displays a Pokemon image
- * and opens a modal with full Pokemon details when clicked.
+ * and calls onClick when clicked.
  */
 export function PokemonSprite({
   pokemonId,
@@ -23,38 +23,34 @@ export function PokemonSprite({
   name,
   className = 'h-16 w-16 object-contain',
   disableClick = false,
+  onClick,
 }: PokemonSpriteProps) {
-  const [modalOpen, setModalOpen] = useState(false);
-
   if (!spriteUrl) {
     return <div className={className} />;
   }
 
-  if (disableClick) {
+  if (disableClick || !onClick) {
     return <Image src={spriteUrl} alt={name} width={96} height={96} unoptimized className={className} />;
   }
 
   return (
-    <>
-      <Image
-        src={spriteUrl}
-        alt={name}
-        width={96}
-        height={96}
-        unoptimized
-        className={`${className} cursor-pointer transition-transform hover:scale-110`}
-        onClick={() => setModalOpen(true)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setModalOpen(true);
-          }
-        }}
-        aria-label={`View ${name} details`}
-      />
-      <PokemonModal pokemonId={pokemonId} open={modalOpen} onOpenChange={setModalOpen} />
-    </>
+    <Image
+      src={spriteUrl}
+      alt={name}
+      width={96}
+      height={96}
+      unoptimized
+      className={`${className} cursor-pointer transition-transform hover:scale-110`}
+      onClick={() => onClick(pokemonId)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(pokemonId);
+        }
+      }}
+      aria-label={`View ${name} details`}
+    />
   );
 }

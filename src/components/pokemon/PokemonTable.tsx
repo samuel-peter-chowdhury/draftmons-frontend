@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Card, CardContent, ErrorAlert, Spinner, Pagination } from '@/components';
 import {
@@ -14,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PokemonSprite } from './PokemonSprite';
+import { PokemonModal } from './PokemonModal';
 import type { PaginatedResponse, PokemonInput } from '@/types';
 
 type SortableColumn =
@@ -78,6 +79,11 @@ export function PokemonTable({
   onPageChange,
   onPageSizeChange,
 }: PokemonTableProps) {
+  const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(null);
+
+  const handleSpriteClick = useCallback((pokemonId: number) => {
+    setSelectedPokemonId(pokemonId);
+  }, []);
 
   return (
     <>
@@ -141,6 +147,7 @@ export function PokemonTable({
                               pokemonId={pokemon.id}
                               spriteUrl={pokemon.spriteUrl}
                               name={pokemon.name}
+                              onClick={handleSpriteClick}
                             />
                           </TableCell>
                           <TableCell className="font-medium capitalize">{pokemon.name}</TableCell>
@@ -211,6 +218,16 @@ export function PokemonTable({
             className="mt-4"
           />
         </>
+      )}
+
+      {selectedPokemonId !== null && (
+        <PokemonModal
+          pokemonId={selectedPokemonId}
+          open={selectedPokemonId !== null}
+          onOpenChange={(open) => {
+            if (!open) setSelectedPokemonId(null);
+          }}
+        />
       )}
     </>
   );
