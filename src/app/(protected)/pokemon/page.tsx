@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
-import { BASE_ENDPOINTS } from '@/lib/constants';
+import { BASE_ENDPOINTS, NAT_DEX_GENERATION_ID } from '@/lib/constants';
 import type {
   AbilityInput,
   GenerationInput,
@@ -107,6 +107,17 @@ export default function PokemonPage() {
   const moves = movesData?.data || [];
   const generations = generationsData?.data || [];
   const specialMoveCategories = specialMoveCategoriesData?.data || [];
+
+  // Set Nat Dex as the default generation filter once data loads
+  const hasInitializedGeneration = useRef(false);
+  useEffect(() => {
+    if (hasInitializedGeneration.current || generations.length === 0) return;
+    const natDex = generations.find((g) => g.id === NAT_DEX_GENERATION_ID);
+    if (natDex) {
+      setFilters((prev) => ({ ...prev, selectedGenerations: [natDex] }));
+      hasInitializedGeneration.current = true;
+    }
+  }, [generations]);
 
   // Build params for API call
   const params = useMemo(() => {

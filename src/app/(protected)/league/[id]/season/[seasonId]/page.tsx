@@ -54,7 +54,7 @@ export default function SeasonDetailPage() {
     error: seasonError,
     refetch: refetchSeason,
   } = useFetch<SeasonInput>(
-    buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season', seasonId], {}),
+    buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season', seasonId], { full: true }),
   );
 
   const [isEditSeasonModalOpen, setIsEditSeasonModalOpen] = useState(false);
