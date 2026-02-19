@@ -117,6 +117,19 @@ function RichTextEditor({
       return;
     }
 
+    // Validate URL scheme to prevent javascript: and other dangerous protocols
+    const ALLOWED_SCHEMES = ['http:', 'https:', 'mailto:'];
+    try {
+      const parsed = new URL(url);
+      if (!ALLOWED_SCHEMES.includes(parsed.protocol)) {
+        window.alert('Only http, https, and mailto links are allowed.');
+        return;
+      }
+    } catch {
+      window.alert('Please enter a valid URL (e.g. https://example.com).');
+      return;
+    }
+
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   };
 

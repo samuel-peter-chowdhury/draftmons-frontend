@@ -11,8 +11,8 @@ export async function middleware(request: NextRequest) {
 
   if (isProtectedRoute) {
     try {
-      // Check authentication by calling the auth status endpoint
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+      // Use a server-only env var for internal API calls (not leaked in client bundle)
+      const apiBaseUrl = process.env.INTERNAL_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
       const response = await fetch(`${apiBaseUrl}/api/auth/status`, {
         credentials: 'include',
         headers: {

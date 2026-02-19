@@ -72,13 +72,30 @@ export function buildUrlWithQuery(
   return url;
 }
 
+function getCsrfToken(): string | undefined {
+  if (typeof document === 'undefined') return undefined;
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
 export async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
   const signal = options.signal
     ? options.signal
     : AbortSignal.timeout(30_000);
 
+  // Attach CSRF token header for state-mutating requests
+  const headers = new Headers(options.headers);
+  const method = (options.method || 'GET').toUpperCase();
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      headers.set('X-XSRF-TOKEN', csrfToken);
+    }
+  }
+
   const res = await fetch(url, {
     ...options,
+    headers,
     signal,
     credentials: 'include',
   });
