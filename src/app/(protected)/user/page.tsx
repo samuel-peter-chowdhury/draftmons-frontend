@@ -16,6 +16,7 @@ import {
 import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
+import { formatUserDisplayName } from '@/lib/utils';
 import type { UserInput, PaginatedResponse } from '@/types';
 
 const USER_SORT_OPTIONS = [
@@ -75,10 +76,7 @@ export default function UserListPage() {
           <div className={loading ? 'pointer-events-none opacity-50' : ''}>
             <div className="grid gap-3 md:grid-cols-2">
               {data.data.map((user) => {
-                const displayName =
-                  user.firstName && user.lastName
-                    ? `${user.firstName} ${user.lastName}`.trim()
-                    : user.firstName || user.lastName || user.email || 'Unknown User';
+                const displayName = formatUserDisplayName(user);
 
                 return (
                   <Card key={user.id}>

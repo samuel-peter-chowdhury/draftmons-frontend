@@ -13,6 +13,7 @@ import {
 } from '@/components';
 import { useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
+import { formatUserDisplayName } from '@/lib/utils';
 import type { LeagueUserInput, TeamOutput } from '@/types';
 
 interface CreateTeamModalProps {
@@ -66,13 +67,6 @@ export function CreateTeamModal({
     }
   };
 
-  const getUserDisplayName = (leagueUser: LeagueUserInput) => {
-    const user = leagueUser.user;
-    if (user?.firstName && user?.lastName) {
-      return `${user.firstName} ${user.lastName}`.trim();
-    }
-    return user?.firstName || user?.lastName || user?.email || 'Unknown User';
-  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -110,7 +104,7 @@ export function CreateTeamModal({
               </option>
               {leagueUsers.map((leagueUser) => (
                 <option key={leagueUser.userId} value={leagueUser.userId}>
-                  {getUserDisplayName(leagueUser)}
+                  {formatUserDisplayName(leagueUser.user)}
                 </option>
               ))}
             </Select>

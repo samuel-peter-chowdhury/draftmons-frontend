@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { X, Pencil } from 'lucide-react';
 import {
@@ -25,10 +25,10 @@ import {
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateTeamModal } from '@/components/modals/CreateTeamModal';
 import { EditRulesModal } from '@/components/modals/EditRulesModal';
-import { useFetch, useMutation } from '@/hooks';
+import { useCheckAuth, useFetch, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import { formatGenerationName } from '@/lib/utils';
+import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import type { LeagueInput, SeasonInput } from '@/types';
 
@@ -36,7 +36,7 @@ export default function SeasonDetailPage() {
   const params = useParams<{ id: string; seasonId: string }>();
   const leagueId = Number(params.id);
   const seasonId = Number(params.seasonId);
-  const { user: currentUser, isAuthenticated, checkAuth } = useAuthStore();
+  const { user: currentUser } = useAuthStore();
 
   // Fetch league data for moderator check and league users
   const {
@@ -62,12 +62,7 @@ export default function SeasonDetailPage() {
   const [isEditRulesModalOpen, setIsEditRulesModalOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<number | null>(null);
 
-  // Ensure auth store is populated on mount
-  useEffect(() => {
-    if (!isAuthenticated) {
-      checkAuth();
-    }
-  }, [isAuthenticated, checkAuth]);
+  useCheckAuth();
 
   // Check if the current user is a moderator of this league
   const isModerator =
@@ -88,13 +83,6 @@ export default function SeasonDetailPage() {
   const handleDeleteTeam = async () => {
     if (!teamToDelete) return;
     await deleteTeamMutation.mutate(teamToDelete);
-  };
-
-  const getUserDisplayName = (user?: { firstName?: string; lastName?: string; email?: string }) => {
-    if (user?.firstName && user?.lastName) {
-      return `${user.firstName} ${user.lastName}`.trim();
-    }
-    return user?.firstName || user?.lastName || user?.email || 'Unknown User';
   };
 
   const loading = leagueLoading || seasonLoading;
@@ -176,7 +164,7 @@ export default function SeasonDetailPage() {
                       <div>
                         <div className="text-sm font-medium">{team.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {getUserDisplayName(team.user)}
+                          {formatUserDisplayName(team.user)}
                         </div>
                       </div>
                       {isModerator && (

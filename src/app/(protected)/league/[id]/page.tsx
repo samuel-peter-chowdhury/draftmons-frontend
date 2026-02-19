@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { X, Pencil } from 'lucide-react';
@@ -26,16 +26,16 @@ import {
 import { AddLeagueUsersModal } from '@/components/modals/AddLeagueUsersModal';
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import { useFetch, useMutation } from '@/hooks';
+import { useCheckAuth, useFetch, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import { formatGenerationName } from '@/lib/utils';
+import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import type { LeagueInput } from '@/types';
 
 export default function LeagueDetailPage() {
   const params = useParams<{ id: string }>();
-  const { user: currentUser, isAuthenticated, checkAuth } = useAuthStore();
+  const { user: currentUser } = useAuthStore();
   const { data, loading, error, refetch } = useFetch<LeagueInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [params.id], { full: true }),
   );
@@ -45,12 +45,7 @@ export default function LeagueDetailPage() {
   const [isEditLeagueModalOpen, setIsEditLeagueModalOpen] = useState(false);
   const [leagueUserToDelete, setLeagueUserToDelete] = useState<number | null>(null);
 
-  // Ensure auth store is populated on mount
-  useEffect(() => {
-    if (!isAuthenticated) {
-      checkAuth();
-    }
-  }, [isAuthenticated, checkAuth]);
+  useCheckAuth();
 
   // Check if the current user is a moderator of this league
   const isModerator = data?.leagueUsers?.some(
@@ -134,11 +129,7 @@ export default function LeagueDetailPage() {
               ) : (
                 <div className="space-y-2">
                   {data.leagueUsers.map((leagueUser) => {
-                    const user = leagueUser.user;
-                    const displayName =
-                      user?.firstName && user?.lastName
-                        ? `${user.firstName} ${user.lastName}`.trim()
-                        : user?.firstName || user?.lastName || user?.email || 'Unknown User';
+                    const displayName = formatUserDisplayName(leagueUser.user);
 
                     return (
                       <div

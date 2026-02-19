@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { PokemonModal } from './PokemonModal';
 
 interface PokemonSpriteProps {
@@ -30,14 +31,17 @@ export function PokemonSprite({
   }
 
   if (disableClick) {
-    return <img src={spriteUrl} alt={name} className={className} />;
+    return <Image src={spriteUrl} alt={name} width={96} height={96} unoptimized className={className} />;
   }
 
   return (
     <>
-      <img
+      <Image
         src={spriteUrl}
         alt={name}
+        width={96}
+        height={96}
+        unoptimized
         className={`${className} cursor-pointer transition-transform hover:scale-110`}
         onClick={() => setModalOpen(true)}
         role="button"

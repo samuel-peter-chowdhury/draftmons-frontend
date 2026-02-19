@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -15,7 +15,7 @@ import {
   SortControls,
 } from '@/components';
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
-import { useFetch } from '@/hooks';
+import { useCheckAuth, useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
@@ -30,7 +30,7 @@ const SEASON_SORT_OPTIONS = [
 export default function SeasonsPage() {
   const params = useParams<{ id: string }>();
   const leagueId = Number(params.id);
-  const { user: currentUser, isAuthenticated, checkAuth } = useAuthStore();
+  const { user: currentUser } = useAuthStore();
 
   // Pagination & sorting state
   const [page, setPage] = useState(1);
@@ -70,12 +70,7 @@ export default function SeasonsPage() {
     refetch: refetchSeasons,
   } = useFetch<PaginatedResponse<SeasonInput>>(seasonsUrl);
 
-  // Ensure auth store is populated on mount
-  useEffect(() => {
-    if (!isAuthenticated) {
-      checkAuth();
-    }
-  }, [isAuthenticated, checkAuth]);
+  useCheckAuth();
 
   // Check if the current user is a moderator of this league
   const isModerator =

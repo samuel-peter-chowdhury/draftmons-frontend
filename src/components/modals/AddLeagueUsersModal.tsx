@@ -13,6 +13,7 @@ import {
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { useMutation } from '@/hooks';
 import { UserApi, LeagueApi } from '@/lib/api';
+import { formatUserDisplayName } from '@/lib/utils';
 import type { UserInput, LeagueUserInput } from '@/types';
 
 interface AddLeagueUsersModalProps {
@@ -128,10 +129,7 @@ export function AddLeagueUsersModal({
 
   // Map to combobox options
   const options: ComboboxOption[] = filteredUsers.map((user) => {
-    const label =
-      user.firstName && user.lastName
-        ? `${user.firstName} ${user.lastName}`.trim()
-        : user.firstName || user.lastName || user.email;
+    const label = formatUserDisplayName(user, user.email || 'Unknown User');
     return { value: String(user.id), label, email: user.email ?? undefined };
   });
 
@@ -167,10 +165,7 @@ export function AddLeagueUsersModal({
               <Label>Selected Users ({selectedUsers.length})</Label>
               <div className="mt-2 space-y-2">
                 {selectedUsers.map((user) => {
-                  const displayName =
-                    user.firstName && user.lastName
-                      ? `${user.firstName} ${user.lastName}`.trim()
-                      : user.firstName || user.lastName || user.email;
+                  const displayName = formatUserDisplayName(user, user.email || 'Unknown User');
 
                   return (
                     <div

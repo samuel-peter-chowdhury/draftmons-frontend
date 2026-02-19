@@ -26,6 +26,33 @@ type SortableColumn =
   | 'speed'
   | 'baseStatTotal';
 
+function SortableHeader({
+  column,
+  sortBy,
+  sortOrder,
+  onSort,
+  children,
+}: {
+  column: SortableColumn;
+  sortBy: SortableColumn;
+  sortOrder: 'ASC' | 'DESC';
+  onSort: (column: SortableColumn) => void;
+  children: React.ReactNode;
+}) {
+  const isActive = sortBy === column;
+  return (
+    <button
+      onClick={() => onSort(column)}
+      className="inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground"
+    >
+      {children}
+      {isActive && sortOrder === 'ASC' && <ChevronUp className="h-4 w-4" />}
+      {isActive && sortOrder === 'DESC' && <ChevronDown className="h-4 w-4" />}
+      {!isActive && <div className="h-4 w-4" />}
+    </button>
+  );
+}
+
 export interface PokemonTableProps {
   data: PaginatedResponse<PokemonInput> | null;
   loading: boolean;
@@ -51,26 +78,6 @@ export function PokemonTable({
   onPageChange,
   onPageSizeChange,
 }: PokemonTableProps) {
-  const SortableHeader = ({
-    column,
-    children,
-  }: {
-    column: SortableColumn;
-    children: React.ReactNode;
-  }) => {
-    const isActive = sortBy === column;
-    return (
-      <button
-        onClick={() => onSort(column)}
-        className="inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground"
-      >
-        {children}
-        {isActive && sortOrder === 'ASC' && <ChevronUp className="h-4 w-4" />}
-        {isActive && sortOrder === 'DESC' && <ChevronDown className="h-4 w-4" />}
-        {!isActive && <div className="h-4 w-4" />}
-      </button>
-    );
-  };
 
   return (
     <>
@@ -92,30 +99,30 @@ export function PokemonTable({
                     <TableRow>
                       <TableHead className="w-20"></TableHead>
                       <TableHead>
-                        <SortableHeader column="name">Name</SortableHeader>
+                        <SortableHeader column="name" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Name</SortableHeader>
                       </TableHead>
                       <TableHead>Types</TableHead>
                       <TableHead>Abilities</TableHead>
                       <TableHead>
-                        <SortableHeader column="hp">HP</SortableHeader>
+                        <SortableHeader column="hp" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>HP</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <SortableHeader column="attack">Atk</SortableHeader>
+                        <SortableHeader column="attack" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Atk</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <SortableHeader column="defense">Def</SortableHeader>
+                        <SortableHeader column="defense" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Def</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <SortableHeader column="specialAttack">Sp.Atk</SortableHeader>
+                        <SortableHeader column="specialAttack" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Sp.Atk</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <SortableHeader column="specialDefense">Sp.Def</SortableHeader>
+                        <SortableHeader column="specialDefense" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Sp.Def</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <SortableHeader column="speed">Spd</SortableHeader>
+                        <SortableHeader column="speed" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Spd</SortableHeader>
                       </TableHead>
                       <TableHead>
-                        <SortableHeader column="baseStatTotal">BST</SortableHeader>
+                        <SortableHeader column="baseStatTotal" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>BST</SortableHeader>
                       </TableHead>
                     </TableRow>
                   </TableHeader>

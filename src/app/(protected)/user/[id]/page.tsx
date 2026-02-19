@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Pencil } from 'lucide-react';
 import {
@@ -13,35 +13,28 @@ import {
   Spinner,
 } from '@/components';
 import { EditUserModal } from '@/components/modals/EditUserModal';
-import { useFetch } from '@/hooks';
+import { useCheckAuth, useFetch } from '@/hooks';
 import { buildUrl } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
+import { formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import type { UserInput } from '@/types';
 
 export default function UserDetailPage() {
   const params = useParams<{ id: string }>();
-  const { user: currentUser, isAuthenticated, checkAuth } = useAuthStore();
+  const { user: currentUser } = useAuthStore();
   const { data, loading, error, refetch } = useFetch<UserInput>(
     buildUrl(BASE_ENDPOINTS.USER_BASE, params.id),
   );
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Ensure auth store is populated on mount
-  useEffect(() => {
-    if (!isAuthenticated) {
-      checkAuth();
-    }
-  }, [isAuthenticated, checkAuth]);
+  useCheckAuth();
 
   // Check if the current user is viewing their own profile
   const isOwnProfile = currentUser?.id === data?.id;
 
-  const displayName =
-    data?.firstName && data?.lastName
-      ? `${data.firstName} ${data.lastName}`.trim()
-      : data?.firstName || data?.lastName || data?.email || 'Unknown User';
+  const displayName = formatUserDisplayName(data);
 
   return (
     <div className="mx-auto max-w-7xl p-4">

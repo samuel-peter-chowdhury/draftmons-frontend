@@ -1,23 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
+import { useCheckAuth } from '@/hooks';
+import { formatUserDisplayName } from '@/lib/utils';
 import type { LeagueInput } from '@/types';
 
 export default function HomePage() {
   const router = useRouter();
-  const { user, isAuthenticated, checkAuth } = useAuthStore();
+  const { user } = useAuthStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      checkAuth();
-    }
-  }, [isAuthenticated, checkAuth]);
+  useCheckAuth();
 
   const handleLeagueCreated = (league?: LeagueInput) => {
     if (league?.id) {
@@ -25,10 +23,7 @@ export default function HomePage() {
     }
   };
 
-  const displayName =
-    user?.firstName && user?.lastName
-      ? `${user.firstName} ${user.lastName}`.trim()
-      : user?.firstName || user?.lastName || '';
+  const displayName = formatUserDisplayName(user, '');
 
   return (
     <div className="mx-auto max-w-7xl p-4">

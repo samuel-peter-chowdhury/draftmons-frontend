@@ -18,6 +18,15 @@ export function cn(...inputs: ClassValue[]) {
  * formatGenerationName("scarlet_violet") // Returns "Scarlet Violet"
  * formatGenerationName("gen_9") // Returns "Gen 9"
  */
+export function formatUserDisplayName(
+  user: { firstName?: string | null; lastName?: string | null; email?: string } | null | undefined,
+  fallback = 'Unknown User',
+): string {
+  if (!user) return fallback;
+  if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`.trim();
+  return user.firstName || user.lastName || user.email || fallback;
+}
+
 export function formatGenerationName(name: string): string {
   if (name.length <= 2) {
     return name.toUpperCase();
