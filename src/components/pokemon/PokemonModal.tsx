@@ -389,9 +389,11 @@ export function PokemonModal({ pokemonId, open, onOpenChange }: PokemonModalProp
                     <TooltipProvider delayDuration={100}>
                       {/* Moves by Special Move Category */}
                       {specialGrouped.length > 0 && (
-                        <div className="space-y-4">
-                          {specialGrouped.map(({ specialMoveCategory, categories: smcCategories }) => (
-                            <div key={specialMoveCategory.id}>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                          {specialGrouped.map(({ specialMoveCategory, categories: smcCategories }) => {
+                            const totalMoves = smcCategories.reduce((sum, c) => sum + c.moves.length, 0);
+                            return (
+                            <div key={specialMoveCategory.id} className={totalMoves > 10 ? 'col-span-2' : ''}>
                               <h4 className="mb-2 text-xs font-semibold capitalize text-foreground">
                                 {specialMoveCategory.name}
                               </h4>
@@ -439,7 +441,8 @@ export function PokemonModal({ pokemonId, open, onOpenChange }: PokemonModalProp
                                 ))}
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
 
@@ -448,56 +451,61 @@ export function PokemonModal({ pokemonId, open, onOpenChange }: PokemonModalProp
                       )}
 
                       {/* Moves by Type */}
-                      {grouped.map(({ pokemonType, categories }) => (
-                        <div key={pokemonType.id}>
-                          <h4
-                            className="mb-2 text-xs font-semibold capitalize"
-                            style={{ color: pokemonType.color }}
-                          >
-                            {pokemonType.name}
-                          </h4>
-                          <div className="space-y-2 pl-2">
-                            {categories.map(({ category, moves: catMoves }) => (
-                              <div key={category}>
-                                <p className="mb-1 text-[11px] font-medium text-muted-foreground">
-                                  {capitalizeFirst(category)}
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                  {catMoves.map((move) => (
-                                    <Tooltip key={move.id}>
-                                      <TooltipTrigger asChild>
-                                        <div>
-                                          <Badge
-                                            className="cursor-help capitalize"
-                                            style={{
-                                              backgroundColor: pokemonType.color,
-                                              color: '#fff',
-                                              border: 'none',
-                                            }}
-                                          >
-                                            {move.name}
-                                          </Badge>
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-xs">
-                                        <div className="space-y-1 text-xs">
-                                          <p className="font-medium capitalize">{pokemonType.name} &middot; {capitalizeFirst(move.category)}</p>
-                                          {move.power > 0 && <p>Power: {move.power}</p>}
-                                          {move.accuracy > 0 && <p>Accuracy: {move.accuracy}</p>}
-                                          <p>PP: {move.pp}</p>
-                                          {move.description && (
-                                            <p className="first-letter:capitalize">{move.description}</p>
-                                          )}
-                                        </div>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  ))}
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+                        {grouped.map(({ pokemonType, categories }) => {
+                          const totalMoves = categories.reduce((sum, c) => sum + c.moves.length, 0);
+                          return (
+                          <div key={pokemonType.id} className={totalMoves > 10 ? 'col-span-2' : ''}>
+                            <h4
+                              className="mb-2 text-xs font-semibold capitalize"
+                              style={{ color: pokemonType.color }}
+                            >
+                              {pokemonType.name}
+                            </h4>
+                            <div className="space-y-2 pl-2">
+                              {categories.map(({ category, moves: catMoves }) => (
+                                <div key={category}>
+                                  <p className="mb-1 text-[11px] font-medium text-muted-foreground">
+                                    {capitalizeFirst(category)}
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {catMoves.map((move) => (
+                                      <Tooltip key={move.id}>
+                                        <TooltipTrigger asChild>
+                                          <div>
+                                            <Badge
+                                              className="cursor-help capitalize"
+                                              style={{
+                                                backgroundColor: pokemonType.color,
+                                                color: '#fff',
+                                                border: 'none',
+                                              }}
+                                            >
+                                              {move.name}
+                                            </Badge>
+                                          </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs">
+                                          <div className="space-y-1 text-xs">
+                                            <p className="font-medium capitalize">{pokemonType.name} &middot; {capitalizeFirst(move.category)}</p>
+                                            {move.power > 0 && <p>Power: {move.power}</p>}
+                                            {move.accuracy > 0 && <p>Accuracy: {move.accuracy}</p>}
+                                            <p>PP: {move.pp}</p>
+                                            {move.description && (
+                                              <p className="first-letter:capitalize">{move.description}</p>
+                                            )}
+                                          </div>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                          );
+                        })}
+                      </div>
                     </TooltipProvider>
                   </div>
                 );
