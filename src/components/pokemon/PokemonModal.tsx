@@ -12,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PokemonApi } from '@/lib/api';
+import { getStatColor, calculateSpeedTiers } from '@/lib/pokemon';
 import type { PokemonInput, MoveInput, PokemonTypeInput, SpecialMoveCategoryInput } from '@/types';
 
 function capitalizeFirst(str: string): string {
@@ -54,51 +55,6 @@ const STAT_LABELS: { key: keyof PokemonInput; label: string }[] = [
 ];
 
 const MAX_STAT = 255;
-
-/**
- * Linearly interpolate between two values
- */
-function lerp(start: number, end: number, t: number): number {
-  return start + (end - start) * t;
-}
-
-/**
- * Get the HSL color for a stat bar based on the stat value.
- * Uses continuous interpolation for smooth color transitions:
- * - 0-60: Red tones (hue 0-25)
- * - 61-100: Yellow/Orange tones (hue 25-55)
- * - 101-150: Green tones (hue 55-130)
- * - 151-255: Blue tones (hue 130-240, deepening)
- *
- * Saturation and lightness remain consistent for uniform vibrancy.
- */
-function getStatColor(value: number): string {
-  const saturation = 72;
-  const lightness = 50;
-
-  let hue: number;
-
-  if (value <= 60) {
-    // Red to orange-red: hue 0 → 25
-    const t = value / 60;
-    hue = lerp(0, 25, t);
-  } else if (value <= 100) {
-    // Orange to yellow: hue 25 → 55
-    const t = (value - 60) / 40;
-    hue = lerp(25, 55, t);
-  } else if (value <= 150) {
-    // Yellow-green to green: hue 55 → 130
-    const t = (value - 100) / 50;
-    hue = lerp(55, 130, t);
-  } else {
-    // Green-cyan to deep blue: hue 130 → 240
-    // Use 255 as the upper bound but allow extrapolation for very high stats
-    const t = Math.min((value - 150) / 105, 1.5);
-    hue = lerp(130, 240, t);
-  }
-
-  return `hsl(${Math.round(hue)}, ${saturation}%, ${lightness}%)`;
-}
 
 export function PokemonModal({ pokemonId, open, onOpenChange }: PokemonModalProps) {
   const [pokemon, setPokemon] = useState<PokemonInput | null>(null);
@@ -280,9 +236,8 @@ export function PokemonModal({ pokemonId, open, onOpenChange }: PokemonModalProp
                       );
 
                       if (key === 'speed') {
-                        const maxNeutral = Math.floor(value * 2 + 99);
-                        const maxPositive = Math.floor(maxNeutral * 1.1);
-                        const maxPositivePlus1 = Math.floor(maxPositive * 1.5);
+                        const { maxNeutral, maxPositive, maxPositivePlus1 } =
+                          calculateSpeedTiers(value);
 
                         return (
                           <Tooltip key={key}>

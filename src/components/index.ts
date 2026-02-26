@@ -15,6 +15,7 @@ export * from './ui/textarea';
 export * from './ui/pagination';
 export * from './ui/sort-controls';
 export * from './ui/rich-text-editor';
+export * from './ui/tabs';
 export * from './ui/tooltip';
 export { default as Spinner } from './feedback/Spinner';
 export { default as ErrorAlert } from './feedback/ErrorAlert';
