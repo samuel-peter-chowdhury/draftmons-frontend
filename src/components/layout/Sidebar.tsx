@@ -17,6 +17,7 @@ function NavLink({
   disabled?: boolean;
 }) {
   const pathname = usePathname();
+  const setSidebar = useUiStore((s) => s.setSidebar);
   const active = pathname === href || pathname?.startsWith(href + '/');
   const content = (
     <span
@@ -32,7 +33,7 @@ function NavLink({
   );
   if (disabled) return <div className="px-2">{content}</div>;
   return (
-    <Link href={href as any} className="block px-2">
+    <Link href={href as any} className="block px-2" onClick={() => setSidebar(false)}>
       {content}
     </Link>
   );
@@ -50,6 +51,7 @@ function NavGroup({
   disabled?: boolean;
 }) {
   const pathname = usePathname();
+  const setSidebar = useUiStore((s) => s.setSidebar);
   const active = pathname === href || pathname?.startsWith(href + '/');
 
   const content = (
@@ -73,7 +75,7 @@ function NavGroup({
   }
 
   return (
-    <Link href={href as any} className="block w-full">
+    <Link href={href as any} className="block w-full" onClick={() => setSidebar(false)}>
       {content}
     </Link>
   );
@@ -108,7 +110,7 @@ export default function Sidebar() {
       {/* Overlay */}
       <div
         className={cn(
-          'fixed inset-0 z-40 bg-black/40 transition-opacity',
+          'fixed inset-x-0 bottom-0 top-[var(--header-h)] z-40 bg-black/40 transition-opacity',
           sidebarOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         )}
         onClick={() => setSidebar(false)}
@@ -119,11 +121,11 @@ export default function Sidebar() {
       {/* Panel */}
       <aside
         className={cn(
-          'fixed left-0 z-50 sidebar-w border-r border-border bg-background header-pt top-0 pt-[var(--header-h)]',
+          'fixed left-0 top-[var(--header-h)] z-50 sidebar-w border-r border-border bg-background',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
           'transition-transform'
         )}
-        style={{ height: '100vh' }}
+        style={{ height: 'calc(100vh - var(--header-h))' }}
         aria-hidden={!sidebarOpen}
         aria-label="Main navigation"
       >
