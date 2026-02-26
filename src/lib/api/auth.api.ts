@@ -27,6 +27,6 @@ export const AuthApi = {
    * @param redirectUrl - The URL to redirect to after authentication
    */
   getGoogleAuthUrl: (redirectUrl: string) => {
-    return `${BASE_ENDPOINTS.AUTH_GOOGLE}?redirect=${encodeURIComponent(redirectUrl)}&state=${encodeURIComponent(redirectUrl)}`;
+    return `${BASE_ENDPOINTS.AUTH_GOOGLE}?redirect=${encodeURIComponent(redirectUrl)}`;
   },
 };
