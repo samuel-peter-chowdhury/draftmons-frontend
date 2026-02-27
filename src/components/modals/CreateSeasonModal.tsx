@@ -45,7 +45,7 @@ export function CreateSeasonModal({
     status: season?.status || ('PRE_DRAFT' as SeasonStatus),
     pointLimit: season?.pointLimit ?? 100,
     maxPointValue: season?.maxPointValue ?? 20,
-    generationId: season?.generationId || 0,
+    generationId: season?.generationId ?? 0,
     leagueId,
   });
 
