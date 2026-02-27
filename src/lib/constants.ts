@@ -47,7 +47,7 @@ export const BASE_ENDPOINTS = {
   USER_BASE: `${API_BASE_URL}/api/user`,
 } as const;
 
-export const NAT_DEX_GENERATION_ID = 10;
+export const NAT_DEX_GENERATION_ID = 0;
 
 /**
  * IANA timezone identifiers organized by region
