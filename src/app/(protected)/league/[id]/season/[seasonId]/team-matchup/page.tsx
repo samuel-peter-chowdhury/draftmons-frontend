@@ -19,11 +19,16 @@ import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { getStatColor, calculateSpeedTiers } from '@/lib/pokemon';
+import { Copy, Check, ExternalLink } from 'lucide-react';
+import { formatUserDisplayName } from '@/lib/utils';
 import type {
   SeasonInput,
   PaginatedResponse,
   SeasonPokemonTeamInput,
   PokemonInput,
+  TeamInput,
+  GameInput,
+  GameStatInput,
 } from '@/types';
 
 interface SpeedTierPokemon {
@@ -116,6 +121,293 @@ function SpeedTierColumn({
   );
 }
 
+function CopyableField({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!value) return;
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-2 py-1">
+      <div className="min-w-0">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <p className="truncate text-sm">{value || '—'}</p>
+      </div>
+      {value && (
+        <button
+          onClick={handleCopy}
+          className="shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          aria-label={`Copy ${label}`}
+        >
+          {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function TeamInfoColumn({
+  team,
+  teamPokemon,
+  gameStats,
+  seasonTeams,
+  loading,
+  error,
+  onSpriteClick,
+}: {
+  team: TeamInput | null;
+  teamPokemon: SeasonPokemonTeamInput[];
+  gameStats: GameStatInput[];
+  seasonTeams: TeamInput[];
+  loading: boolean;
+  error: string | null;
+  onSpriteClick: (pokemonId: number) => void;
+}) {
+  // Build seasonPokemonId → PokemonInput map from team's roster
+  const seasonPokemonMap = useMemo(() => {
+    const map = new Map<number, PokemonInput>();
+    teamPokemon.forEach((spt) => {
+      if (spt.seasonPokemon?.pokemon) {
+        map.set(spt.seasonPokemonId, spt.seasonPokemon.pokemon);
+      }
+    });
+    return map;
+  }, [teamPokemon]);
+
+  // Compute top 3 kill leaders: aggregate kills per seasonPokemonId, filter to team's pokemon
+  const killLeaders = useMemo(() => {
+    if (gameStats.length === 0 || seasonPokemonMap.size === 0) return [];
+    const killMap = new Map<number, number>();
+    gameStats.forEach((stat) => {
+      if (seasonPokemonMap.has(stat.seasonPokemonId)) {
+        const current = killMap.get(stat.seasonPokemonId) ?? 0;
+        killMap.set(stat.seasonPokemonId, current + stat.directKills + stat.indirectKills);
+      }
+    });
+    return Array.from(killMap.entries())
+      .map(([spId, totalKills]) => ({ pokemon: seasonPokemonMap.get(spId)!, totalKills }))
+      .filter((entry) => entry.pokemon)
+      .sort((a, b) => b.totalKills - a.totalKills)
+      .slice(0, 3);
+  }, [gameStats, seasonPokemonMap]);
+
+  // Compute records
+  const matchRecord = useMemo(() => {
+    if (!team) return { wins: 0, losses: 0, pct: 0 };
+    const wins = team.wonMatches?.length ?? 0;
+    const losses = team.lostMatches?.length ?? 0;
+    const total = wins + losses;
+    return { wins, losses, pct: total > 0 ? (wins / total) * 100 : 0 };
+  }, [team]);
+
+  const gameRecord = useMemo(() => {
+    if (!team) return { wins: 0, losses: 0, pct: 0 };
+    const wins = team.wonGames?.length ?? 0;
+    const losses = team.lostGames?.length ?? 0;
+    const total = wins + losses;
+    return { wins, losses, pct: total > 0 ? (wins / total) * 100 : 0 };
+  }, [team]);
+
+  // Build match history from wonGames + lostGames, grouped by matchId
+  const teamNameMap = useMemo(() => {
+    const map = new Map<number, string>();
+    seasonTeams.forEach((t) => map.set(t.id, t.name));
+    return map;
+  }, [seasonTeams]);
+
+  const matchHistory = useMemo(() => {
+    if (!team) return [];
+    const teamId = team.id;
+    const wonMatchIds = new Set((team.wonMatches ?? []).map((m) => m.id));
+    const allGames = [...(team.wonGames ?? []), ...(team.lostGames ?? [])];
+
+    const groupMap = new Map<
+      number,
+      { weekName: string; opponentName: string; games: GameInput[] }
+    >();
+    allGames.forEach((game) => {
+      const existing = groupMap.get(game.matchId);
+      if (existing) {
+        existing.games.push(game);
+      } else {
+        const opponentId =
+          game.winningTeamId === teamId ? game.losingTeamId : game.winningTeamId;
+        groupMap.set(game.matchId, {
+          weekName: game.match?.week?.name ?? 'Unknown Week',
+          opponentName: teamNameMap.get(opponentId) ?? 'Unknown',
+          games: [game],
+        });
+      }
+    });
+
+    return Array.from(groupMap.entries())
+      .map(([matchId, { weekName, opponentName, games }]) => ({
+        matchId,
+        weekName,
+        opponentName,
+        matchWon: wonMatchIds.has(matchId),
+        games,
+      }))
+      .sort((a, b) => a.weekName.localeCompare(b.weekName, undefined, { numeric: true }));
+  }, [team, teamNameMap]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-10">
+        <Spinner size={24} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1">
+        <ErrorAlert message={error} />
+      </div>
+    );
+  }
+
+  if (!team) {
+    return (
+      <div className="flex-1">
+        <p className="py-6 text-center text-sm text-muted-foreground">No team data available.</p>
+      </div>
+    );
+  }
+
+  const teamId = team.id;
+
+  return (
+    <div className="flex-1 space-y-4 overflow-x-auto">
+      {/* Team Header */}
+      <div>
+        <h3 className="text-sm font-semibold">{team.name}</h3>
+        <p className="text-xs text-muted-foreground">{formatUserDisplayName(team.user)}</p>
+      </div>
+
+      {/* User Details */}
+      <div className="rounded-md border border-border p-3">
+        <CopyableField label="Discord" value={team.user?.discordUsername ?? ''} />
+        <CopyableField label="Showdown" value={team.user?.showdownUsername ?? ''} />
+        <CopyableField label="Timezone" value={team.user?.timezone ?? ''} />
+      </div>
+
+      {/* Kill Leaders */}
+      <div className="rounded-md border border-border p-3">
+        <span className="text-xs font-medium text-muted-foreground">Kill Leaders</span>
+        {killLeaders.length > 0 ? (
+          <div className="mt-1 flex gap-4">
+            {killLeaders.map((leader, index) => (
+              <div key={leader.pokemon.id} className="flex items-center gap-1.5">
+                <span className="text-xs font-semibold text-muted-foreground">{index + 1}</span>
+                <PokemonSprite
+                  pokemonId={leader.pokemon.id}
+                  spriteUrl={leader.pokemon.spriteUrl}
+                  name={leader.pokemon.name}
+                  className="h-8 w-8 object-contain"
+                  onClick={onSpriteClick}
+                />
+                <div>
+                  <p className="text-xs font-medium capitalize">{leader.pokemon.name}</p>
+                  <p className="text-[11px] text-muted-foreground">{leader.totalKills} kills</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-1 text-sm text-muted-foreground">No data</p>
+        )}
+      </div>
+
+      {/* Records */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-md border border-border p-3">
+          <span className="text-xs font-medium text-muted-foreground">Match Record</span>
+          <p className="text-sm font-semibold">
+            {matchRecord.wins}-{matchRecord.losses}{' '}
+            <span className="font-normal text-muted-foreground">({matchRecord.pct.toFixed(1)}%)</span>
+          </p>
+        </div>
+        <div className="rounded-md border border-border p-3">
+          <span className="text-xs font-medium text-muted-foreground">Game Record</span>
+          <p className="text-sm font-semibold">
+            {gameRecord.wins}-{gameRecord.losses}{' '}
+            <span className="font-normal text-muted-foreground">({gameRecord.pct.toFixed(1)}%)</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Match History */}
+      <div>
+        <span className="text-xs font-medium text-muted-foreground">Match History</span>
+        {matchHistory.length === 0 ? (
+          <p className="mt-1 text-sm text-muted-foreground">No matches played.</p>
+        ) : (
+          <div className="mt-2 space-y-3">
+            {matchHistory.map((match) => (
+              <div
+                key={match.matchId}
+                className={`rounded-md border-l-4 p-3 ${
+                  match.matchWon
+                    ? 'border-l-green-500 bg-green-500/5'
+                    : 'border-l-red-500 bg-red-500/5'
+                }`}
+              >
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-xs font-medium">
+                    {match.weekName}
+                    <span className="ml-1 text-muted-foreground">vs {match.opponentName}</span>
+                  </span>
+                  <span
+                    className={`text-xs font-semibold ${match.matchWon ? 'text-green-500' : 'text-red-500'}`}
+                  >
+                    {match.matchWon ? 'W' : 'L'}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {match.games.map((game) => {
+                    const gameWon = game.winningTeamId === teamId;
+                    return (
+                      <div
+                        key={game.id}
+                        className="flex items-center justify-between gap-2 text-sm"
+                      >
+                        <span
+                          className={`font-mono text-xs font-semibold ${
+                            gameWon ? 'text-green-500' : 'text-red-500'
+                          }`}
+                        >
+                          {gameWon ? '+' : '-'}
+                          {game.differential}
+                        </span>
+                        {game.replayLink && (
+                          <a
+                            href={game.replayLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            Replay
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function TeamMatchupPage() {
   const params = useParams<{ id: string; seasonId: string }>();
   const leagueId = Number(params.id);
@@ -193,6 +485,81 @@ export default function TeamMatchupPage() {
     loading: teamBLoading,
     error: teamBError,
   } = useFetch<PaginatedResponse<SeasonPokemonTeamInput>>(teamBUrl);
+
+  // Fetch full team data (user info, matches, games)
+  const teamAFullUrl = teamAId
+    ? buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'team', teamAId], { full: true })
+    : null;
+  const {
+    data: teamAFull,
+    loading: teamAFullLoading,
+    error: teamAFullError,
+  } = useFetch<TeamInput>(teamAFullUrl);
+
+  const teamBFullUrl = teamBId
+    ? buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'team', teamBId], { full: true })
+    : null;
+  const {
+    data: teamBFull,
+    loading: teamBFullLoading,
+    error: teamBFullError,
+  } = useFetch<TeamInput>(teamBFullUrl);
+
+  // Fetch game stats filtered by game IDs (dependent on full team data)
+  const teamAGameIds = useMemo(() => {
+    if (!teamAFull) return null;
+    const won = teamAFull.wonGames?.map((g) => g.id) ?? [];
+    const lost = teamAFull.lostGames?.map((g) => g.id) ?? [];
+    const ids = [...won, ...lost];
+    return ids.length > 0 ? ids : null;
+  }, [teamAFull]);
+
+  const teamAGameStatsUrl = teamAGameIds
+    ? buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'game-stat'], {
+        gameIds: teamAGameIds,
+        pageSize: 999,
+      })
+    : null;
+  const {
+    data: teamAGameStatsRaw,
+    loading: teamAGameStatsLoading,
+    error: teamAGameStatsError,
+  } = useFetch<PaginatedResponse<GameStatInput>>(teamAGameStatsUrl);
+
+  const teamBGameIds = useMemo(() => {
+    if (!teamBFull) return null;
+    const won = teamBFull.wonGames?.map((g) => g.id) ?? [];
+    const lost = teamBFull.lostGames?.map((g) => g.id) ?? [];
+    const ids = [...won, ...lost];
+    return ids.length > 0 ? ids : null;
+  }, [teamBFull]);
+
+  const teamBGameStatsUrl = teamBGameIds
+    ? buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'game-stat'], {
+        gameIds: teamBGameIds,
+        pageSize: 999,
+      })
+    : null;
+  const {
+    data: teamBGameStatsRaw,
+    loading: teamBGameStatsLoading,
+    error: teamBGameStatsError,
+  } = useFetch<PaginatedResponse<GameStatInput>>(teamBGameStatsUrl);
+
+  // Extract game stats arrays (handle both paginated and direct array responses)
+  const teamAGameStats = useMemo<GameStatInput[]>(() => {
+    if (!teamAGameStatsRaw) return [];
+    return Array.isArray(teamAGameStatsRaw)
+      ? (teamAGameStatsRaw as unknown as GameStatInput[])
+      : teamAGameStatsRaw.data;
+  }, [teamAGameStatsRaw]);
+
+  const teamBGameStats = useMemo<GameStatInput[]>(() => {
+    if (!teamBGameStatsRaw) return [];
+    return Array.isArray(teamBGameStatsRaw)
+      ? (teamBGameStatsRaw as unknown as GameStatInput[])
+      : teamBGameStatsRaw.data;
+  }, [teamBGameStatsRaw]);
 
   // Extract and sort pokemon by speed desc
   const teamAPokemon = useMemo<SpeedTierPokemon[]>(() => {
@@ -287,9 +654,7 @@ export default function TeamMatchupPage() {
           <Tabs defaultValue="speed-tiers">
             <TabsList>
               <TabsTrigger value="speed-tiers">Speed Tiers</TabsTrigger>
-              <TabsTrigger value="type-coverage" disabled>
-                Team Info
-              </TabsTrigger>
+              <TabsTrigger value="type-coverage">Team Info</TabsTrigger>
               <TabsTrigger value="stat-comparison" disabled>
                 Type Effectiveness
               </TabsTrigger>
@@ -335,11 +700,40 @@ export default function TeamMatchupPage() {
               </Card>
             </TabsContent>
 
-            {/* Placeholder tabs */}
+            {/* Team Info tab */}
             <TabsContent value="type-coverage">
               <Card>
                 <CardContent className="pt-6">
-                  <p className="py-6 text-center text-sm text-muted-foreground">Coming soon.</p>
+                  {!teamAId && !teamBId ? (
+                    <p className="py-6 text-center text-sm text-muted-foreground">
+                      Select at least one team to view team info.
+                    </p>
+                  ) : (
+                    <div className="flex gap-8">
+                      {teamAId && (
+                        <TeamInfoColumn
+                          team={teamAFull}
+                          teamPokemon={teamAData?.data ?? []}
+                          gameStats={teamAGameStats}
+                          seasonTeams={teams}
+                          loading={teamAFullLoading || teamAGameStatsLoading}
+                          error={teamAFullError || teamAGameStatsError}
+                          onSpriteClick={handleSpriteClick}
+                        />
+                      )}
+                      {teamBId && (
+                        <TeamInfoColumn
+                          team={teamBFull}
+                          teamPokemon={teamBData?.data ?? []}
+                          gameStats={teamBGameStats}
+                          seasonTeams={teams}
+                          loading={teamBFullLoading || teamBGameStatsLoading}
+                          error={teamBFullError || teamBGameStatsError}
+                          onSpriteClick={handleSpriteClick}
+                        />
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
