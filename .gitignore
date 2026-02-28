@@ -47,3 +47,6 @@ yarn-error.log*
 # lockfiles (keep package-lock.json for reproducible builds)
 pnpm-lock.yaml
 yarn.lock
+
+# Design sample screenshots
+/design_samples
