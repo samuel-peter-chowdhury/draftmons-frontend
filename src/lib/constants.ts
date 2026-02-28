@@ -36,14 +36,18 @@ export const BASE_ENDPOINTS = {
   AUTH_GOOGLE: `${API_BASE_URL}/api/auth/google`,
   AUTH_LOGOUT: `${API_BASE_URL}/api/auth/logout`,
   GENERATION_BASE: `${API_BASE_URL}/api/generation`,
+  ITEM_BASE: `${API_BASE_URL}/api/item`,
   LEAGUE_BASE: `${API_BASE_URL}/api/league`,
   LEAGUE_USER_BASE: `${API_BASE_URL}/api/league-user`,
   MOVE_BASE: `${API_BASE_URL}/api/move`,
+  NATURE_BASE: `${API_BASE_URL}/api/nature`,
   POKEMON_BASE: `${API_BASE_URL}/api/pokemon`,
   SEASON_POKEMON_TEAM_BASE: `${API_BASE_URL}/api/season-pokemon-team`,
   POKEMON_TYPE_BASE: `${API_BASE_URL}/api/pokemon-type`,
   SEASON_BASE: `${API_BASE_URL}/api/season`,
   SPECIAL_MOVE_CATEGORY_BASE: `${API_BASE_URL}/api/special-move-category`,
+  TEAM_BUILD_BASE: `${API_BASE_URL}/api/team-build`,
+  TEAM_BUILD_SET_BASE: `${API_BASE_URL}/api/team-build-set`,
   USER_BASE: `${API_BASE_URL}/api/user`,
 } as const;
 
