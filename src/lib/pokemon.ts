@@ -61,3 +61,101 @@ export function calculateSpeedTiers(baseSpeed: number): SpeedTiers {
   const maxPositivePlus1 = Math.floor(maxPositive * 1.5);
   return { maxNeutral, maxPositive, maxPositivePlus1 };
 }
+
+/**
+ * Standard ordering of the 18 Pokemon types.
+ */
+export const POKEMON_TYPE_ORDER = [
+  'normal',
+  'fire',
+  'water',
+  'electric',
+  'grass',
+  'ice',
+  'fighting',
+  'poison',
+  'ground',
+  'flying',
+  'psychic',
+  'bug',
+  'rock',
+  'ghost',
+  'dragon',
+  'dark',
+  'steel',
+  'fairy',
+] as const;
+
+/**
+ * 3-letter abbreviations for type column headers.
+ */
+export const TYPE_ABBREVIATIONS: Record<string, string> = {
+  normal: 'NOR',
+  fire: 'FIR',
+  water: 'WAT',
+  electric: 'ELE',
+  grass: 'GRA',
+  ice: 'ICE',
+  fighting: 'FIG',
+  poison: 'POI',
+  ground: 'GRO',
+  flying: 'FLY',
+  psychic: 'PSY',
+  bug: 'BUG',
+  rock: 'ROC',
+  ghost: 'GHO',
+  dragon: 'DRA',
+  dark: 'DAR',
+  steel: 'STE',
+  fairy: 'FAI',
+};
+
+/**
+ * Format a type effectiveness multiplier for display.
+ * Neutral (1x) returns empty string since neutral cells are left blank.
+ */
+export function formatEffectivenessValue(value: number): string {
+  if (value === 0) return '0';
+  if (value === 0.125) return '\u215B'; // ⅛
+  if (value === 0.25) return '\u00BC'; // ¼
+  if (value === 0.5) return '\u00BD'; // ½
+  if (value === 1) return '';
+  if (value === 2) return '2';
+  if (value === 4) return '4';
+  if (value === 8) return '8';
+  return String(value);
+}
+
+/**
+ * Get the background color for a type effectiveness cell.
+ * Green shades for resistances, red shades for weaknesses,
+ * charcoal for immune, transparent for neutral.
+ */
+export function getEffectivenessColor(value: number): string {
+  if (value === 0) return 'rgba(50, 50, 50, 0.9)';
+  if (value <= 0.125) return 'rgba(20, 100, 45, 0.8)';
+  if (value <= 0.25) return 'rgba(34, 120, 60, 0.7)';
+  if (value <= 0.5) return 'rgba(56, 142, 80, 0.5)';
+  if (value === 1) return 'transparent';
+  if (value <= 2) return 'rgba(190, 50, 50, 0.5)';
+  if (value <= 4) return 'rgba(200, 30, 30, 0.7)';
+  return 'rgba(180, 20, 20, 0.85)'; // 8x+
+}
+
+/**
+ * Convert a type effectiveness multiplier to a cumulative score.
+ * Inverted sign: positive = good (resistant), negative = bad (weak).
+ * Uses -log2(value) pattern, with +4 for immune.
+ */
+export function getEffectivenessScore(value: number): number {
+  if (value === 0) return 4;
+  if (value === 0.125) return 3;
+  if (value === 0.25) return 2;
+  if (value === 0.5) return 1;
+  if (value === 1) return 0;
+  if (value === 2) return -1;
+  if (value === 4) return -2;
+  if (value === 8) return -3;
+  // Fallback: use -log2 for any other value
+  return -Math.round(Math.log2(value));
+}
