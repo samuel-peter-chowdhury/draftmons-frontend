@@ -30,13 +30,13 @@ export default function LandingPage() {
   useEffect(() => {
     if (isAuthenticated) {
       const raw = search.get('next') || '/home';
-      const next = /^\/[a-zA-Z0-9/_-]*$/.test(raw) ? raw : '/home';
+      const next = /^\/[a-zA-Z0-9/_-]*(\?[a-zA-Z0-9_=&.%-]*)?$/.test(raw) ? raw : '/home';
       router.replace(next as any);
     }
   }, [isAuthenticated, search, router]);
 
   const rawNext = search.get('next') || '/home';
-  const next = /^\/[a-zA-Z0-9/_-]*$/.test(rawNext) ? rawNext : '/home';
+  const next = /^\/[a-zA-Z0-9/_-]*(\?[a-zA-Z0-9_=&.%-]*)?$/.test(rawNext) ? rawNext : '/home';
   const redirectUrl = `${CLIENT_URL}${next}`;
   const googleUrl = AuthApi.getGoogleAuthUrl(redirectUrl);
 

@@ -425,9 +425,12 @@ export default function TeamMatchupPage() {
     const val = searchParams.get('teamBId');
     return val ? Number(val) : null;
   });
+  const [activeTab, setActiveTab] = useState<string>(
+    () => searchParams.get('tab') || 'speed-tiers',
+  );
 
   const updateSearchParams = useCallback(
-    (newTeamAId: number | null, newTeamBId: number | null) => {
+    (newTeamAId: number | null, newTeamBId: number | null, tab?: string) => {
       const params = new URLSearchParams(searchParams.toString());
       if (newTeamAId !== null) {
         params.set('teamAId', String(newTeamAId));
@@ -439,10 +442,16 @@ export default function TeamMatchupPage() {
       } else {
         params.delete('teamBId');
       }
+      const tabValue = tab ?? activeTab;
+      if (tabValue && tabValue !== 'speed-tiers') {
+        params.set('tab', tabValue);
+      } else {
+        params.delete('tab');
+      }
       const query = params.toString();
       router.replace(`${pathname}${query ? `?${query}` : ''}` as any, { scroll: false });
     },
-    [searchParams, pathname, router],
+    [searchParams, pathname, router, activeTab],
   );
   const [modalPokemonId, setModalPokemonId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -651,17 +660,23 @@ export default function TeamMatchupPage() {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="speed-tiers">
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => {
+              setActiveTab(value);
+              updateSearchParams(teamAId, teamBId, value);
+            }}
+          >
             <TabsList>
               <TabsTrigger value="speed-tiers">Speed Tiers</TabsTrigger>
-              <TabsTrigger value="type-coverage">Team Info</TabsTrigger>
-              <TabsTrigger value="stat-comparison" disabled>
+              <TabsTrigger value="team-info">Team Info</TabsTrigger>
+              <TabsTrigger value="type-effectiveness" disabled>
                 Type Effectiveness
               </TabsTrigger>
-              <TabsTrigger value="matchup-matrix" disabled>
+              <TabsTrigger value="special-moves" disabled>
                 Special Moves
               </TabsTrigger>
-              <TabsTrigger value="move-coverage" disabled>
+              <TabsTrigger value="coverage-moves" disabled>
                 Coverage Moves
               </TabsTrigger>
             </TabsList>
@@ -701,7 +716,7 @@ export default function TeamMatchupPage() {
             </TabsContent>
 
             {/* Team Info tab */}
-            <TabsContent value="type-coverage">
+            <TabsContent value="team-info">
               <Card>
                 <CardContent className="pt-6">
                   {!teamAId && !teamBId ? (
@@ -737,21 +752,21 @@ export default function TeamMatchupPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="stat-comparison">
+            <TabsContent value="type-effectiveness">
               <Card>
                 <CardContent className="pt-6">
                   <p className="py-6 text-center text-sm text-muted-foreground">Coming soon.</p>
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="matchup-matrix">
+            <TabsContent value="special-moves">
               <Card>
                 <CardContent className="pt-6">
                   <p className="py-6 text-center text-sm text-muted-foreground">Coming soon.</p>
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="move-coverage">
+            <TabsContent value="coverage-moves">
               <Card>
                 <CardContent className="pt-6">
                   <p className="py-6 text-center text-sm text-muted-foreground">Coming soon.</p>

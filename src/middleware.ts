@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
       if (!response.ok) {
         // Not authenticated, redirect to login with the original destination
         const url = new URL('/', request.url);
-        url.searchParams.set('next', pathname);
+        url.searchParams.set('next', pathname + request.nextUrl.search);
         return NextResponse.redirect(url);
       }
 
@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
       if (!data.isAuthenticated) {
         // Not authenticated, redirect to login with the original destination
         const url = new URL('/', request.url);
-        url.searchParams.set('next', pathname);
+        url.searchParams.set('next', pathname + request.nextUrl.search);
         return NextResponse.redirect(url);
       }
 
@@ -43,7 +43,7 @@ export async function middleware(request: NextRequest) {
       // Backend unreachable — fail closed (redirect to login)
       console.error('Middleware auth check failed:', error);
       const url = new URL('/', request.url);
-      url.searchParams.set('next', pathname);
+      url.searchParams.set('next', pathname + request.nextUrl.search);
       return NextResponse.redirect(url);
     }
   }
