@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useCallback, useMemo, useState } from 'react';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -121,8 +121,37 @@ export default function TeamMatchupPage() {
   const leagueId = Number(params.id);
   const seasonId = Number(params.seasonId);
 
-  const [teamAId, setTeamAId] = useState<number | null>(null);
-  const [teamBId, setTeamBId] = useState<number | null>(null);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const [teamAId, setTeamAId] = useState<number | null>(() => {
+    const val = searchParams.get('teamAId');
+    return val ? Number(val) : null;
+  });
+  const [teamBId, setTeamBId] = useState<number | null>(() => {
+    const val = searchParams.get('teamBId');
+    return val ? Number(val) : null;
+  });
+
+  const updateSearchParams = useCallback(
+    (newTeamAId: number | null, newTeamBId: number | null) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (newTeamAId !== null) {
+        params.set('teamAId', String(newTeamAId));
+      } else {
+        params.delete('teamAId');
+      }
+      if (newTeamBId !== null) {
+        params.set('teamBId', String(newTeamBId));
+      } else {
+        params.delete('teamBId');
+      }
+      const query = params.toString();
+      router.replace(`${pathname}${query ? `?${query}` : ''}` as any, { scroll: false });
+    },
+    [searchParams, pathname, router],
+  );
   const [modalPokemonId, setModalPokemonId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -218,7 +247,11 @@ export default function TeamMatchupPage() {
               </label>
               <Select
                 value={teamAId?.toString() ?? ''}
-                onChange={(e) => setTeamAId(e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) => {
+                  const newId = e.target.value ? Number(e.target.value) : null;
+                  setTeamAId(newId);
+                  updateSearchParams(newId, teamBId);
+                }}
               >
                 <option value="">Select a team...</option>
                 {teams.map((team) => (
@@ -234,7 +267,11 @@ export default function TeamMatchupPage() {
               </label>
               <Select
                 value={teamBId?.toString() ?? ''}
-                onChange={(e) => setTeamBId(e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) => {
+                  const newId = e.target.value ? Number(e.target.value) : null;
+                  setTeamBId(newId);
+                  updateSearchParams(teamAId, newId);
+                }}
               >
                 <option value="">Select a team...</option>
                 {teams.map((team) => (
