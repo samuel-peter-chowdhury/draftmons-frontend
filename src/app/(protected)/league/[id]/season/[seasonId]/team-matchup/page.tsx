@@ -12,6 +12,10 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
@@ -29,6 +33,7 @@ import {
 } from '@/lib/pokemon';
 import { Copy, Check, ExternalLink } from 'lucide-react';
 import { formatUserDisplayName } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import type {
   SeasonInput,
   PaginatedResponse,
@@ -37,7 +42,9 @@ import type {
   TeamInput,
   GameInput,
   GameStatInput,
+  MoveInput,
 } from '@/types';
+import { MoveCategory } from '@/types';
 
 interface SpeedTierPokemon {
   pokemon: PokemonInput;
@@ -592,6 +599,394 @@ function TypeEffectivenessColumn({
   );
 }
 
+interface SpecialMoveRow {
+  move: MoveInput;
+  teamAPokemon: PokemonInput[];
+  teamBPokemon: PokemonInput[];
+}
+
+interface SpecialMoveGroup {
+  categoryName: string;
+  rows: SpecialMoveRow[];
+}
+
+function capitalizeFirst(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function MoveSpritesRow({
+  teamAPokemon,
+  teamBPokemon,
+  teamASelected,
+  teamBSelected,
+  onSpriteClick,
+  badge,
+}: {
+  teamAPokemon: PokemonInput[];
+  teamBPokemon: PokemonInput[];
+  teamASelected: boolean;
+  teamBSelected: boolean;
+  onSpriteClick: (pokemonId: number) => void;
+  badge: React.ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 rounded-md px-2 py-1 transition-colors hover:bg-secondary/30">
+      {/* Team A sprites — right-aligned */}
+      <div className="flex flex-wrap items-center justify-end gap-0.5">
+        {teamASelected ? (
+          teamAPokemon.length > 0 ? (
+            teamAPokemon.map((pkmn) => (
+              <PokemonSprite
+                key={pkmn.id}
+                pokemonId={pkmn.id}
+                spriteUrl={pkmn.spriteUrl}
+                name={pkmn.name}
+                className="h-7 w-7 object-contain"
+                onClick={onSpriteClick}
+              />
+            ))
+          ) : (
+            <span className="text-xs text-muted-foreground">&mdash;</span>
+          )
+        ) : (
+          <span />
+        )}
+      </div>
+
+      {/* Center badge */}
+      <div className="flex w-40 justify-center">{badge}</div>
+
+      {/* Team B sprites — left-aligned */}
+      <div className="flex flex-wrap items-center justify-start gap-0.5">
+        {teamBSelected ? (
+          teamBPokemon.length > 0 ? (
+            teamBPokemon.map((pkmn) => (
+              <PokemonSprite
+                key={pkmn.id}
+                pokemonId={pkmn.id}
+                spriteUrl={pkmn.spriteUrl}
+                name={pkmn.name}
+                className="h-7 w-7 object-contain"
+                onClick={onSpriteClick}
+              />
+            ))
+          ) : (
+            <span className="text-xs text-muted-foreground">&mdash;</span>
+          )
+        ) : (
+          <span />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SpecialMovesContent({
+  teamAName,
+  teamBName,
+  teamAPokemon,
+  teamBPokemon,
+  teamASelected,
+  teamBSelected,
+  loading,
+  error,
+  onSpriteClick,
+}: {
+  teamAName: string;
+  teamBName: string;
+  teamAPokemon: PokemonInput[];
+  teamBPokemon: PokemonInput[];
+  teamASelected: boolean;
+  teamBSelected: boolean;
+  loading: boolean;
+  error: string | null;
+  onSpriteClick: (pokemonId: number) => void;
+}) {
+  const groups = useMemo<SpecialMoveGroup[]>(() => {
+    const categoryMap = new Map<string, Map<number, SpecialMoveRow>>();
+
+    const processTeam = (pokemon: PokemonInput[], team: 'a' | 'b') => {
+      for (const pkmn of pokemon) {
+        if (!pkmn.moves) continue;
+        for (const move of pkmn.moves) {
+          if (!move.specialMoveCategories?.length) continue;
+          for (const smc of move.specialMoveCategories) {
+            if (!categoryMap.has(smc.name)) {
+              categoryMap.set(smc.name, new Map());
+            }
+            const moveMap = categoryMap.get(smc.name)!;
+            if (!moveMap.has(move.id)) {
+              moveMap.set(move.id, { move, teamAPokemon: [], teamBPokemon: [] });
+            }
+            const row = moveMap.get(move.id)!;
+            const arr = team === 'a' ? row.teamAPokemon : row.teamBPokemon;
+            if (!arr.some((p) => p.id === pkmn.id)) {
+              arr.push(pkmn);
+            }
+          }
+        }
+      }
+    };
+
+    processTeam(teamAPokemon, 'a');
+    processTeam(teamBPokemon, 'b');
+
+    return Array.from(categoryMap.entries())
+      .map(([categoryName, moveMap]) => ({
+        categoryName,
+        rows: Array.from(moveMap.values()).sort((a, b) =>
+          a.move.name.localeCompare(b.move.name),
+        ),
+      }))
+      .sort((a, b) => a.categoryName.localeCompare(b.categoryName));
+  }, [teamAPokemon, teamBPokemon]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <Spinner size={24} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorAlert message={error} />;
+  }
+
+  if (groups.length === 0) {
+    return (
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        No special moves found for the selected team(s).
+      </p>
+    );
+  }
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <div className="space-y-0">
+        {/* Header row */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 px-2 pb-2">
+          {teamASelected && (
+            <span className="text-right text-sm font-semibold">{teamAName}</span>
+          )}
+          {!teamASelected && <span />}
+          <span className="w-40 text-center text-xs font-medium uppercase text-muted-foreground">
+            Move
+          </span>
+          {teamBSelected && (
+            <span className="text-left text-sm font-semibold">{teamBName}</span>
+          )}
+          {!teamBSelected && <span />}
+        </div>
+
+        {/* Category groups */}
+        {groups.map((group) => (
+          <div key={group.categoryName} className="mb-2">
+            {/* Category header */}
+            <div className="border-b border-border px-2 py-2">
+              <h4 className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {group.categoryName}
+              </h4>
+            </div>
+
+            {/* Move rows */}
+            <div className="space-y-0">
+              {group.rows.map(({ move, teamAPokemon: rowTeamA, teamBPokemon: rowTeamB }) => (
+                <MoveSpritesRow
+                  key={move.id}
+                  teamAPokemon={rowTeamA}
+                  teamBPokemon={rowTeamB}
+                  teamASelected={teamASelected}
+                  teamBSelected={teamBSelected}
+                  onSpriteClick={onSpriteClick}
+                  badge={
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <Badge
+                            className="cursor-help whitespace-nowrap capitalize"
+                            style={{
+                              backgroundColor: move.pokemonType?.color ?? '#888',
+                              color: '#fff',
+                              border: 'none',
+                            }}
+                          >
+                            {move.name}
+                          </Badge>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <div className="space-y-1 text-xs">
+                          <p className="font-medium capitalize">
+                            {move.pokemonType?.name} &middot; {capitalizeFirst(move.category)}
+                          </p>
+                          {move.power > 0 && <p>Power: {move.power}</p>}
+                          {move.accuracy > 0 && <p>Accuracy: {move.accuracy}</p>}
+                          <p>PP: {move.pp}</p>
+                          {move.description && (
+                            <p className="first-letter:capitalize">{move.description}</p>
+                          )}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </TooltipProvider>
+  );
+}
+
+interface CoverageRow {
+  typeName: string;
+  typeColor: string;
+  teamAPokemon: PokemonInput[];
+  teamBPokemon: PokemonInput[];
+}
+
+function CoverageMovesContent({
+  teamAName,
+  teamBName,
+  teamAPokemon,
+  teamBPokemon,
+  teamASelected,
+  teamBSelected,
+  loading,
+  error,
+  onSpriteClick,
+}: {
+  teamAName: string;
+  teamBName: string;
+  teamAPokemon: PokemonInput[];
+  teamBPokemon: PokemonInput[];
+  teamASelected: boolean;
+  teamBSelected: boolean;
+  loading: boolean;
+  error: string | null;
+  onSpriteClick: (pokemonId: number) => void;
+}) {
+  const rows = useMemo<CoverageRow[]>(() => {
+    // Build map: typeName -> { typeColor, teamAPokemon set, teamBPokemon set }
+    const typeMap = new Map<
+      string,
+      { typeColor: string; teamAIds: Set<number>; teamBIds: Set<number>; teamA: PokemonInput[]; teamB: PokemonInput[] }
+    >();
+
+    // Initialize all 18 types
+    for (const typeName of POKEMON_TYPE_ORDER) {
+      typeMap.set(typeName, { typeColor: '#888', teamAIds: new Set(), teamBIds: new Set(), teamA: [], teamB: [] });
+    }
+
+    const processTeam = (pokemon: PokemonInput[], team: 'a' | 'b') => {
+      for (const pkmn of pokemon) {
+        if (!pkmn.moves) continue;
+        for (const move of pkmn.moves) {
+          if (move.category === MoveCategory.STATUS) continue;
+          const typeName = move.pokemonType?.name?.toLowerCase();
+          if (!typeName || !typeMap.has(typeName)) continue;
+          const entry = typeMap.get(typeName)!;
+          // Update color from move data
+          if (move.pokemonType?.color) {
+            entry.typeColor = move.pokemonType.color;
+          }
+          const ids = team === 'a' ? entry.teamAIds : entry.teamBIds;
+          const arr = team === 'a' ? entry.teamA : entry.teamB;
+          if (!ids.has(pkmn.id)) {
+            ids.add(pkmn.id);
+            arr.push(pkmn);
+          }
+        }
+      }
+    };
+
+    processTeam(teamAPokemon, 'a');
+    processTeam(teamBPokemon, 'b');
+
+    // Also try to get type colors from typeEffectiveness data as fallback
+    const allPokemon = [...teamAPokemon, ...teamBPokemon];
+    for (const pkmn of allPokemon) {
+      if (pkmn.typeEffectiveness) {
+        for (const te of pkmn.typeEffectiveness) {
+          if (te.pokemonType?.name && te.pokemonType?.color) {
+            const entry = typeMap.get(te.pokemonType.name.toLowerCase());
+            if (entry && entry.typeColor === '#888') {
+              entry.typeColor = te.pokemonType.color;
+            }
+          }
+        }
+      }
+    }
+
+    return POKEMON_TYPE_ORDER.map((typeName) => {
+      const entry = typeMap.get(typeName)!;
+      return {
+        typeName,
+        typeColor: entry.typeColor,
+        teamAPokemon: entry.teamA,
+        teamBPokemon: entry.teamB,
+      };
+    });
+  }, [teamAPokemon, teamBPokemon]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <Spinner size={24} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <ErrorAlert message={error} />;
+  }
+
+  return (
+    <div className="space-y-0">
+      {/* Header row */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 px-2 pb-2">
+        {teamASelected && (
+          <span className="text-right text-sm font-semibold">{teamAName}</span>
+        )}
+        {!teamASelected && <span />}
+        <span className="w-40 text-center text-xs font-medium uppercase text-muted-foreground">
+          Type
+        </span>
+        {teamBSelected && (
+          <span className="text-left text-sm font-semibold">{teamBName}</span>
+        )}
+        {!teamBSelected && <span />}
+      </div>
+
+      {/* Type rows */}
+      {rows.map(({ typeName, typeColor, teamAPokemon: rowTeamA, teamBPokemon: rowTeamB }) => (
+        <MoveSpritesRow
+          key={typeName}
+          teamAPokemon={rowTeamA}
+          teamBPokemon={rowTeamB}
+          teamASelected={teamASelected}
+          teamBSelected={teamBSelected}
+          onSpriteClick={onSpriteClick}
+          badge={
+            <Badge
+              className="whitespace-nowrap capitalize"
+              style={{
+                backgroundColor: typeColor,
+                color: '#fff',
+                border: 'none',
+              }}
+            >
+              {typeName}
+            </Badge>
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function TeamMatchupPage() {
   const params = useParams<{ id: string; seasonId: string }>();
   const leagueId = Number(params.id);
@@ -816,6 +1211,78 @@ export default function TeamMatchupPage() {
       .sort((a, b) => b.pokemon.speed - a.pokemon.speed);
   }, [teamBData]);
 
+  // Extract raw PokemonInput arrays for special/coverage moves tabs
+  const teamARawPokemon = useMemo<PokemonInput[]>(() => {
+    if (!teamAData) return [];
+    return teamAData.data
+      .filter((spt) => spt.seasonPokemon?.pokemon)
+      .map((spt) => spt.seasonPokemon!.pokemon!);
+  }, [teamAData]);
+
+  const teamBRawPokemon = useMemo<PokemonInput[]>(() => {
+    if (!teamBData) return [];
+    return teamBData.data
+      .filter((spt) => spt.seasonPokemon?.pokemon)
+      .map((spt) => spt.seasonPokemon!.pokemon!);
+  }, [teamBData]);
+
+  // Fetch moves for all selected team Pokemon (separate call for performance)
+  const allPokemonIds = useMemo(() => {
+    const ids = [...teamARawPokemon, ...teamBRawPokemon].map((p) => p.id);
+    return ids.length > 0 ? ids : null;
+  }, [teamARawPokemon, teamBRawPokemon]);
+
+  const movesUrl = allPokemonIds
+    ? buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], {
+        pokemonIds: allPokemonIds,
+        full: true,
+        pageSize: 9999,
+      })
+    : null;
+  const {
+    data: movesData,
+    loading: movesLoading,
+    error: movesError,
+  } = useFetch<PaginatedResponse<MoveInput>>(movesUrl);
+
+  // Build pokemonId → MoveInput[] map from the moves response
+  const pokemonMovesMap = useMemo(() => {
+    const map = new Map<number, MoveInput[]>();
+    if (!movesData) return map;
+    const allIds = new Set(allPokemonIds ?? []);
+    for (const move of movesData.data) {
+      if (move.pokemon) {
+        for (const pkmn of move.pokemon) {
+          if (!allIds.has(pkmn.id)) continue;
+          if (!map.has(pkmn.id)) {
+            map.set(pkmn.id, []);
+          }
+          map.get(pkmn.id)!.push(move);
+        }
+      }
+    }
+    return map;
+  }, [movesData, allPokemonIds]);
+
+  // Enrich raw Pokemon with their moves
+  const teamAWithMoves = useMemo<PokemonInput[]>(
+    () =>
+      teamARawPokemon.map((pkmn) => ({
+        ...pkmn,
+        moves: pokemonMovesMap.get(pkmn.id) ?? [],
+      })),
+    [teamARawPokemon, pokemonMovesMap],
+  );
+
+  const teamBWithMoves = useMemo<PokemonInput[]>(
+    () =>
+      teamBRawPokemon.map((pkmn) => ({
+        ...pkmn,
+        moves: pokemonMovesMap.get(pkmn.id) ?? [],
+      })),
+    [teamBRawPokemon, pokemonMovesMap],
+  );
+
   const teamAName = teams.find((t) => t.id === teamAId)?.name ?? 'Team A';
   const teamBName = teams.find((t) => t.id === teamBId)?.name ?? 'Team B';
 
@@ -896,12 +1363,8 @@ export default function TeamMatchupPage() {
               <TabsTrigger value="type-effectiveness">
                 Type Effectiveness
               </TabsTrigger>
-              <TabsTrigger value="special-moves" disabled>
-                Special Moves
-              </TabsTrigger>
-              <TabsTrigger value="coverage-moves" disabled>
-                Coverage Moves
-              </TabsTrigger>
+              <TabsTrigger value="special-moves">Special Moves</TabsTrigger>
+              <TabsTrigger value="coverage-moves">Coverage Moves</TabsTrigger>
             </TabsList>
 
             {/* Speed Tiers tab */}
@@ -1010,14 +1473,46 @@ export default function TeamMatchupPage() {
             <TabsContent value="special-moves">
               <Card>
                 <CardContent className="pt-6">
-                  <p className="py-6 text-center text-sm text-muted-foreground">Coming soon.</p>
+                  {!teamAId && !teamBId ? (
+                    <p className="py-6 text-center text-sm text-muted-foreground">
+                      Select at least one team to view special moves.
+                    </p>
+                  ) : (
+                    <SpecialMovesContent
+                      teamAName={teamAName}
+                      teamBName={teamBName}
+                      teamAPokemon={teamAWithMoves}
+                      teamBPokemon={teamBWithMoves}
+                      teamASelected={teamAId !== null}
+                      teamBSelected={teamBId !== null}
+                      loading={teamALoading || teamBLoading || movesLoading}
+                      error={teamAError || teamBError || movesError}
+                      onSpriteClick={handleSpriteClick}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
             <TabsContent value="coverage-moves">
               <Card>
                 <CardContent className="pt-6">
-                  <p className="py-6 text-center text-sm text-muted-foreground">Coming soon.</p>
+                  {!teamAId && !teamBId ? (
+                    <p className="py-6 text-center text-sm text-muted-foreground">
+                      Select at least one team to view coverage moves.
+                    </p>
+                  ) : (
+                    <CoverageMovesContent
+                      teamAName={teamAName}
+                      teamBName={teamBName}
+                      teamAPokemon={teamAWithMoves}
+                      teamBPokemon={teamBWithMoves}
+                      teamASelected={teamAId !== null}
+                      teamBSelected={teamBId !== null}
+                      loading={teamALoading || teamBLoading || movesLoading}
+                      error={teamAError || teamBError || movesError}
+                      onSpriteClick={handleSpriteClick}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
