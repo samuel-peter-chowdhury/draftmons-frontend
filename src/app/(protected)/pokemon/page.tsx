@@ -30,7 +30,8 @@ type SortableColumn =
   | 'specialAttack'
   | 'specialDefense'
   | 'speed'
-  | 'baseStatTotal';
+  | 'baseStatTotal'
+  | 'seasonPoints';
 
 export default function PokemonPage() {
   // Pagination & sorting state
@@ -286,6 +287,7 @@ export default function PokemonPage() {
 
       <PokemonTable
         data={data}
+        variant={'pokemon'}
         loading={loading}
         error={error}
         sortBy={sortBy}
