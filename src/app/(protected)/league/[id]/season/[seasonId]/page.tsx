@@ -32,6 +32,7 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import type { LeagueInput, SeasonInput } from '@/types';
+import Link from 'next/link';
 
 export default function SeasonDetailPage() {
   const params = useParams<{ id: string; seasonId: string }>();
@@ -156,16 +157,25 @@ export default function SeasonDetailPage() {
               {!season.teams || season.teams.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No teams in this season yet.</p>
               ) : (
-                <div className="space-y-2">
+                <div className="grid gap-3 md:grid-cols-2">
                   {season.teams.map((team) => (
                     <div
                       key={team.id}
-                      className="flex items-center justify-between rounded-md border border-border bg-card p-3"
+                      className="rounded-md border border-border bg-card p-3"
                     >
                       <div>
-                        <div className="text-sm font-medium">{team.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatUserDisplayName(team.user)}
+                        <div>
+                          <div className="text-sm font-medium justify-between">{team.name}</div>
+                          <div className="text-xs text-muted-foreground justify-between">
+                            {formatUserDisplayName(team.user)}
+                          </div>
+                        </div>
+                        <div className="justify-self-end">
+                          <Link href={`/league/${params.id}/season/${season.id}/team/${team.id}`}>
+                            <Button variant="secondary" size="sm">
+                              Open
+                            </Button>
+                          </Link>
                         </div>
                       </div>
                       {isModerator && (

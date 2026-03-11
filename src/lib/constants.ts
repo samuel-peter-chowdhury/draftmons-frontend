@@ -42,12 +42,14 @@ export const BASE_ENDPOINTS = {
   MOVE_BASE: `${API_BASE_URL}/api/move`,
   NATURE_BASE: `${API_BASE_URL}/api/nature`,
   POKEMON_BASE: `${API_BASE_URL}/api/pokemon`,
+  SEASON_POKEMON_BASE: `${API_BASE_URL}/api/season-pokemon`,
   SEASON_POKEMON_TEAM_BASE: `${API_BASE_URL}/api/season-pokemon-team`,
   POKEMON_TYPE_BASE: `${API_BASE_URL}/api/pokemon-type`,
   SEASON_BASE: `${API_BASE_URL}/api/season`,
   SPECIAL_MOVE_CATEGORY_BASE: `${API_BASE_URL}/api/special-move-category`,
   TEAM_BUILD_BASE: `${API_BASE_URL}/api/team-build`,
   TEAM_BUILD_SET_BASE: `${API_BASE_URL}/api/team-build-set`,
+  TEAM_BASE: `${API_BASE_URL}/api/team`,
   USER_BASE: `${API_BASE_URL}/api/user`,
 } as const;
 
