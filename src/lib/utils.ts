@@ -27,6 +27,10 @@ export function formatUserDisplayName(
   return user.firstName || user.lastName || user.email || fallback;
 }
 
+export function capitalizeFirst(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 export function formatGenerationName(name: string): string {
   if (name.length <= 2) {
     return name.toUpperCase();
