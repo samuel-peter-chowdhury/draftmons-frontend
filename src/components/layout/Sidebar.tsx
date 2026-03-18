@@ -141,34 +141,16 @@ export default function Sidebar() {
             </NavGroup>
           </div>
 
-          {/* Tiers */}
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full"
-          >
-            <AccordionItem value="tiers">
-              <AccordionTrigger className="px-3">
-                <span className="flex items-center gap-2">
-                  <Layers className="h-4 w-4" />
-                  Tiers
-                </span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-1">
-                  <NavLink
-                    href={seasonPrefix ? `${seasonPrefix}/tiers/classic` : '#'}
-                    disabled={!seasonPrefix}
-                  >
-                    Classic
-                  </NavLink>
-                  <NavLink href={seasonPrefix ? `${seasonPrefix}/tiers/type` : '#'} disabled={!seasonPrefix}>
-                    Type
-                  </NavLink>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          {/* Tier List */}
+          <div>
+            <NavGroup
+              href={seasonPrefix ? `${seasonPrefix}/tiers` : '#'}
+              icon={Layers}
+              disabled={!seasonPrefix}
+            >
+              Tier List
+            </NavGroup>
+          </div>
 
           {/* Rank */}
           <Accordion

@@ -163,9 +163,7 @@ function TeamMatchupContent() {
           {/* Team selectors */}
           <div className="flex flex-wrap gap-4">
             <div className="w-64">
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">
-                Team A
-              </label>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">Team A</label>
               <Select
                 value={teamAId?.toString() ?? ''}
                 onChange={(e) => {
@@ -182,9 +180,7 @@ function TeamMatchupContent() {
               </Select>
             </div>
             <div className="w-64">
-              <label className="mb-1 block text-sm font-medium text-muted-foreground">
-                Team B
-              </label>
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">Team B</label>
               <Select
                 value={teamBId?.toString() ?? ''}
                 onChange={(e) => {
