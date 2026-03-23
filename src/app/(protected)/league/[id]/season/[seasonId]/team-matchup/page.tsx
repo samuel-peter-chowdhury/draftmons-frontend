@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Route } from 'next';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -30,6 +30,11 @@ import {
   TypeEffectivenessColumn,
 } from './_components';
 
+// localStorage keys
+const LS_TAB_KEY = 'teamMatchup_tab';
+const lsTeamKey = (leagueId: number, seasonId: number, side: 'teamAId' | 'teamBId') =>
+  `teamMatchup_${leagueId}_${seasonId}_${side}`;
+
 function TeamMatchupContent() {
   const params = useParams<{ id: string; seasonId: string }>();
   const leagueId = Number(params.id);
@@ -38,6 +43,60 @@ function TeamMatchupContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+
+  // Hydrate from localStorage on first render when query params are absent
+  const hydrated = useRef(false);
+  useEffect(() => {
+    if (hydrated.current) return;
+    hydrated.current = true;
+
+    const hasTeamA = searchParams.has('teamAId');
+    const hasTeamB = searchParams.has('teamBId');
+    const hasTab = searchParams.has('tab');
+
+    // Persist any query params that arrived in the URL
+    if (hasTeamA) {
+      localStorage.setItem(lsTeamKey(leagueId, seasonId, 'teamAId'), searchParams.get('teamAId')!);
+    }
+    if (hasTeamB) {
+      localStorage.setItem(lsTeamKey(leagueId, seasonId, 'teamBId'), searchParams.get('teamBId')!);
+    }
+    if (hasTab) {
+      localStorage.setItem(LS_TAB_KEY, searchParams.get('tab')!);
+    }
+
+    if (hasTeamA && hasTeamB && hasTab) return;
+
+    const updates = new URLSearchParams(searchParams.toString());
+    let changed = false;
+
+    if (!hasTeamA) {
+      const stored = localStorage.getItem(lsTeamKey(leagueId, seasonId, 'teamAId'));
+      if (stored) {
+        updates.set('teamAId', stored);
+        changed = true;
+      }
+    }
+    if (!hasTeamB) {
+      const stored = localStorage.getItem(lsTeamKey(leagueId, seasonId, 'teamBId'));
+      if (stored) {
+        updates.set('teamBId', stored);
+        changed = true;
+      }
+    }
+    if (!hasTab) {
+      const stored = localStorage.getItem(LS_TAB_KEY);
+      if (stored) {
+        updates.set('tab', stored);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      const query = updates.toString();
+      router.replace(`${pathname}${query ? `?${query}` : ''}` as Route, { scroll: false });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derive state from URL (source of truth)
   const teamAId = searchParams.get('teamAId') ? Number(searchParams.get('teamAId')) : null;
@@ -53,8 +112,21 @@ function TeamMatchupContent() {
       }
       const query = params.toString();
       router.replace(`${pathname}${query ? `?${query}` : ''}` as Route, { scroll: false });
+
+      // Persist selections to localStorage
+      if ('teamAId' in updates) {
+        const k = lsTeamKey(leagueId, seasonId, 'teamAId');
+        updates.teamAId ? localStorage.setItem(k, updates.teamAId) : localStorage.removeItem(k);
+      }
+      if ('teamBId' in updates) {
+        const k = lsTeamKey(leagueId, seasonId, 'teamBId');
+        updates.teamBId ? localStorage.setItem(k, updates.teamBId) : localStorage.removeItem(k);
+      }
+      if ('tab' in updates) {
+        updates.tab ? localStorage.setItem(LS_TAB_KEY, updates.tab) : localStorage.removeItem(LS_TAB_KEY);
+      }
     },
-    [searchParams, pathname, router],
+    [searchParams, pathname, router, leagueId, seasonId],
   );
 
   const [modalPokemonId, setModalPokemonId] = useState<number | null>(null);
