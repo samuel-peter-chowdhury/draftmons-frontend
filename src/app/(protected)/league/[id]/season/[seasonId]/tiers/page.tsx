@@ -66,6 +66,7 @@ export default function TierListPage() {
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season-pokemon'], {
       seasonId,
       full: true,
+      activeRelationsOnly: true,
       pageSize: 9999,
     }),
   );
@@ -236,21 +237,27 @@ export default function TierListPage() {
                         {sorted.map((sp) => {
                           const pkmn = sp.pokemon!;
                           const value = view === 'classic' ? pkmn.speed : (sp.pointValue ?? 0);
+                          const isDrafted =
+                            (sp.seasonPokemonTeams?.length ?? 0) > 0;
                           return (
                             <div
                               key={sp.id}
-                              className="grid grid-cols-[36px_1fr_48px] items-center px-2 py-0.5 transition-colors hover:bg-secondary/50"
+                              className={`grid grid-cols-[36px_1fr_48px] items-center px-2 py-0.5 transition-colors hover:bg-secondary/50${isDrafted ? ' opacity-50' : ''}`}
                             >
                               <PokemonSprite
                                 pokemonId={pkmn.id}
                                 spriteUrl={pkmn.spriteUrl}
                                 name={pkmn.name}
-                                className="h-8 w-8 object-contain"
+                                className={`h-8 w-8 object-contain${isDrafted ? ' grayscale' : ''}`}
                                 onClick={handleSpriteClick}
                               />
-                              <span className="truncate pr-1 text-xs capitalize">{pkmn.name}</span>
                               <span
-                                className="text-right text-xs font-semibold"
+                                className={`truncate pr-1 text-xs capitalize${isDrafted ? ' line-through text-muted-foreground' : ''}`}
+                              >
+                                {pkmn.name}
+                              </span>
+                              <span
+                                className={`text-right text-xs font-semibold${isDrafted ? ' opacity-70' : ''}`}
                                 style={
                                   view === 'classic'
                                     ? { color: getStatColor(pkmn.speed) }
