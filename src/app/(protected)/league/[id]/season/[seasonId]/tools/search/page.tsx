@@ -21,6 +21,10 @@ import {
   type PokemonFilters,
 } from '@/components/pokemon/PokemonFilterPanel';
 import { PokemonTable } from '@/components/pokemon/PokemonTable';
+import { useParams } from 'next/navigation';
+// Essentially, should duplicate existing Pokemon page
+// Should give users the filter panel along with the results table
+// Searches for season pokemon instead of pokemon
 
 type SortableColumn =
   | 'name'
@@ -33,8 +37,8 @@ type SortableColumn =
   | 'baseStatTotal'
   | 'pointValue';
 
-export default function PokemonPage() {
-  // Pagination & sorting state
+export default function SeasonPokemonSearchPage() {
+// Pagination & sorting state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [sortBy, setSortBy] = useState<SortableColumn>('name');
@@ -156,7 +160,8 @@ export default function PokemonPage() {
       page,
       pageSize,
       sortBy,
-      sortOrder,
+      sortOrder, 
+      full: true
     };
 
     if (debouncedNameLike.trim()) p.nameLike = debouncedNameLike.trim();
@@ -210,7 +215,7 @@ export default function PokemonPage() {
 
   // Build URL for pokemon fetch
   const pokemonUrl = useMemo(() => {
-    return buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_BASE, [], params);
+    return buildUrlWithQuery(BASE_ENDPOINTS.SEASON_POKEMON_BASE, [], params);
   }, [params]);
 
   // Fetch pokemon data
@@ -276,7 +281,7 @@ export default function PokemonPage() {
 
       <PokemonFilterPanel
         filters={filters}
-        variant={'pokemon'}
+        variant={'seasonPokemon'}
         onFilterChange={handleFilterChange}
         types={types}
         specialMoveCategories={specialMoveCategories}
@@ -290,7 +295,7 @@ export default function PokemonPage() {
 
       <PokemonTable
         data={data}
-        variant={'pokemon'}
+        variant={'seasonPokemon'}
         loading={loading}
         error={error}
         sortBy={sortBy}

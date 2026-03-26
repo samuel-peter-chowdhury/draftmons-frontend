@@ -26,7 +26,7 @@ type SortableColumn =
   | 'specialDefense'
   | 'speed'
   | 'baseStatTotal'
-  | 'seasonPoints';
+  | 'pointValue';
 
 function SortableHeader({
   column,

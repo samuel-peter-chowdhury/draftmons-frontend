@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, Input, Label } from '@/components';
+import { Card, CardContent, Input, Label, PokemonVariant } from '@/components';
 import {
   Accordion,
   AccordionContent,
@@ -15,6 +15,7 @@ import type {
   PokemonTypeInput,
   SpecialMoveCategoryInput,
 } from '@/types';
+import { Checkbox } from '../ui/checkbox';
 
 export interface PokemonFilters {
   nameLike: string;
@@ -36,6 +37,8 @@ export interface PokemonFilters {
   maxPhysicalBulk: string;
   minSpecialBulk: string;
   maxSpecialBulk: string;
+  minPointValue: string;
+  maxPointValue: string;
   selectedAbilities: AbilityInput[];
   selectedTypes: PokemonTypeInput[];
   selectedWeakTypes: PokemonTypeInput[];
@@ -48,6 +51,7 @@ export interface PokemonFilters {
 
 export interface PokemonFilterPanelProps {
   filters: PokemonFilters;
+  variant: PokemonVariant;
   onFilterChange: (filters: Partial<PokemonFilters>) => void;
   types: PokemonTypeInput[];
   specialMoveCategories: SpecialMoveCategoryInput[];
@@ -78,6 +82,7 @@ const getSmcName = (smc: SpecialMoveCategoryInput) => smc.name;
 
 export function PokemonFilterPanel({
   filters,
+  variant,
   onFilterChange,
   types,
   specialMoveCategories,
@@ -319,6 +324,30 @@ export function PokemonFilterPanel({
                   </div>
                 </div>
 
+
+                {/* Season Point Value */}
+                { variant === 'seasonPokemon' && (
+                  <div className="w-40 space-y-2">
+                    <Label className="text-sm font-medium">Point Value</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Min"
+                        value={filters.minPointValue}
+                        onChange={(e) => onFilterChange({ minPointValue: e.target.value })}
+                        className="text-sm"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.maxPointValue}
+                        onChange={(e) => onFilterChange({ maxPointValue: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Types Filter */}
                 <FilterDropdown
                   label="Types"
@@ -421,6 +450,16 @@ export function PokemonFilterPanel({
                   getLabel={getTypeName}
                   getBadgeStyle={getTypeBadgeStyle}
                 />
+
+                {/* Exclude Drafted Pokemon */}
+                { variant === 'seasonPokemon' && (
+                  <div className="w-40 space-y-2">
+                    <Label className="text-sm font-medium">Exclude Drafted Pokemon</Label>
+                    <Checkbox
+                      defaultChecked={true}>
+                    </Checkbox>
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>
