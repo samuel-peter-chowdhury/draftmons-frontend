@@ -39,6 +39,7 @@ export interface PokemonFilters {
   maxSpecialBulk: string;
   minPointValue: string;
   maxPointValue: string;
+  excludeDrafted: boolean;
   selectedAbilities: AbilityInput[];
   selectedTypes: PokemonTypeInput[];
   selectedWeakTypes: PokemonTypeInput[];
@@ -133,7 +134,7 @@ export function PokemonFilterPanel({
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent className="px-6 pb-4">
+            <AccordionContent className="overflow-visible px-6 pb-4">
               <div className="flex flex-wrap gap-4">
                 {/* HP */}
                 <div className="w-40 space-y-2">
@@ -453,11 +454,12 @@ export function PokemonFilterPanel({
 
                 {/* Exclude Drafted Pokemon */}
                 { variant === 'seasonPokemon' && (
-                  <div className="w-40 space-y-2">
-                    <Label className="text-sm font-medium">Exclude Drafted Pokemon</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="excludeDrafted" className="text-sm font-medium">Exclude Drafted Pokemon</Label>
                     <Checkbox
-                      defaultChecked={true}>
-                    </Checkbox>
+                      checked={filters.excludeDrafted}
+                      id="excludeDrafted"
+                      onCheckedChange={(checked) => onFilterChange({ excludeDrafted: checked === true })} />
                   </div>
                 )}
               </div>

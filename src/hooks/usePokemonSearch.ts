@@ -4,9 +4,6 @@ import { useState, useMemo, useCallback } from 'react';
 import { useFetch, useDebounce } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS, NAT_DEX_GENERATION_ID } from '@/lib/constants';
-import { formatGenerationName } from '@/lib/utils';
-import { Label } from '@/components';
-import { Select } from '@/components/ui/select';
 import type {
   AbilityInput,
   GenerationInput,
@@ -16,12 +13,7 @@ import type {
   PokemonTypeInput,
   SpecialMoveCategoryInput,
 } from '@/types';
-import {
-  PokemonFilterPanel,
-  type PokemonFilters,
-} from '@/components/pokemon/PokemonFilterPanel';
-import { PokemonTable } from '@/components/pokemon/PokemonTable';
-import { useParams } from 'next/navigation';
+import type { PokemonFilters } from '@/components/pokemon/PokemonFilterPanel';
 
 type SortableColumn =
   | 'name'
@@ -34,63 +26,63 @@ type SortableColumn =
   | 'baseStatTotal'
   | 'pointValue';
 
-export default function SeasonPokemonSearchPage() {
-// Pagination & sorting state
+const DEFAULT_FILTERS: PokemonFilters = {
+  nameLike: '',
+  minHp: '',
+  maxHp: '',
+  minAttack: '',
+  maxAttack: '',
+  minDefense: '',
+  maxDefense: '',
+  minSpecialAttack: '',
+  maxSpecialAttack: '',
+  minSpecialDefense: '',
+  maxSpecialDefense: '',
+  minSpeed: '',
+  maxSpeed: '',
+  minBaseStatTotal: '',
+  maxBaseStatTotal: '',
+  minPhysicalBulk: '',
+  maxPhysicalBulk: '',
+  minSpecialBulk: '',
+  maxSpecialBulk: '',
+  minPointValue: '',
+  maxPointValue: '',
+  excludeDrafted: false,
+  selectedAbilities: [],
+  selectedTypes: [],
+  selectedWeakTypes: [],
+  selectedNotWeakTypes: [],
+  selectedResistedTypes: [],
+  selectedImmuneTypes: [],
+  selectedMoves: [],
+  selectedSpecialMoveCategories: [],
+};
+
+interface UsePokemonSearchOptions {
+  endpoint: string;
+  extraParams?: Record<string, unknown>;
+  initialFilters?: Partial<PokemonFilters>;
+}
+
+export function usePokemonSearch({
+  endpoint,
+  extraParams,
+  initialFilters,
+}: UsePokemonSearchOptions) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [sortBy, setSortBy] = useState<SortableColumn>('name');
-  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');  
-  
-  const inParams = useParams<{ id: string; seasonId: string; teamId: string }>();
-  const seasonId = Number(inParams.seasonId);
-
-  // Generation state (separate from filter panel)
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
   const [selectedGenerationId, setSelectedGenerationId] = useState<number>(NAT_DEX_GENERATION_ID);
-
-  // Filter state
-  const [filters, setFilters] = useState<PokemonFilters>({
-    nameLike: '',
-    minHp: '',
-    maxHp: '',
-    minAttack: '',
-    maxAttack: '',
-    minDefense: '',
-    maxDefense: '',
-    minSpecialAttack: '',
-    maxSpecialAttack: '',
-    minSpecialDefense: '',
-    maxSpecialDefense: '',
-    minSpeed: '',
-    maxSpeed: '',
-    minBaseStatTotal: '',
-    maxBaseStatTotal: '',
-    minPhysicalBulk: '',
-    maxPhysicalBulk: '',
-    minSpecialBulk: '',
-    maxSpecialBulk: '',
-    minPointValue: '',
-    maxPointValue: '',
-    excludeDrafted: true,
-    selectedAbilities: [],
-    selectedTypes: [],
-    selectedWeakTypes: [],
-    selectedNotWeakTypes: [],
-    selectedResistedTypes: [],
-    selectedImmuneTypes: [],
-    selectedMoves: [],
-    selectedSpecialMoveCategories: [],
-  });
-
-  // Ability/Move search state (raw text from FilterDropdown)
+  const [filters, setFilters] = useState<PokemonFilters>({ ...DEFAULT_FILTERS, ...initialFilters });
   const [abilitySearch, setAbilitySearch] = useState('');
   const [moveSearch, setMoveSearch] = useState('');
 
-  // Debounce search terms
   const debouncedNameLike = useDebounce(filters.nameLike, 300);
   const debouncedAbilitySearch = useDebounce(abilitySearch, 300);
   const debouncedMoveSearch = useDebounce(moveSearch, 300);
 
-  // Fetch types, generations, and special move categories (static dropdowns)
   const typesUrl = useMemo(
     () => buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_TYPE_BASE, [], { page: 1, pageSize: 100 }),
     [],
@@ -108,7 +100,6 @@ export default function SeasonPokemonSearchPage() {
     [],
   );
 
-  // Build ability search URL (always fetch, filtered by generation; add nameLike when typing)
   const abilitySearchUrl = useMemo(() => {
     const params: Parameters<typeof buildUrlWithQuery>[2] = {
       page: 1,
@@ -123,7 +114,6 @@ export default function SeasonPokemonSearchPage() {
     return buildUrlWithQuery(BASE_ENDPOINTS.ABILITY_BASE, [], params);
   }, [selectedGenerationId, debouncedAbilitySearch]);
 
-  // Build move search URL (always fetch, filtered by generation; add nameLike when typing)
   const moveSearchUrl = useMemo(() => {
     const params: Parameters<typeof buildUrlWithQuery>[2] = {
       page: 1,
@@ -140,10 +130,9 @@ export default function SeasonPokemonSearchPage() {
 
   const { data: typesData } = useFetch<PaginatedResponse<PokemonTypeInput>>(typesUrl);
   const { data: generationsData } = useFetch<PaginatedResponse<GenerationInput>>(generationsUrl);
-  const { data: specialMoveCategoriesData } = useFetch<
-    PaginatedResponse<SpecialMoveCategoryInput>
-  >(specialMoveCategoriesUrl);
-
+  const { data: specialMoveCategoriesData } = useFetch<PaginatedResponse<SpecialMoveCategoryInput>>(
+    specialMoveCategoriesUrl,
+  );
   const { data: abilitySearchData, loading: abilitySearchLoading } =
     useFetch<PaginatedResponse<AbilityInput>>(abilitySearchUrl);
   const { data: moveSearchData, loading: moveSearchLoading } =
@@ -155,15 +144,13 @@ export default function SeasonPokemonSearchPage() {
   const abilitySearchResults = abilitySearchData?.data || [];
   const moveSearchResults = moveSearchData?.data || [];
 
-  // Build params for API call
-  const outParams = useMemo(() => {
+  const params = useMemo(() => {
     const p: any = {
       page,
       pageSize,
       sortBy,
-      sortOrder, 
-      full: true,
-      seasonId: seasonId
+      sortOrder,
+      ...extraParams,
     };
 
     if (debouncedNameLike.trim()) p.nameLike = debouncedNameLike.trim();
@@ -185,7 +172,9 @@ export default function SeasonPokemonSearchPage() {
     if (filters.maxPhysicalBulk) p.maxPhysicalBulk = parseInt(filters.maxPhysicalBulk);
     if (filters.minSpecialBulk) p.minSpecialBulk = parseInt(filters.minSpecialBulk);
     if (filters.maxSpecialBulk) p.maxSpecialBulk = parseInt(filters.maxSpecialBulk);
-    if (filters.excludeDrafted) p.excludeDrafted = (filters.excludeDrafted);
+    if (filters.minPointValue) p.minPointValue = parseInt(filters.minPointValue);
+    if (filters.maxPointValue) p.maxPointValue = parseInt(filters.maxPointValue);
+    if (filters.excludeDrafted) p.excludeDrafted = filters.excludeDrafted;
 
     if (filters.selectedAbilities.length > 0) {
       p.abilityIds = filters.selectedAbilities.map((a) => a.id);
@@ -216,10 +205,10 @@ export default function SeasonPokemonSearchPage() {
     return p;
   }, [page, pageSize, sortBy, sortOrder, filters, selectedGenerationId, debouncedNameLike]);
 
-  // Build URL for pokemon fetch
+  // Build URL for fetch
   const pokemonUrl = useMemo(() => {
-    return buildUrlWithQuery(BASE_ENDPOINTS.SEASON_POKEMON_BASE, [], outParams);
-  }, [outParams]);
+    return buildUrlWithQuery(endpoint, [], params);
+  }, [params]);
 
   // Fetch pokemon data
   const { data, loading, error } = useFetch<PaginatedResponse<PokemonInput>>(pokemonUrl);
@@ -258,57 +247,34 @@ export default function SeasonPokemonSearchPage() {
     setPage(1);
   }, []);
 
-  return (
-    <div className="mx-auto max-w-7xl p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Season {seasonId} Pokemon</h1>
-        <div className="flex items-center gap-2">
-          <Label htmlFor="generation-select" className="text-sm text-muted-foreground">
-            Generation:
-          </Label>
-          <Select
-            id="generation-select"
-            value={selectedGenerationId}
-            onChange={handleGenerationChange}
-            className="h-9 w-auto px-2 py-1"
-            aria-label="Select generation"
-          >
-            {generations.map((g) => (
-              <option key={g.id} value={g.id}>
-                {formatGenerationName(g.name)}
-              </option>
-            ))}
-          </Select>
-        </div>
-      </div>
-
-      <PokemonFilterPanel
-        filters={filters}
-        variant={'seasonPokemon'}
-        onFilterChange={handleFilterChange}
-        types={types}
-        specialMoveCategories={specialMoveCategories}
-        abilitySearchResults={abilitySearchResults}
-        moveSearchResults={moveSearchResults}
-        onAbilitySearchChange={setAbilitySearch}
-        onMoveSearchChange={setMoveSearch}
-        abilitySearchLoading={abilitySearchLoading}
-        moveSearchLoading={moveSearchLoading}
-      />
-
-      <PokemonTable
-        data={data}
-        variant={'seasonPokemon'}
-        loading={loading}
-        error={error}
-        sortBy={sortBy}
-        sortOrder={sortOrder}
-        page={page}
-        pageSize={pageSize}
-        onSort={handleSort}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-      />
-    </div>
-  );
+  return {
+    // Data
+    data,
+    loading,
+    error,
+    // Filter panel props
+    filters,
+    types,
+    generations,
+    specialMoveCategories,
+    abilitySearchResults,
+    moveSearchResults,
+    abilitySearchLoading,
+    moveSearchLoading,
+    // Table props
+    sortBy,
+    sortOrder,
+    page,
+    pageSize,
+    // Generation select
+    selectedGenerationId,
+    // Handlers
+    handleGenerationChange,
+    handleFilterChange,
+    handleSort,
+    handlePageChange,
+    handlePageSizeChange,
+    setAbilitySearch,
+    setMoveSearch,
+  };
 }
