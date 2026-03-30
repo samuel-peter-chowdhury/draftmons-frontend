@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useFetch, useDebounce } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS, NAT_DEX_GENERATION_ID } from '@/lib/constants';
@@ -14,6 +14,7 @@ import type {
   PaginatedResponse,
   PokemonInput,
   PokemonTypeInput,
+  SeasonInput,
   SpecialMoveCategoryInput,
 } from '@/types';
 import {
@@ -185,6 +186,8 @@ export default function SeasonPokemonSearchPage() {
     if (filters.maxPhysicalBulk) p.maxPhysicalBulk = parseInt(filters.maxPhysicalBulk);
     if (filters.minSpecialBulk) p.minSpecialBulk = parseInt(filters.minSpecialBulk);
     if (filters.maxSpecialBulk) p.maxSpecialBulk = parseInt(filters.maxSpecialBulk);
+    if (filters.minPointValue) p.minPointValue = parseInt(filters.minPointValue);
+    if (filters.maxPointValue) p.maxPointValue = parseInt(filters.maxPointValue);
     if (filters.excludeDrafted) p.excludeDrafted = (filters.excludeDrafted);
 
     if (filters.selectedAbilities.length > 0) {
@@ -224,13 +227,21 @@ export default function SeasonPokemonSearchPage() {
   // Fetch pokemon data
   const { data, loading, error } = useFetch<PaginatedResponse<PokemonInput>>(pokemonUrl);
 
-  const handleGenerationChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedGenerationId(Number(e.target.value));
-    setFilters((prev) => ({ ...prev, selectedAbilities: [], selectedMoves: [] }));
-    setAbilitySearch('');
-    setMoveSearch('');
-    setPage(1);
-  }, []);
+  // Fetch season data
+  const {
+    data: season,
+    loading: teamLoading,
+    error: teamError,
+    refetch: refetchSeason,
+  } = useFetch<SeasonInput>(
+    buildUrlWithQuery(BASE_ENDPOINTS.SEASON_BASE, [seasonId], { full: true }),
+  );
+
+  useEffect(() => {                                                                      
+    if (season?.generationId) {                                                          
+      setSelectedGenerationId(season.generationId);                                      
+    }             
+  }, [season?.generationId]); 
 
   const handleFilterChange = useCallback((newFilters: Partial<PokemonFilters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -261,7 +272,7 @@ export default function SeasonPokemonSearchPage() {
   return (
     <div className="mx-auto max-w-7xl p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Season {seasonId} Pokemon</h1>
+        <h1 className="text-2xl font-semibold">{season?.name} Pokemon</h1>
         <div className="flex items-center gap-2">
           <Label htmlFor="generation-select" className="text-sm text-muted-foreground">
             Generation:
@@ -269,10 +280,9 @@ export default function SeasonPokemonSearchPage() {
           <Select
             id="generation-select"
             value={selectedGenerationId}
-            onChange={handleGenerationChange}
+            disabled={true}
             className="h-9 w-auto px-2 py-1"
-            aria-label="Select generation"
-          >
+            aria-label="Select generation">
             {generations.map((g) => (
               <option key={g.id} value={g.id}>
                 {formatGenerationName(g.name)}
