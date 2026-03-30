@@ -41,7 +41,7 @@ export default function SeasonPokemonSearchPage() {
     setAbilitySearch,
     setMoveSearch,
     setSelectedGenerationId
-  } = usePokemonSearch({ endpoint: BASE_ENDPOINTS.SEASON_POKEMON_BASE, extraParams: {full: true} });
+  } = usePokemonSearch({ endpoint: BASE_ENDPOINTS.SEASON_POKEMON_BASE, extraParams: {full: true}, initialFilters: {excludeDrafted: true} });
 
   // Fetch season data
   const { data: season } = useFetch<SeasonInput>(
