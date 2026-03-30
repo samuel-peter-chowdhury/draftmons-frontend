@@ -95,19 +95,19 @@ export default function TeamDetailPage() {
       )}
 
       {data && (
-        <PokemonTable
-          data={data}
-          variant={'seasonPokemon'}
-          loading={loading}
-          error={error}
-          sortBy={sortBy}
-          sortOrder={sortOrder}
-          page={page}
-          pageSize={pageSize}
-          onSort={handleSort}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-        />
+          <PokemonTable
+            data={data}
+            variant={'seasonPokemon'}
+            loading={loading}
+            error={error}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            page={page}
+            pageSize={pageSize}
+            onSort={handleSort}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
         )
       }
     </div>

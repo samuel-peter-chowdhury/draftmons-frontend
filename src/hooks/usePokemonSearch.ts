@@ -276,5 +276,6 @@ export function usePokemonSearch({
     handlePageSizeChange,
     setAbilitySearch,
     setMoveSearch,
+    setSelectedGenerationId
   };
 }

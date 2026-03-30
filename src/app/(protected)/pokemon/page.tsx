@@ -32,7 +32,7 @@ export default function PokemonPage() {
     handlePageChange,
     handlePageSizeChange,
     setAbilitySearch,
-    setMoveSearch,
+    setMoveSearch
   } = usePokemonSearch({ endpoint: BASE_ENDPOINTS.POKEMON_BASE });
 
   return (
