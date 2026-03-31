@@ -151,7 +151,7 @@ export function PokemonTable({
                       </TableHead>
                       {variant === 'seasonPokemon' && (
                           <TableHead>
-                            <SortableHeader column="baseStatTotal" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Pts</SortableHeader>
+                            <SortableHeader column="pointValue" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Pts</SortableHeader>
                           </TableHead>
                         )
                       }
