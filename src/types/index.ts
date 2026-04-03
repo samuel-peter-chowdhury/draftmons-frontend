@@ -11,6 +11,7 @@ export * from './move.type';
 export * from './nature.type';
 export * from './pagination.type';
 export * from './pokemon.type';
+export * from './pokemonSearch.type';
 export * from './pokemonType.type';
 export * from './season.type';
 export * from './seasonPokemon.type';
