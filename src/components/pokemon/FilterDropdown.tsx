@@ -89,7 +89,7 @@ export function FilterDropdown<T>({
           onBlur={() => setFocused(false)}
         />
         {showDropdown && (
-          <div className="fixed z-50 mt-1 max-h-60 w-64 overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
+          <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-md">
             {isAsync && loading && filteredItems.length === 0 ? (
               <div className="px-2 py-1.5 text-sm text-muted-foreground">Loading...</div>
             ) : (

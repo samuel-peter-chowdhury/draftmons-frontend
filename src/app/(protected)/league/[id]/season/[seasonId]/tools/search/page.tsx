@@ -1,14 +1,21 @@
 'use client';
 
-import { usePokemonSearch } from '@/hooks';
+import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { useFetch, usePokemonSearch } from '@/hooks';
+import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
 import { Label } from '@/components';
 import { Select } from '@/components/ui/select';
 import { PokemonFilterPanel } from '@/components/pokemon/PokemonFilterPanel';
 import { PokemonTable } from '@/components/pokemon/PokemonTable';
+import type { SeasonInput } from '@/types';
 
-export default function PokemonPage() {
+export default function SeasonPokemonSearchPage() {
+  const params = useParams<{ id: string; seasonId: string }>();
+  const seasonId = Number(params.seasonId);
+
   const {
     data,
     loading,
@@ -26,19 +33,37 @@ export default function PokemonPage() {
     page,
     pageSize,
     selectedGenerationId,
-    handleGenerationChange,
+    resetGeneration,
     handleFilterChange,
     handleSort,
     handlePageChange,
     handlePageSizeChange,
     setAbilitySearch,
-    setMoveSearch
-  } = usePokemonSearch({ endpoint: BASE_ENDPOINTS.POKEMON_BASE });
+    setMoveSearch,
+  } = usePokemonSearch({
+    endpoint: BASE_ENDPOINTS.SEASON_POKEMON_BASE,
+    extraParams: { full: true },
+    initialFilters: { excludeDrafted: true },
+    initialSortBy: 'pointValue',
+    initialSortOrder: 'DESC',
+  });
+
+  // Fetch season data
+  const { data: season } = useFetch<SeasonInput>(
+    buildUrlWithQuery(BASE_ENDPOINTS.SEASON_BASE, [seasonId], { full: true }),
+  );
+
+  // Sync generation from season data, resetting dependent filters
+  useEffect(() => {
+    if (season?.generationId) {
+      resetGeneration(season.generationId);
+    }
+  }, [season?.generationId, resetGeneration]);
 
   return (
-    <div className="mx-auto max-w-[1600px] p-4">
+    <div className="mx-auto max-w-7xl p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Pokemon</h1>
+        <h1 className="text-2xl font-semibold">{season?.name} Pokemon</h1>
         <div className="flex items-center gap-2">
           <Label htmlFor="generation-select" className="text-sm text-muted-foreground">
             Generation:
@@ -46,7 +71,7 @@ export default function PokemonPage() {
           <Select
             id="generation-select"
             value={selectedGenerationId}
-            onChange={handleGenerationChange}
+            disabled={true}
             className="h-9 w-auto px-2 py-1"
             aria-label="Select generation"
           >
@@ -61,7 +86,7 @@ export default function PokemonPage() {
 
       <PokemonFilterPanel
         filters={filters}
-        variant={'pokemon'}
+        variant={'seasonPokemon'}
         onFilterChange={handleFilterChange}
         types={types}
         specialMoveCategories={specialMoveCategories}
@@ -75,7 +100,7 @@ export default function PokemonPage() {
 
       <PokemonTable
         data={data}
-        variant={'pokemon'}
+        variant={'seasonPokemon'}
         loading={loading}
         error={error}
         sortBy={sortBy}
