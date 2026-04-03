@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { X, Pencil } from 'lucide-react';
 import {
@@ -25,14 +25,12 @@ import {
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateTeamModal } from '@/components/modals/CreateTeamModal';
 import { EditRulesModal } from '@/components/modals/EditRulesModal';
-import { useCheckAuth, useFetch, useMutation } from '@/hooks';
-import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
-import { BASE_ENDPOINTS } from '@/lib/constants';
+import { useCheckAuth, useMutation } from '@/hooks';
+import { LeagueApi } from '@/lib/api';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import { useLeagueStore, useIsModerator } from '@/stores/useLeagueStore';
-import type { LeagueInput, SeasonInput } from '@/types';
 import Link from 'next/link';
 
 export default function SeasonDetailPage() {
@@ -40,19 +38,18 @@ export default function SeasonDetailPage() {
   const leagueId = Number(params.id);
   const seasonId = Number(params.seasonId);
   const { user: currentUser } = useAuthStore();
+
   const league = useLeagueStore((s) => s.league);
   const leagueLoading = useLeagueStore((s) => s.leagueLoading);
   const leagueError = useLeagueStore((s) => s.leagueError);
+  const season = useLeagueStore((s) => s.season);
+  const seasonLoading = useLeagueStore((s) => s.seasonLoading);
+  const seasonError = useLeagueStore((s) => s.seasonError);
+  const refetchSeason = useLeagueStore((s) => s.refetchSeason);
 
-  // Fetch season with teams
-  const {
-    data: season,
-    loading: seasonLoading,
-    error: seasonError,
-    refetch: refetchSeason,
-  } = useFetch<SeasonInput>(
-    buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season', seasonId], { full: true }),
-  );
+  const handleRefetchSeason = useCallback(() => {
+    refetchSeason(leagueId, seasonId);
+  }, [refetchSeason, leagueId, seasonId]);
 
   const [isEditSeasonModalOpen, setIsEditSeasonModalOpen] = useState(false);
   const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
@@ -67,7 +64,7 @@ export default function SeasonDetailPage() {
     (teamId: number) => LeagueApi.deleteTeam(leagueId, teamId),
     {
       onSuccess: () => {
-        refetchSeason();
+        handleRefetchSeason();
         setTeamToDelete(null);
       },
     },
@@ -225,7 +222,7 @@ export default function SeasonDetailPage() {
           onOpenChange={setIsEditSeasonModalOpen}
           leagueId={leagueId}
           season={season}
-          onSuccess={refetchSeason}
+          onSuccess={handleRefetchSeason}
         />
       )}
 
@@ -237,7 +234,7 @@ export default function SeasonDetailPage() {
             leagueId={leagueId}
             seasonId={seasonId}
             leagueUsers={league.leagueUsers}
-            onSuccess={refetchSeason}
+            onSuccess={handleRefetchSeason}
           />
 
           <EditRulesModal
@@ -246,7 +243,7 @@ export default function SeasonDetailPage() {
             leagueId={leagueId}
             seasonId={seasonId}
             currentRules={season?.rules || ''}
-            onSuccess={refetchSeason}
+            onSuccess={handleRefetchSeason}
           />
 
           <AlertDialog

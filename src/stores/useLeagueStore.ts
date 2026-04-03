@@ -13,11 +13,19 @@ type LeagueState = {
   seasonLoading: boolean;
   leagueError: string | null;
   seasonError: string | null;
+  /** Tracks the league ID currently being fetched to prevent race conditions */
+  _fetchingLeagueId: number | null;
+  /** Tracks the season ID currently being fetched to prevent race conditions */
+  _fetchingSeasonId: number | null;
 };
 
 type LeagueActions = {
   fetchLeague: (leagueId: number) => Promise<void>;
   fetchSeason: (leagueId: number, seasonId: number) => Promise<void>;
+  /** Force-refetch the current league, bypassing the cache check */
+  refetchLeague: (leagueId: number) => Promise<void>;
+  /** Force-refetch the current season, bypassing the cache check */
+  refetchSeason: (leagueId: number, seasonId: number) => Promise<void>;
   clear: () => void;
 };
 
@@ -28,45 +36,82 @@ const initialState: LeagueState = {
   seasonLoading: false,
   leagueError: null,
   seasonError: null,
+  _fetchingLeagueId: null,
+  _fetchingSeasonId: null,
 };
+
+async function fetchLeagueImpl(
+  leagueId: number,
+  set: (partial: Partial<LeagueState>) => void,
+) {
+  set({ leagueLoading: true, leagueError: null, _fetchingLeagueId: leagueId });
+  try {
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId], { full: true });
+    const league = await apiFetch<LeagueInput>(url);
+    set({ league, leagueLoading: false, _fetchingLeagueId: null });
+  } catch (e: any) {
+    set({
+      leagueLoading: false,
+      _fetchingLeagueId: null,
+      leagueError: e?.body?.message || e?.message || 'Failed to load league',
+    });
+  }
+}
+
+async function fetchSeasonImpl(
+  leagueId: number,
+  seasonId: number,
+  set: (partial: Partial<LeagueState>) => void,
+) {
+  set({ seasonLoading: true, seasonError: null, _fetchingSeasonId: seasonId });
+  try {
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season', seasonId], {
+      full: true,
+    });
+    const season = await apiFetch<SeasonInput>(url);
+    set({ season, seasonLoading: false, _fetchingSeasonId: null });
+  } catch (e: any) {
+    set({
+      seasonLoading: false,
+      _fetchingSeasonId: null,
+      seasonError: e?.body?.message || e?.message || 'Failed to load season',
+    });
+  }
+}
 
 export const useLeagueStore = create<LeagueState & LeagueActions>((set, get) => ({
   ...initialState,
 
   fetchLeague: async (leagueId: number) => {
-    // Skip if already loaded for this league
-    if (get().league?.id === leagueId && !get().leagueError) return;
-
-    set({ leagueLoading: true, leagueError: null });
-    try {
-      const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId], { full: true });
-      const league = await apiFetch<LeagueInput>(url);
-      set({ league, leagueLoading: false });
-    } catch (e: any) {
-      set({
-        leagueLoading: false,
-        leagueError: e?.body?.message || e?.message || 'Failed to load league',
-      });
+    const state = get();
+    // Skip if already loaded or currently fetching this league
+    if (
+      (state.league?.id === leagueId && !state.leagueError) ||
+      state._fetchingLeagueId === leagueId
+    ) {
+      return;
     }
+    await fetchLeagueImpl(leagueId, set);
   },
 
   fetchSeason: async (leagueId: number, seasonId: number) => {
-    // Skip if already loaded for this season
-    if (get().season?.id === seasonId && !get().seasonError) return;
-
-    set({ seasonLoading: true, seasonError: null });
-    try {
-      const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season', seasonId], {
-        full: true,
-      });
-      const season = await apiFetch<SeasonInput>(url);
-      set({ season, seasonLoading: false });
-    } catch (e: any) {
-      set({
-        seasonLoading: false,
-        seasonError: e?.body?.message || e?.message || 'Failed to load season',
-      });
+    const state = get();
+    // Skip if already loaded or currently fetching this season
+    if (
+      (state.season?.id === seasonId && !state.seasonError) ||
+      state._fetchingSeasonId === seasonId
+    ) {
+      return;
     }
+    await fetchSeasonImpl(leagueId, seasonId, set);
+  },
+
+  refetchLeague: async (leagueId: number) => {
+    await fetchLeagueImpl(leagueId, set);
+  },
+
+  refetchSeason: async (leagueId: number, seasonId: number) => {
+    await fetchSeasonImpl(leagueId, seasonId, set);
   },
 
   clear: () => set(initialState),
