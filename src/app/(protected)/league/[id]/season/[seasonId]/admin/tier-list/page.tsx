@@ -629,7 +629,7 @@ export default function AdminTierListPage() {
   if (!isModerator && !seasonLoading) return null;
 
   return (
-    <div className="mx-auto max-w-[100vw] p-4">
+    <div className="mx-auto max-w-7xl p-4">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Admin Tier List</h1>
         {season && (
