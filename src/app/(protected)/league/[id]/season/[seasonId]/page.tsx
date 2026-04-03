@@ -31,6 +31,7 @@ import { BASE_ENDPOINTS } from '@/lib/constants';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
+import { useLeagueStore, useIsModerator } from '@/stores/useLeagueStore';
 import type { LeagueInput, SeasonInput } from '@/types';
 import Link from 'next/link';
 
@@ -39,15 +40,9 @@ export default function SeasonDetailPage() {
   const leagueId = Number(params.id);
   const seasonId = Number(params.seasonId);
   const { user: currentUser } = useAuthStore();
-
-  // Fetch league data for moderator check and league users
-  const {
-    data: league,
-    loading: leagueLoading,
-    error: leagueError,
-  } = useFetch<LeagueInput>(
-    buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId], { full: true }),
-  );
+  const league = useLeagueStore((s) => s.league);
+  const leagueLoading = useLeagueStore((s) => s.leagueLoading);
+  const leagueError = useLeagueStore((s) => s.leagueError);
 
   // Fetch season with teams
   const {
@@ -66,11 +61,7 @@ export default function SeasonDetailPage() {
 
   useCheckAuth();
 
-  // Check if the current user is a moderator of this league
-  const isModerator =
-    league?.leagueUsers?.some(
-      (leagueUser) => leagueUser.userId === currentUser?.id && leagueUser.isModerator,
-    ) ?? false;
+  const isModerator = useIsModerator(currentUser?.id);
 
   const deleteTeamMutation = useMutation(
     (teamId: number) => LeagueApi.deleteTeam(leagueId, teamId),
