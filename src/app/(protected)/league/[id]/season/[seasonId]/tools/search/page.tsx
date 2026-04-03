@@ -1,20 +1,19 @@
 'use client';
 
-import { usePokemonSearch } from '@/hooks';
 import { useEffect } from 'react';
-import { useFetch } from '@/hooks';
+import { useParams } from 'next/navigation';
+import { useFetch, usePokemonSearch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
 import { Label } from '@/components';
 import { Select } from '@/components/ui/select';
-import type { SeasonInput } from '@/types';
 import { PokemonFilterPanel } from '@/components/pokemon/PokemonFilterPanel';
 import { PokemonTable } from '@/components/pokemon/PokemonTable';
-import { useParams } from 'next/navigation';
+import type { SeasonInput } from '@/types';
 
 export default function SeasonPokemonSearchPage() {
-  const params = useParams<{ id: string; seasonId: string; teamId: string }>();
+  const params = useParams<{ id: string; seasonId: string }>();
   const seasonId = Number(params.seasonId);
 
   const {
@@ -34,25 +33,32 @@ export default function SeasonPokemonSearchPage() {
     page,
     pageSize,
     selectedGenerationId,
+    resetGeneration,
     handleFilterChange,
     handleSort,
     handlePageChange,
     handlePageSizeChange,
     setAbilitySearch,
     setMoveSearch,
-    setSelectedGenerationId
-  } = usePokemonSearch({ endpoint: BASE_ENDPOINTS.SEASON_POKEMON_BASE, extraParams: {full: true}, initialFilters: {excludeDrafted: true} });
+  } = usePokemonSearch({
+    endpoint: BASE_ENDPOINTS.SEASON_POKEMON_BASE,
+    extraParams: { full: true },
+    initialFilters: { excludeDrafted: true },
+    initialSortBy: 'pointValue',
+    initialSortOrder: 'DESC',
+  });
 
   // Fetch season data
   const { data: season } = useFetch<SeasonInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.SEASON_BASE, [seasonId], { full: true }),
   );
 
-  useEffect(() => {                                                                      
-    if (season?.generationId) {                                                          
-      setSelectedGenerationId(season.generationId);                                      
-    }             
-  }, [season?.generationId]); 
+  // Sync generation from season data, resetting dependent filters
+  useEffect(() => {
+    if (season?.generationId) {
+      resetGeneration(season.generationId);
+    }
+  }, [season?.generationId, resetGeneration]);
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -67,7 +73,8 @@ export default function SeasonPokemonSearchPage() {
             value={selectedGenerationId}
             disabled={true}
             className="h-9 w-auto px-2 py-1"
-            aria-label="Select generation">
+            aria-label="Select generation"
+          >
             {generations.map((g) => (
               <option key={g.id} value={g.id}>
                 {formatGenerationName(g.name)}

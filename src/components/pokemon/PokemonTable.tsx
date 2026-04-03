@@ -15,18 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PokemonSprite } from './PokemonSprite';
 import { PokemonModal } from './PokemonModal';
-import type { PaginatedResponse, PokemonInput, SeasonPokemonInput } from '@/types';
-
-type SortableColumn =
-  | 'name'
-  | 'hp'
-  | 'attack'
-  | 'defense'
-  | 'specialAttack'
-  | 'specialDefense'
-  | 'speed'
-  | 'baseStatTotal'
-  | 'pointValue';
+import type { PaginatedResponse, PokemonInput, SeasonPokemonInput, SortableColumn } from '@/types';
 
 function SortableHeader({
   column,
@@ -76,13 +65,16 @@ export interface PokemonTableProps {
   onPageSizeChange: (pageSize: number) => void;
 }
 
-function getRowData(item: PokemonInput | SeasonPokemonInput, variant: PokemonVariant): PokemonRow {
+function getRowData(
+  item: PokemonInput | SeasonPokemonInput,
+  variant: PokemonVariant,
+): PokemonRow | null {
   if (variant === 'pokemon') {
-    return {pokemon: item as PokemonInput} 
-  } else {
-    const seasonPokemon = item as SeasonPokemonInput;
-    return {pokemon: seasonPokemon.pokemon!, pointValue: seasonPokemon.pointValue}
+    return { pokemon: item as PokemonInput };
   }
+  const seasonPokemon = item as SeasonPokemonInput;
+  if (!seasonPokemon.pokemon) return null;
+  return { pokemon: seasonPokemon.pokemon, pointValue: seasonPokemon.pointValue };
 }
 
 export function PokemonTable({
@@ -160,13 +152,14 @@ export function PokemonTable({
                   <TableBody>
                     {data.data.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={11} className="text-center text-muted-foreground">
+                        <TableCell colSpan={variant === 'seasonPokemon' ? 12 : 11} className="text-center text-muted-foreground">
                           No pokemon found matching your filters.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      data.data.map((item) => { 
-                        const rowData: PokemonRow = getRowData(item, variant);
+                      data.data.map((item) => {
+                        const rowData = getRowData(item, variant);
+                        if (!rowData) return null;
                         return (
                         <TableRow key={rowData.pokemon.id}>
                           <TableCell className="min-w-20 w-20">

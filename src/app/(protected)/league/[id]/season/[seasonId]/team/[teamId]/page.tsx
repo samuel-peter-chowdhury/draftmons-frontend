@@ -3,20 +3,9 @@
 import { Card, CardHeader, CardTitle, ErrorAlert, PokemonTable, Spinner } from '@/components';
 import { useFetch } from '@/hooks';
 import { BASE_ENDPOINTS, buildUrlWithQuery, formatUserDisplayName } from '@/lib';
-import { PaginatedResponse, SeasonPokemonInput, TeamInput } from '@/types';
+import { PaginatedResponse, SeasonPokemonInput, SortableColumn, TeamInput } from '@/types';
 import { useParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
-
-type SortableColumn =
-  | 'name'
-  | 'hp'
-  | 'attack'
-  | 'defense'
-  | 'specialAttack'
-  | 'specialDefense'
-  | 'speed'
-  | 'baseStatTotal'
-  | 'pointValue';
 
 export default function TeamDetailPage() {
   // Pagination & sorting state

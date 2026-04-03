@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, Input, Label, PokemonVariant } from '@/components';
+import { Card, CardContent, Checkbox, Input, Label, PokemonVariant } from '@/components';
 import {
   Accordion,
   AccordionContent,
@@ -9,13 +9,13 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { FilterDropdown } from '@/components/pokemon/FilterDropdown';
+import { StatRangeFilter } from '@/components/pokemon/StatRangeFilter';
 import type {
   AbilityInput,
   MoveInput,
   PokemonTypeInput,
   SpecialMoveCategoryInput,
 } from '@/types';
-import { Checkbox } from '../ui/checkbox';
 
 export interface PokemonFilters {
   nameLike: string;
@@ -81,6 +81,18 @@ const getMoveName = (m: MoveInput) => m.name;
 const getSmcKey = (smc: SpecialMoveCategoryInput) => smc.id;
 const getSmcName = (smc: SpecialMoveCategoryInput) => smc.name;
 
+const STAT_RANGE_FILTERS: { label: string; minKey: keyof PokemonFilters; maxKey: keyof PokemonFilters }[] = [
+  { label: 'HP', minKey: 'minHp', maxKey: 'maxHp' },
+  { label: 'Attack', minKey: 'minAttack', maxKey: 'maxAttack' },
+  { label: 'Defense', minKey: 'minDefense', maxKey: 'maxDefense' },
+  { label: 'Special Attack', minKey: 'minSpecialAttack', maxKey: 'maxSpecialAttack' },
+  { label: 'Special Defense', minKey: 'minSpecialDefense', maxKey: 'maxSpecialDefense' },
+  { label: 'Speed', minKey: 'minSpeed', maxKey: 'maxSpeed' },
+  { label: 'Base Stat Total', minKey: 'minBaseStatTotal', maxKey: 'maxBaseStatTotal' },
+  { label: 'Physical Bulk', minKey: 'minPhysicalBulk', maxKey: 'maxPhysicalBulk' },
+  { label: 'Special Bulk', minKey: 'minSpecialBulk', maxKey: 'maxSpecialBulk' },
+];
+
 export function PokemonFilterPanel({
   filters,
   variant,
@@ -136,217 +148,25 @@ export function PokemonFilterPanel({
             </AccordionTrigger>
             <AccordionContent className="overflow-visible px-6 pb-4">
               <div className="flex flex-wrap gap-4">
-                {/* HP */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">HP</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minHp}
-                      onChange={(e) => onFilterChange({ minHp: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxHp}
-                      onChange={(e) => onFilterChange({ maxHp: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
+                {STAT_RANGE_FILTERS.map(({ label, minKey, maxKey }) => (
+                  <StatRangeFilter
+                    key={minKey}
+                    label={label}
+                    minKey={minKey}
+                    maxKey={maxKey}
+                    filters={filters}
+                    onFilterChange={onFilterChange}
+                  />
+                ))}
 
-                {/* Attack */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Attack</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minAttack}
-                      onChange={(e) => onFilterChange({ minAttack: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxAttack}
-                      onChange={(e) => onFilterChange({ maxAttack: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Defense */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Defense</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minDefense}
-                      onChange={(e) => onFilterChange({ minDefense: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxDefense}
-                      onChange={(e) => onFilterChange({ maxDefense: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Special Attack */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Special Attack</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minSpecialAttack}
-                      onChange={(e) => onFilterChange({ minSpecialAttack: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxSpecialAttack}
-                      onChange={(e) => onFilterChange({ maxSpecialAttack: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Special Defense */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Special Defense</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minSpecialDefense}
-                      onChange={(e) => onFilterChange({ minSpecialDefense: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxSpecialDefense}
-                      onChange={(e) => onFilterChange({ maxSpecialDefense: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Speed */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Speed</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minSpeed}
-                      onChange={(e) => onFilterChange({ minSpeed: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxSpeed}
-                      onChange={(e) => onFilterChange({ maxSpeed: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Base Stat Total */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Base Stat Total</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minBaseStatTotal}
-                      onChange={(e) => onFilterChange({ minBaseStatTotal: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxBaseStatTotal}
-                      onChange={(e) => onFilterChange({ maxBaseStatTotal: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Physical Bulk */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Physical Bulk</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minPhysicalBulk}
-                      onChange={(e) => onFilterChange({ minPhysicalBulk: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxPhysicalBulk}
-                      onChange={(e) => onFilterChange({ maxPhysicalBulk: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Special Bulk */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Special Bulk</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minSpecialBulk}
-                      onChange={(e) => onFilterChange({ minSpecialBulk: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxSpecialBulk}
-                      onChange={(e) => onFilterChange({ maxSpecialBulk: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-
-                {/* Season Point Value */}
-                { variant === 'seasonPokemon' && (
-                  <div className="w-40 space-y-2">
-                    <Label className="text-sm font-medium">Point Value</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Min"
-                        value={filters.minPointValue}
-                        onChange={(e) => onFilterChange({ minPointValue: e.target.value })}
-                        className="text-sm"
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Max"
-                        value={filters.maxPointValue}
-                        onChange={(e) => onFilterChange({ maxPointValue: e.target.value })}
-                        className="text-sm"
-                      />
-                    </div>
-                  </div>
+                {variant === 'seasonPokemon' && (
+                  <StatRangeFilter
+                    label="Point Value"
+                    minKey="minPointValue"
+                    maxKey="maxPointValue"
+                    filters={filters}
+                    onFilterChange={onFilterChange}
+                  />
                 )}
 
                 {/* Types Filter */}
@@ -453,13 +273,18 @@ export function PokemonFilterPanel({
                 />
 
                 {/* Exclude Drafted Pokemon */}
-                { variant === 'seasonPokemon' && (
+                {variant === 'seasonPokemon' && (
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="excludeDrafted" className="text-sm font-medium">Exclude Drafted Pokemon</Label>
+                    <Label htmlFor="excludeDrafted" className="text-sm font-medium">
+                      Exclude Drafted Pokemon
+                    </Label>
                     <Checkbox
                       checked={filters.excludeDrafted}
                       id="excludeDrafted"
-                      onCheckedChange={(checked) => onFilterChange({ excludeDrafted: checked === true })} />
+                      onCheckedChange={(checked) =>
+                        onFilterChange({ excludeDrafted: checked === true })
+                      }
+                    />
                   </div>
                 )}
               </div>
