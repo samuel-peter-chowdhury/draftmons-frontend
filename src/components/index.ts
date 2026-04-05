@@ -20,6 +20,7 @@ export * from './ui/tabs';
 export * from './ui/tooltip';
 export { default as Spinner } from './feedback/Spinner';
 export { default as ErrorAlert } from './feedback/ErrorAlert';
+export { default as AuthProvider } from './layout/AuthProvider';
 export { default as Header } from './layout/Header';
 export { default as Sidebar } from './layout/Sidebar';
 export * from './pokemon/PokemonFilterPanel';

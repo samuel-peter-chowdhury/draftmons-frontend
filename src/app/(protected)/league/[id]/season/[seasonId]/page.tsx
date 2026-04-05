@@ -25,7 +25,7 @@ import {
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateTeamModal } from '@/components/modals/CreateTeamModal';
 import { EditRulesModal } from '@/components/modals/EditRulesModal';
-import { useCheckAuth, useMutation } from '@/hooks';
+import { useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
@@ -55,8 +55,6 @@ export default function SeasonDetailPage() {
   const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
   const [isEditRulesModalOpen, setIsEditRulesModalOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<number | null>(null);
-
-  useCheckAuth();
 
   const isModerator = useIsModerator(currentUser?.id);
 

@@ -13,7 +13,7 @@ import {
   Spinner,
 } from '@/components';
 import { EditUserModal } from '@/components/modals/EditUserModal';
-import { useCheckAuth, useFetch } from '@/hooks';
+import { useFetch } from '@/hooks';
 import { buildUrl } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatUserDisplayName } from '@/lib/utils';
@@ -28,8 +28,6 @@ export default function UserDetailPage() {
   );
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  useCheckAuth();
 
   // Check if the current user is viewing their own profile
   const isOwnProfile = currentUser?.id === data?.id;
