@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import { useCheckAuth } from '@/hooks';
 import { formatUserDisplayName } from '@/lib/utils';
 import type { LeagueInput } from '@/types';
 
@@ -14,8 +13,6 @@ export default function HomePage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  useCheckAuth();
 
   const handleLeagueCreated = (league?: LeagueInput) => {
     if (league?.id) {

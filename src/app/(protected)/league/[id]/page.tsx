@@ -26,7 +26,7 @@ import {
 import { AddLeagueUsersModal } from '@/components/modals/AddLeagueUsersModal';
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import { useCheckAuth, useFetch, useMutation } from '@/hooks';
+import { useFetch, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
@@ -44,8 +44,6 @@ export default function LeagueDetailPage() {
   const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
   const [isEditLeagueModalOpen, setIsEditLeagueModalOpen] = useState(false);
   const [leagueUserToDelete, setLeagueUserToDelete] = useState<number | null>(null);
-
-  useCheckAuth();
 
   // Check if the current user is a moderator of this league
   const isModerator = data?.leagueUsers?.some(

@@ -6,7 +6,7 @@ import { ArrowRightLeft, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useCheckAuth, useFetch } from '@/hooks';
+import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { getStatColor, POKEMON_TYPE_ORDER } from '@/lib/pokemon';
@@ -50,8 +50,6 @@ export default function TierListPage() {
   const params = useParams<{ id: string; seasonId: string }>();
   const leagueId = Number(params.id);
   const seasonId = Number(params.seasonId);
-
-  useCheckAuth();
 
   const [view, setView] = useState<ViewMode>('classic');
   const [classicSortMap, setClassicSortMap] = useState<Record<string, TierSort>>({});
