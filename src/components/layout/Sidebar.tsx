@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUiStore } from '@/stores';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ChevronRight, Layers, ListOrdered, Swords, Wrench } from 'lucide-react';
+import { ChevronRight, Layers, ListOrdered, Shield, Swords, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsModerator } from '@/stores/useLeagueStore';
+import { useAuthStore } from '@/stores';
 
 function NavLink({
   href,
@@ -104,6 +106,8 @@ function useSeasonPrefix(): string | null {
 export default function Sidebar() {
   const { sidebarOpen, setSidebar } = useUiStore();
   const seasonPrefix = useSeasonPrefix();
+  const { user } = useAuthStore();
+  const isModerator = useIsModerator(user?.id);
 
   return (
     <>
@@ -212,6 +216,34 @@ export default function Sidebar() {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+
+          {/* Admin (moderators only) */}
+          {isModerator && (
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+            >
+              <AccordionItem value="admin">
+                <AccordionTrigger className="px-3">
+                  <span className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Admin
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col gap-1">
+                    <NavLink
+                      href={seasonPrefix ? `${seasonPrefix}/admin/tier-list` : '#'}
+                      disabled={!seasonPrefix}
+                    >
+                      Tier List
+                    </NavLink>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
 
           <div className="mt-auto px-3 pb-3 text-xs text-muted-foreground">v0.1.0</div>
         </nav>
