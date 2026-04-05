@@ -15,7 +15,7 @@ import {
   SortControls,
 } from '@/components';
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
-import { useCheckAuth, useFetch } from '@/hooks';
+import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
@@ -69,8 +69,6 @@ export default function SeasonsPage() {
     error: seasonsError,
     refetch: refetchSeasons,
   } = useFetch<PaginatedResponse<SeasonInput>>(seasonsUrl);
-
-  useCheckAuth();
 
   // Check if the current user is a moderator of this league
   const isModerator =

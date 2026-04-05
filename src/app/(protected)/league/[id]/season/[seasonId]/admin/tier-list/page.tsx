@@ -20,7 +20,7 @@ import {
   ConditionModal,
   DeleteConfirmDialog,
 } from './_components';
-import { useCheckAuth, useFetch, useMutation } from '@/hooks';
+import { useFetch, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useLeagueStore, useIsModerator } from '@/stores/useLeagueStore';
@@ -32,8 +32,6 @@ export default function AdminTierListPage() {
   const router = useRouter();
   const leagueId = Number(params.id);
   const seasonId = Number(params.seasonId);
-
-  useCheckAuth();
 
   const { user } = useAuthStore();
   const isModerator = useIsModerator(user?.id);
