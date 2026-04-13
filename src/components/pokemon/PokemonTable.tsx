@@ -45,8 +45,9 @@ function SortableHeader({
 }
 
 interface PokemonRow {
-  pokemon: PokemonInput; 
-  pointValue?: number
+  pokemon: PokemonInput;
+  pointValue?: number;
+  seasonPokemonId?: number;
 };
 
 export type PokemonVariant = 'pokemon' | 'seasonPokemon';
@@ -63,6 +64,8 @@ export interface PokemonTableProps {
   onSort: (column: SortableColumn) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  leagueId?: number;
+  seasonId?: number;
 }
 
 function getRowData(
@@ -74,7 +77,11 @@ function getRowData(
   }
   const seasonPokemon = item as SeasonPokemonInput;
   if (!seasonPokemon.pokemon) return null;
-  return { pokemon: seasonPokemon.pokemon, pointValue: seasonPokemon.pointValue };
+  return {
+    pokemon: seasonPokemon.pokemon,
+    pointValue: seasonPokemon.pointValue,
+    seasonPokemonId: seasonPokemon.id,
+  };
 }
 
 export function PokemonTable({
@@ -89,12 +96,19 @@ export function PokemonTable({
   onSort,
   onPageChange,
   onPageSizeChange,
+  leagueId,
+  seasonId,
 }: PokemonTableProps) {
   const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(null);
+  const [selectedSeasonPokemonId, setSelectedSeasonPokemonId] = useState<number | null>(null);
 
-  const handleSpriteClick = useCallback((pokemonId: number) => {
-    setSelectedPokemonId(pokemonId);
-  }, []);
+  const handleSpriteClick = useCallback(
+    (pokemonId: number, seasonPokemonId?: number) => {
+      setSelectedPokemonId(pokemonId);
+      setSelectedSeasonPokemonId(seasonPokemonId ?? null);
+    },
+    [],
+  );
 
   return (
     <>
@@ -167,7 +181,9 @@ export function PokemonTable({
                               pokemonId={rowData.pokemon.id}
                               spriteUrl={rowData.pokemon.spriteUrl}
                               name={rowData.pokemon.name}
-                              onClick={handleSpriteClick}
+                              onClick={(id) =>
+                                handleSpriteClick(id, rowData.seasonPokemonId)
+                              }
                             />
                           </TableCell>
                           <TableCell className="font-medium capitalize">{rowData.pokemon.name}</TableCell>
@@ -248,8 +264,14 @@ export function PokemonTable({
           pokemonId={selectedPokemonId}
           open={selectedPokemonId !== null}
           onOpenChange={(open) => {
-            if (!open) setSelectedPokemonId(null);
+            if (!open) {
+              setSelectedPokemonId(null);
+              setSelectedSeasonPokemonId(null);
+            }
           }}
+          seasonPokemonId={selectedSeasonPokemonId}
+          leagueId={leagueId}
+          seasonId={seasonId}
         />
       )}
     </>

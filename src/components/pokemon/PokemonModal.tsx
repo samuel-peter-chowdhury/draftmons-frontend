@@ -11,9 +11,16 @@ import {
 } from '@/components';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { PokemonApi } from '@/lib/api';
+import Link from 'next/link';
+import { PokemonApi, LeagueApi } from '@/lib/api';
 import { getStatColor, calculateSpeedTiers } from '@/lib/pokemon';
-import type { PokemonInput, MoveInput, PokemonTypeInput, SpecialMoveCategoryInput } from '@/types';
+import type {
+  PokemonInput,
+  MoveInput,
+  PokemonTypeInput,
+  SpecialMoveCategoryInput,
+  SeasonPokemonInput,
+} from '@/types';
 
 function capitalizeFirst(str: string): string {
   const lower = str.toLowerCase();
@@ -43,6 +50,9 @@ interface PokemonModalProps {
   pokemonId: number | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  seasonPokemonId?: number | null;
+  leagueId?: number;
+  seasonId?: number;
 }
 
 const STAT_LABELS: { key: keyof PokemonInput; label: string }[] = [
@@ -56,19 +66,51 @@ const STAT_LABELS: { key: keyof PokemonInput; label: string }[] = [
 
 const MAX_STAT = 255;
 
-export function PokemonModal({ pokemonId, open, onOpenChange }: PokemonModalProps) {
+export function PokemonModal({
+  pokemonId,
+  open,
+  onOpenChange,
+  seasonPokemonId,
+  leagueId,
+  seasonId,
+}: PokemonModalProps) {
   const [pokemon, setPokemon] = useState<PokemonInput | null>(null);
+  const [seasonPokemon, setSeasonPokemon] = useState<SeasonPokemonInput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isSeasonMode = !!(seasonPokemonId && leagueId);
   const moves = pokemon?.moves ?? [];
 
-  // Fetch pokemon data
+  // Fetch pokemon data (or season pokemon data when in season mode)
   useEffect(() => {
-    if (open && pokemonId) {
+    if (!open) return;
+
+    if (isSeasonMode && pokemonId) {
       setLoading(true);
       setError(null);
       setPokemon(null);
+      setSeasonPokemon(null);
+
+      Promise.all([
+        PokemonApi.getById(pokemonId, true),
+        LeagueApi.getSeasonPokemonById(leagueId, seasonPokemonId, true, true),
+      ])
+        .then(([pokemonData, seasonData]) => {
+          setPokemon(pokemonData);
+          setSeasonPokemon(seasonData);
+        })
+        .catch((err) => {
+          setError(err?.body?.message || err?.message || 'Failed to load Pokemon data');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else if (pokemonId) {
+      setLoading(true);
+      setError(null);
+      setPokemon(null);
+      setSeasonPokemon(null);
 
       PokemonApi.getById(pokemonId, true)
         .then((data) => {
@@ -81,11 +123,12 @@ export function PokemonModal({ pokemonId, open, onOpenChange }: PokemonModalProp
           setLoading(false);
         });
     }
-  }, [open, pokemonId]);
+  }, [open, pokemonId, isSeasonMode, leagueId, seasonPokemonId]);
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setPokemon(null);
+      setSeasonPokemon(null);
       setError(null);
     }
     onOpenChange(newOpen);
@@ -267,6 +310,34 @@ export function PokemonModal({ pokemonId, open, onOpenChange }: PokemonModalProp
                 </div>
               </div>
             </div>
+
+            {/* Season info section */}
+            {seasonPokemon && (
+              <div className="flex items-start gap-6 rounded-lg bg-secondary/50 px-4 py-3">
+                <div className="shrink-0">
+                  <span className="text-xs font-medium text-muted-foreground">Pts</span>
+                  <p className="text-sm">{seasonPokemon.pointValue}</p>
+                </div>
+                {seasonPokemon.condition && (
+                  <div className="shrink-0">
+                    <span className="text-xs font-medium text-muted-foreground">Condition</span>
+                    <p className="text-sm">{seasonPokemon.condition}</p>
+                  </div>
+                )}
+                {seasonPokemon.seasonPokemonTeams &&
+                  seasonPokemon.seasonPokemonTeams.length > 0 && (
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-medium text-muted-foreground">Drafted By</span>
+                      <p className="text-sm">
+                        {seasonPokemon.seasonPokemonTeams
+                          .filter((spt) => spt.team)
+                          .map((spt) => spt.team!.name)
+                          .join(', ')}
+                      </p>
+                    </div>
+                  )}
+              </div>
+            )}
 
             {/* Moves section */}
             <div>

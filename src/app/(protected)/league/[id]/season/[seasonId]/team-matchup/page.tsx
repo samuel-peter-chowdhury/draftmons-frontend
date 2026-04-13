@@ -130,6 +130,7 @@ function TeamMatchupContent() {
   );
 
   const [modalPokemonId, setModalPokemonId] = useState<number | null>(null);
+  const [modalSeasonPokemonId, setModalSeasonPokemonId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   // Fetch season with teams
@@ -213,10 +214,28 @@ function TeamMatchupContent() {
     [teams, teamBId],
   );
 
-  const handleSpriteClick = useCallback((pokemonId: number) => {
-    setModalPokemonId(pokemonId);
-    setModalOpen(true);
-  }, []);
+  // Map pokemonId → seasonPokemonId from both teams' rosters
+  const pokemonToSeasonPokemonMap = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const roster of [teamA.rosterData, teamB.rosterData]) {
+      if (!roster) continue;
+      for (const spt of roster.data) {
+        const pkmn = spt.seasonPokemon?.pokemon;
+        const spId = spt.seasonPokemon?.id;
+        if (pkmn && spId) map.set(pkmn.id, spId);
+      }
+    }
+    return map;
+  }, [teamA.rosterData, teamB.rosterData]);
+
+  const handleSpriteClick = useCallback(
+    (pokemonId: number) => {
+      setModalPokemonId(pokemonId);
+      setModalSeasonPokemonId(pokemonToSeasonPokemonMap.get(pokemonId) ?? null);
+      setModalOpen(true);
+    },
+    [pokemonToSeasonPokemonMap],
+  );
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -436,7 +455,20 @@ function TeamMatchupContent() {
         </div>
       )}
 
-      <PokemonModal pokemonId={modalPokemonId} open={modalOpen} onOpenChange={setModalOpen} />
+      <PokemonModal
+        pokemonId={modalPokemonId}
+        open={modalOpen}
+        onOpenChange={(open) => {
+          setModalOpen(open);
+          if (!open) {
+            setModalPokemonId(null);
+            setModalSeasonPokemonId(null);
+          }
+        }}
+        seasonPokemonId={modalSeasonPokemonId}
+        leagueId={leagueId}
+        seasonId={seasonId}
+      />
     </div>
   );
 }
