@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Card, CardContent, ErrorAlert, Spinner, Pagination } from '@/components';
 import {
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PokemonSprite } from './PokemonSprite';
 import { PokemonModal } from './PokemonModal';
+import { usePokemonModal } from '@/hooks';
 import type { PaginatedResponse, PokemonInput, SeasonPokemonInput, SortableColumn } from '@/types';
 
 function SortableHeader({
@@ -48,7 +49,7 @@ interface PokemonRow {
   pokemon: PokemonInput;
   pointValue?: number;
   seasonPokemonId?: number;
-};
+}
 
 export type PokemonVariant = 'pokemon' | 'seasonPokemon';
 
@@ -65,7 +66,6 @@ export interface PokemonTableProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   leagueId?: number;
-  seasonId?: number;
 }
 
 function getRowData(
@@ -97,17 +97,14 @@ export function PokemonTable({
   onPageChange,
   onPageSizeChange,
   leagueId,
-  seasonId,
 }: PokemonTableProps) {
-  const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(null);
-  const [selectedSeasonPokemonId, setSelectedSeasonPokemonId] = useState<number | null>(null);
+  const pokemonModal = usePokemonModal();
 
   const handleSpriteClick = useCallback(
     (pokemonId: number, seasonPokemonId?: number) => {
-      setSelectedPokemonId(pokemonId);
-      setSelectedSeasonPokemonId(seasonPokemonId ?? null);
+      pokemonModal.openModal(pokemonId, seasonPokemonId);
     },
-    [],
+    [pokemonModal.openModal],
   );
 
   return (
@@ -259,19 +256,13 @@ export function PokemonTable({
         </>
       )}
 
-      {selectedPokemonId !== null && (
+      {pokemonModal.open && (
         <PokemonModal
-          pokemonId={selectedPokemonId}
-          open={selectedPokemonId !== null}
-          onOpenChange={(open) => {
-            if (!open) {
-              setSelectedPokemonId(null);
-              setSelectedSeasonPokemonId(null);
-            }
-          }}
-          seasonPokemonId={selectedSeasonPokemonId}
+          pokemonId={pokemonModal.pokemonId}
+          open={pokemonModal.open}
+          onOpenChange={pokemonModal.onOpenChange}
+          seasonPokemonId={pokemonModal.seasonPokemonId}
           leagueId={leagueId}
-          seasonId={seasonId}
         />
       )}
     </>

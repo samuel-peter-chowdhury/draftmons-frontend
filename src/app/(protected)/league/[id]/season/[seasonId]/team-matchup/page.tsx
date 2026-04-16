@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Route } from 'next';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -15,7 +15,7 @@ import {
   TabsTrigger,
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useFetch } from '@/hooks';
+import { useFetch, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { SeasonInput, PaginatedResponse, MoveInput, PokemonInput } from '@/types';
@@ -129,9 +129,7 @@ function TeamMatchupContent() {
     [searchParams, pathname, router, leagueId, seasonId],
   );
 
-  const [modalPokemonId, setModalPokemonId] = useState<number | null>(null);
-  const [modalSeasonPokemonId, setModalSeasonPokemonId] = useState<number | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const pokemonModal = usePokemonModal();
 
   // Fetch season with teams
   const {
@@ -230,11 +228,10 @@ function TeamMatchupContent() {
 
   const handleSpriteClick = useCallback(
     (pokemonId: number) => {
-      setModalPokemonId(pokemonId);
-      setModalSeasonPokemonId(pokemonToSeasonPokemonMap.get(pokemonId) ?? null);
-      setModalOpen(true);
+      const seasonPokemonId = pokemonToSeasonPokemonMap.get(pokemonId);
+      pokemonModal.openModal(pokemonId, seasonPokemonId);
     },
-    [pokemonToSeasonPokemonMap],
+    [pokemonToSeasonPokemonMap, pokemonModal.openModal],
   );
 
   return (
@@ -456,18 +453,11 @@ function TeamMatchupContent() {
       )}
 
       <PokemonModal
-        pokemonId={modalPokemonId}
-        open={modalOpen}
-        onOpenChange={(open) => {
-          setModalOpen(open);
-          if (!open) {
-            setModalPokemonId(null);
-            setModalSeasonPokemonId(null);
-          }
-        }}
-        seasonPokemonId={modalSeasonPokemonId}
+        pokemonId={pokemonModal.pokemonId}
+        open={pokemonModal.open}
+        onOpenChange={pokemonModal.onOpenChange}
+        seasonPokemonId={pokemonModal.seasonPokemonId}
         leagueId={leagueId}
-        seasonId={seasonId}
       />
     </div>
   );

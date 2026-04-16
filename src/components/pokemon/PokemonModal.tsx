@@ -11,7 +11,6 @@ import {
 } from '@/components';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import Link from 'next/link';
 import { PokemonApi, LeagueApi } from '@/lib/api';
 import { getStatColor, calculateSpeedTiers } from '@/lib/pokemon';
 import type {
@@ -52,7 +51,6 @@ interface PokemonModalProps {
   onOpenChange: (open: boolean) => void;
   seasonPokemonId?: number | null;
   leagueId?: number;
-  seasonId?: number;
 }
 
 const STAT_LABELS: { key: keyof PokemonInput; label: string }[] = [
@@ -72,57 +70,42 @@ export function PokemonModal({
   onOpenChange,
   seasonPokemonId,
   leagueId,
-  seasonId,
 }: PokemonModalProps) {
   const [pokemon, setPokemon] = useState<PokemonInput | null>(null);
   const [seasonPokemon, setSeasonPokemon] = useState<SeasonPokemonInput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isSeasonMode = !!(seasonPokemonId && leagueId);
+  const isSeasonMode = !!(seasonPokemonId && leagueId && pokemonId);
   const moves = pokemon?.moves ?? [];
 
   // Fetch pokemon data (or season pokemon data when in season mode)
   useEffect(() => {
-    if (!open) return;
+    if (!open || !pokemonId) return;
 
-    if (isSeasonMode && pokemonId) {
-      setLoading(true);
-      setError(null);
-      setPokemon(null);
-      setSeasonPokemon(null);
+    setLoading(true);
+    setError(null);
+    setPokemon(null);
+    setSeasonPokemon(null);
 
-      Promise.all([
-        PokemonApi.getById(pokemonId, true),
-        LeagueApi.getSeasonPokemonById(leagueId, seasonPokemonId, true, true),
-      ])
-        .then(([pokemonData, seasonData]) => {
-          setPokemon(pokemonData);
-          setSeasonPokemon(seasonData);
-        })
-        .catch((err) => {
-          setError(err?.body?.message || err?.message || 'Failed to load Pokemon data');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else if (pokemonId) {
-      setLoading(true);
-      setError(null);
-      setPokemon(null);
-      setSeasonPokemon(null);
+    const fetches =
+      isSeasonMode
+        ? Promise.all([
+            PokemonApi.getById(pokemonId, true),
+            LeagueApi.getSeasonPokemonById(leagueId!, seasonPokemonId!, true, true),
+          ]).then(([pokemonData, seasonData]) => {
+            setPokemon(pokemonData);
+            setSeasonPokemon(seasonData);
+          })
+        : PokemonApi.getById(pokemonId, true).then(setPokemon);
 
-      PokemonApi.getById(pokemonId, true)
-        .then((data) => {
-          setPokemon(data);
-        })
-        .catch((err) => {
-          setError(err?.body?.message || err?.message || 'Failed to load Pokemon data');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
+    fetches
+      .catch((err) => {
+        setError(err?.body?.message || err?.message || 'Failed to load Pokemon data');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [open, pokemonId, isSeasonMode, leagueId, seasonPokemonId]);
 
   const handleOpenChange = (newOpen: boolean) => {

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, type JSX } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowRightLeft, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useFetch } from '@/hooks';
+import { useFetch, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { getStatColor, POKEMON_TYPE_ORDER } from '@/lib/pokemon';
@@ -54,9 +54,7 @@ export default function TierListPage() {
   const [view, setView] = useState<ViewMode>('classic');
   const [classicSortMap, setClassicSortMap] = useState<Record<string, TierSort>>({});
   const [typeSortMap, setTypeSortMap] = useState<Record<string, TierSort>>({});
-  const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(null);
-  const [selectedSeasonPokemonId, setSelectedSeasonPokemonId] = useState<number | null>(null);
-  const [pokemonModalOpen, setPokemonModalOpen] = useState(false);
+  const pokemonModal = usePokemonModal();
 
   const sortMap = view === 'classic' ? classicSortMap : typeSortMap;
   const setSortMap = view === 'classic' ? setClassicSortMap : setTypeSortMap;
@@ -158,11 +156,9 @@ export default function TierListPage() {
 
   const handleSpriteClick = useCallback(
     (pokemonId: number, seasonPokemonId?: number) => {
-      setSelectedPokemonId(pokemonId);
-      setSelectedSeasonPokemonId(seasonPokemonId ?? null);
-      setPokemonModalOpen(true);
+      pokemonModal.openModal(pokemonId, seasonPokemonId);
     },
-    [],
+    [pokemonModal.openModal],
   );
 
   const toggleView = useCallback(() => {
@@ -283,18 +279,11 @@ export default function TierListPage() {
       )}
 
       <PokemonModal
-        pokemonId={selectedPokemonId}
-        open={pokemonModalOpen}
-        onOpenChange={(open) => {
-          setPokemonModalOpen(open);
-          if (!open) {
-            setSelectedPokemonId(null);
-            setSelectedSeasonPokemonId(null);
-          }
-        }}
-        seasonPokemonId={selectedSeasonPokemonId}
+        pokemonId={pokemonModal.pokemonId}
+        open={pokemonModal.open}
+        onOpenChange={pokemonModal.onOpenChange}
+        seasonPokemonId={pokemonModal.seasonPokemonId}
         leagueId={leagueId}
-        seasonId={seasonId}
       />
     </div>
   );
