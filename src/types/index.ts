@@ -23,3 +23,4 @@ export * from './teamBuildSet.type';
 export * from './typeEffective.type';
 export * from './user.type';
 export * from './week.type';
+export * from './discord.type';

@@ -51,6 +51,7 @@ export const BASE_ENDPOINTS = {
   TEAM_BUILD_SET_BASE: `${API_BASE_URL}/api/team-build-set`,
   TEAM_BASE: `${API_BASE_URL}/api/team`,
   USER_BASE: `${API_BASE_URL}/api/user`,
+  DISCORD_GUILDS: `${API_BASE_URL}/api/discord/guilds`,
 } as const;
 
 export const NAT_DEX_GENERATION_ID = 0;
