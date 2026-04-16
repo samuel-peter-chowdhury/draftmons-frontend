@@ -129,7 +129,7 @@ function TeamMatchupContent() {
     [searchParams, pathname, router, leagueId, seasonId],
   );
 
-  const pokemonModal = usePokemonModal();
+  const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
   // Fetch season with teams
   const {
@@ -229,9 +229,9 @@ function TeamMatchupContent() {
   const handleSpriteClick = useCallback(
     (pokemonId: number) => {
       const seasonPokemonId = pokemonToSeasonPokemonMap.get(pokemonId);
-      pokemonModal.openModal(pokemonId, seasonPokemonId);
+      openModal(pokemonId, seasonPokemonId);
     },
-    [pokemonToSeasonPokemonMap, pokemonModal.openModal],
+    [pokemonToSeasonPokemonMap, openModal],
   );
 
   return (
@@ -453,10 +453,10 @@ function TeamMatchupContent() {
       )}
 
       <PokemonModal
-        pokemonId={pokemonModal.pokemonId}
-        open={pokemonModal.open}
-        onOpenChange={pokemonModal.onOpenChange}
-        seasonPokemonId={pokemonModal.seasonPokemonId}
+        pokemonId={modalPokemonId}
+        open={modalOpen}
+        onOpenChange={onOpenChange}
+        seasonPokemonId={modalSeasonPokemonId}
         leagueId={leagueId}
       />
     </div>

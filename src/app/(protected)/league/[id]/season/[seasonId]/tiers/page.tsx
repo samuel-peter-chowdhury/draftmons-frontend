@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, type JSX } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowRightLeft, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
@@ -54,7 +54,7 @@ export default function TierListPage() {
   const [view, setView] = useState<ViewMode>('classic');
   const [classicSortMap, setClassicSortMap] = useState<Record<string, TierSort>>({});
   const [typeSortMap, setTypeSortMap] = useState<Record<string, TierSort>>({});
-  const pokemonModal = usePokemonModal();
+  const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
   const sortMap = view === 'classic' ? classicSortMap : typeSortMap;
   const setSortMap = view === 'classic' ? setClassicSortMap : setTypeSortMap;
@@ -156,9 +156,9 @@ export default function TierListPage() {
 
   const handleSpriteClick = useCallback(
     (pokemonId: number, seasonPokemonId?: number) => {
-      pokemonModal.openModal(pokemonId, seasonPokemonId);
+      openModal(pokemonId, seasonPokemonId);
     },
-    [pokemonModal.openModal],
+    [openModal],
   );
 
   const toggleView = useCallback(() => {
@@ -279,10 +279,10 @@ export default function TierListPage() {
       )}
 
       <PokemonModal
-        pokemonId={pokemonModal.pokemonId}
-        open={pokemonModal.open}
-        onOpenChange={pokemonModal.onOpenChange}
-        seasonPokemonId={pokemonModal.seasonPokemonId}
+        pokemonId={modalPokemonId}
+        open={modalOpen}
+        onOpenChange={onOpenChange}
+        seasonPokemonId={modalSeasonPokemonId}
         leagueId={leagueId}
       />
     </div>

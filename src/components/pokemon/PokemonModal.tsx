@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -76,46 +76,58 @@ export function PokemonModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isSeasonMode = !!(seasonPokemonId && leagueId && pokemonId);
   const moves = pokemon?.moves ?? [];
 
   // Fetch pokemon data (or season pokemon data when in season mode)
   useEffect(() => {
     if (!open || !pokemonId) return;
 
+    let cancelled = false;
     setLoading(true);
     setError(null);
     setPokemon(null);
     setSeasonPokemon(null);
 
     const fetches =
-      isSeasonMode
+      seasonPokemonId && leagueId
         ? Promise.all([
             PokemonApi.getById(pokemonId, true),
-            LeagueApi.getSeasonPokemonById(leagueId!, seasonPokemonId!, true, true),
+            LeagueApi.getSeasonPokemonById(leagueId, seasonPokemonId, true, true),
           ]).then(([pokemonData, seasonData]) => {
+            if (cancelled) return;
             setPokemon(pokemonData);
             setSeasonPokemon(seasonData);
           })
-        : PokemonApi.getById(pokemonId, true).then(setPokemon);
+        : PokemonApi.getById(pokemonId, true).then((data) => {
+            if (cancelled) return;
+            setPokemon(data);
+          });
 
     fetches
       .catch((err) => {
+        if (cancelled) return;
         setError(err?.body?.message || err?.message || 'Failed to load Pokemon data');
       })
       .finally(() => {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       });
-  }, [open, pokemonId, isSeasonMode, leagueId, seasonPokemonId]);
 
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      setPokemon(null);
-      setSeasonPokemon(null);
-      setError(null);
-    }
-    onOpenChange(newOpen);
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [open, pokemonId, leagueId, seasonPokemonId]);
+
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (!newOpen) {
+        setPokemon(null);
+        setSeasonPokemon(null);
+        setError(null);
+      }
+      onOpenChange(newOpen);
+    },
+    [onOpenChange],
+  );
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

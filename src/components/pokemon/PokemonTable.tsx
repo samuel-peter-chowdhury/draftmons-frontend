@@ -98,13 +98,13 @@ export function PokemonTable({
   onPageSizeChange,
   leagueId,
 }: PokemonTableProps) {
-  const pokemonModal = usePokemonModal();
+  const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
   const handleSpriteClick = useCallback(
     (pokemonId: number, seasonPokemonId?: number) => {
-      pokemonModal.openModal(pokemonId, seasonPokemonId);
+      openModal(pokemonId, seasonPokemonId);
     },
-    [pokemonModal.openModal],
+    [openModal],
   );
 
   return (
@@ -256,15 +256,13 @@ export function PokemonTable({
         </>
       )}
 
-      {pokemonModal.open && (
-        <PokemonModal
-          pokemonId={pokemonModal.pokemonId}
-          open={pokemonModal.open}
-          onOpenChange={pokemonModal.onOpenChange}
-          seasonPokemonId={pokemonModal.seasonPokemonId}
-          leagueId={leagueId}
-        />
-      )}
+      <PokemonModal
+        pokemonId={modalPokemonId}
+        open={modalOpen}
+        onOpenChange={onOpenChange}
+        seasonPokemonId={modalSeasonPokemonId}
+        leagueId={leagueId}
+      />
     </>
   );
 }
