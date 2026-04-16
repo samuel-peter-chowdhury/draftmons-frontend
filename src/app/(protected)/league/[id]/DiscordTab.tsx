@@ -43,8 +43,9 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
     BASE_ENDPOINTS.DISCORD_GUILDS,
   );
 
+  const channelsFetchGuildId = selectedGuildId || league.discordGuildId;
   const { data: channels, loading: channelsLoading } = useFetch<DiscordChannel[]>(
-    selectedGuildId ? `${BASE_ENDPOINTS.DISCORD_GUILDS}/${selectedGuildId}/channels` : null,
+    channelsFetchGuildId ? `${BASE_ENDPOINTS.DISCORD_GUILDS}/${channelsFetchGuildId}/channels` : null,
   );
 
   const isConnected = !!league.discordGuildId && !!league.discordChannelId;
@@ -52,7 +53,8 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
 
   const connectedGuild = guilds?.find((g) => g.id === league.discordGuildId);
   const connectedGuildName = connectedGuild?.name ?? league.discordGuildId ?? 'Unknown Server';
-  const connectedChannelId = league.discordChannelId;
+  const connectedChannel = channels?.find((c) => c.id === league.discordChannelId);
+  const connectedChannelName = connectedChannel?.name ?? league.discordChannelId ?? 'Unknown Channel';
 
   const saveMutation = useMutation(
     ({ guildId, channelId }: { guildId: string; channelId: string }) =>
@@ -150,7 +152,7 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
               </div>
               <div>
                 <span className="text-muted-foreground">Channel: </span>
-                <span className="font-medium">#{connectedChannelId}</span>
+                <span className="font-medium">#{connectedChannelName}</span>
               </div>
             </div>
             <div className="flex gap-2">
