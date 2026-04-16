@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Card, CardContent, ErrorAlert, Spinner, Pagination } from '@/components';
 import {
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PokemonSprite } from './PokemonSprite';
 import { PokemonModal } from './PokemonModal';
+import { usePokemonModal } from '@/hooks';
 import type { PaginatedResponse, PokemonInput, SeasonPokemonInput, SortableColumn } from '@/types';
 
 function SortableHeader({
@@ -45,9 +46,10 @@ function SortableHeader({
 }
 
 interface PokemonRow {
-  pokemon: PokemonInput; 
-  pointValue?: number
-};
+  pokemon: PokemonInput;
+  pointValue?: number;
+  seasonPokemonId?: number;
+}
 
 export type PokemonVariant = 'pokemon' | 'seasonPokemon';
 
@@ -63,6 +65,7 @@ export interface PokemonTableProps {
   onSort: (column: SortableColumn) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  leagueId?: number;
 }
 
 function getRowData(
@@ -74,7 +77,11 @@ function getRowData(
   }
   const seasonPokemon = item as SeasonPokemonInput;
   if (!seasonPokemon.pokemon) return null;
-  return { pokemon: seasonPokemon.pokemon, pointValue: seasonPokemon.pointValue };
+  return {
+    pokemon: seasonPokemon.pokemon,
+    pointValue: seasonPokemon.pointValue,
+    seasonPokemonId: seasonPokemon.id,
+  };
 }
 
 export function PokemonTable({
@@ -89,12 +96,16 @@ export function PokemonTable({
   onSort,
   onPageChange,
   onPageSizeChange,
+  leagueId,
 }: PokemonTableProps) {
-  const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(null);
+  const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
-  const handleSpriteClick = useCallback((pokemonId: number) => {
-    setSelectedPokemonId(pokemonId);
-  }, []);
+  const handleSpriteClick = useCallback(
+    (pokemonId: number, seasonPokemonId?: number) => {
+      openModal(pokemonId, seasonPokemonId);
+    },
+    [openModal],
+  );
 
   return (
     <>
@@ -167,7 +178,9 @@ export function PokemonTable({
                               pokemonId={rowData.pokemon.id}
                               spriteUrl={rowData.pokemon.spriteUrl}
                               name={rowData.pokemon.name}
-                              onClick={handleSpriteClick}
+                              onClick={(id) =>
+                                handleSpriteClick(id, rowData.seasonPokemonId)
+                              }
                             />
                           </TableCell>
                           <TableCell className="font-medium capitalize">{rowData.pokemon.name}</TableCell>
@@ -243,15 +256,13 @@ export function PokemonTable({
         </>
       )}
 
-      {selectedPokemonId !== null && (
-        <PokemonModal
-          pokemonId={selectedPokemonId}
-          open={selectedPokemonId !== null}
-          onOpenChange={(open) => {
-            if (!open) setSelectedPokemonId(null);
-          }}
-        />
-      )}
+      <PokemonModal
+        pokemonId={modalPokemonId}
+        open={modalOpen}
+        onOpenChange={onOpenChange}
+        seasonPokemonId={modalSeasonPokemonId}
+        leagueId={leagueId}
+      />
     </>
   );
 }

@@ -424,8 +424,17 @@ export const LeagueApi = {
    * GET /api/league/:leagueId/season-pokemon/:seasonPokemonId
    * Get a specific season pokemon
    */
-  getSeasonPokemonById: (leagueId: number, seasonPokemonId: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon', seasonPokemonId);
+  getSeasonPokemonById: (
+    leagueId: number,
+    seasonPokemonId: number,
+    full?: boolean,
+    activeRelationsOnly?: boolean,
+  ) => {
+    const url = buildUrlWithQuery(
+      BASE_ENDPOINTS.LEAGUE_BASE,
+      [leagueId, 'season-pokemon', seasonPokemonId],
+      { full, activeRelationsOnly },
+    );
     return Api.get<SeasonPokemonInput>(url);
   },
 

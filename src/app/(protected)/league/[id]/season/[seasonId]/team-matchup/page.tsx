@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Route } from 'next';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -15,7 +15,7 @@ import {
   TabsTrigger,
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useFetch } from '@/hooks';
+import { useFetch, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { SeasonInput, PaginatedResponse, MoveInput, PokemonInput } from '@/types';
@@ -129,8 +129,7 @@ function TeamMatchupContent() {
     [searchParams, pathname, router, leagueId, seasonId],
   );
 
-  const [modalPokemonId, setModalPokemonId] = useState<number | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
   // Fetch season with teams
   const {
@@ -213,10 +212,27 @@ function TeamMatchupContent() {
     [teams, teamBId],
   );
 
-  const handleSpriteClick = useCallback((pokemonId: number) => {
-    setModalPokemonId(pokemonId);
-    setModalOpen(true);
-  }, []);
+  // Map pokemonId → seasonPokemonId from both teams' rosters
+  const pokemonToSeasonPokemonMap = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const roster of [teamA.rosterData, teamB.rosterData]) {
+      if (!roster) continue;
+      for (const spt of roster.data) {
+        const pkmn = spt.seasonPokemon?.pokemon;
+        const spId = spt.seasonPokemon?.id;
+        if (pkmn && spId) map.set(pkmn.id, spId);
+      }
+    }
+    return map;
+  }, [teamA.rosterData, teamB.rosterData]);
+
+  const handleSpriteClick = useCallback(
+    (pokemonId: number) => {
+      const seasonPokemonId = pokemonToSeasonPokemonMap.get(pokemonId);
+      openModal(pokemonId, seasonPokemonId);
+    },
+    [pokemonToSeasonPokemonMap, openModal],
+  );
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -436,7 +452,13 @@ function TeamMatchupContent() {
         </div>
       )}
 
-      <PokemonModal pokemonId={modalPokemonId} open={modalOpen} onOpenChange={setModalOpen} />
+      <PokemonModal
+        pokemonId={modalPokemonId}
+        open={modalOpen}
+        onOpenChange={onOpenChange}
+        seasonPokemonId={modalSeasonPokemonId}
+        leagueId={leagueId}
+      />
     </div>
   );
 }
