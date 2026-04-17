@@ -12,8 +12,8 @@ import {
 import type { ToastData } from '@/hooks/useToast';
 
 export function Toaster() {
-  const { subscribe, getSnapshot } = useToastStore();
-  const toasts: ToastData[] = useSyncExternalStore(subscribe, getSnapshot, () => []);
+  const { subscribe, getSnapshot, getServerSnapshot } = useToastStore();
+  const toasts: ToastData[] = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   return (
     <ToastProvider>

@@ -30,15 +30,19 @@ export function dismissToast(id: string): void {
   notifyListeners();
 }
 
-export function useToastStore() {
-  const subscribe = (listener: (toasts: ToastData[]) => void) => {
-    listeners.add(listener);
-    return () => {
-      listeners.delete(listener);
-    };
+// Stable references for useSyncExternalStore — must not be recreated per render
+const subscribe = (listener: (toasts: ToastData[]) => void) => {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
   };
+};
 
-  const getSnapshot = () => toasts;
+const getSnapshot = () => toasts;
 
-  return { subscribe, getSnapshot };
+const EMPTY: ToastData[] = [];
+const getServerSnapshot = () => EMPTY;
+
+export function useToastStore() {
+  return { subscribe, getSnapshot, getServerSnapshot };
 }

@@ -22,6 +22,7 @@ export interface UserOutput extends BaseOutput {
   email?: string;
   isAdmin: boolean;
   googleId?: string;
+  discordId?: string | null;
   showdownUsername?: string;
   discordUsername?: string;
   timezone?: string;

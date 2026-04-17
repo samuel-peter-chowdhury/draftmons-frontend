@@ -36,7 +36,6 @@ export const BASE_ENDPOINTS = {
   AUTH_GOOGLE: `${API_BASE_URL}/api/auth/google`,
   AUTH_LOGOUT: `${API_BASE_URL}/api/auth/logout`,
   AUTH_DISCORD: `${API_BASE_URL}/api/auth/discord`,
-  AUTH_DISCORD_UNLINK: `${API_BASE_URL}/api/auth/discord`,
   GENERATION_BASE: `${API_BASE_URL}/api/generation`,
   ITEM_BASE: `${API_BASE_URL}/api/item`,
   LEAGUE_BASE: `${API_BASE_URL}/api/league`,

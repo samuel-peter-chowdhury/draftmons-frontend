@@ -43,6 +43,6 @@ export const AuthApi = {
    * Unlink the current user's Discord account
    */
   unlinkDiscord: () => {
-    return Api.delete<{ message: string }>(BASE_ENDPOINTS.AUTH_DISCORD_UNLINK);
+    return Api.delete<{ message: string }>(BASE_ENDPOINTS.AUTH_DISCORD);
   },
 };
