@@ -1,4 +1,4 @@
-import { Header, Sidebar } from '@/components';
+import { Header, Sidebar, Toaster } from '@/components';
 import AuthProvider from '@/components/layout/AuthProvider';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -7,6 +7,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       <Header />
       <Sidebar />
       <main className="header-pt">{children}</main>
+      <Toaster />
     </AuthProvider>
   );
 }

@@ -8,6 +8,7 @@ export interface UserInput extends BaseInput {
   email: string;
   isAdmin: boolean;
   googleId: string;
+  discordId: string | null;
   showdownUsername: string;
   discordUsername: string;
   timezone: string;
