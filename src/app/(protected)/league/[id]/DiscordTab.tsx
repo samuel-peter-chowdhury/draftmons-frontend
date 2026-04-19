@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ExternalLink } from 'lucide-react';
 import {
   Button,
   Card,
@@ -25,7 +26,7 @@ import {
 import { useFetch, useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { LeagueInput, DiscordGuild, DiscordChannel } from '@/types';
+import type { LeagueInput, DiscordGuild, DiscordChannel, DiscordInviteUrl } from '@/types';
 
 interface DiscordTabProps {
   leagueId: number;
@@ -39,9 +40,14 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDisconnectDialogOpen, setIsDisconnectDialogOpen] = useState(false);
 
-  const { data: guilds, loading: guildsLoading, error: guildsError } = useFetch<DiscordGuild[]>(
-    BASE_ENDPOINTS.DISCORD_GUILDS,
-  );
+  const {
+    data: guilds,
+    loading: guildsLoading,
+    error: guildsError,
+    refetch: refetchGuilds,
+  } = useFetch<DiscordGuild[]>(BASE_ENDPOINTS.DISCORD_GUILDS);
+
+  const { data: inviteUrlData } = useFetch<DiscordInviteUrl>(BASE_ENDPOINTS.DISCORD_INVITE_URL);
 
   const channelsFetchGuildId = selectedGuildId || league.discordGuildId;
   const { data: channels, loading: channelsLoading } = useFetch<DiscordChannel[]>(
@@ -50,6 +56,7 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
 
   const isConnected = !!league.discordGuildId && !!league.discordChannelId;
   const isBotDisabled = guildsError !== null;
+  const hasNoGuilds = !guildsLoading && guilds !== null && guilds.length === 0;
 
   const connectedGuild = guilds?.find((g) => g.id === league.discordGuildId);
   const connectedGuildName = connectedGuild?.name ?? league.discordGuildId ?? 'Unknown Server';
@@ -197,82 +204,123 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
 
   // Disconnected / editing state
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Connect Discord</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium">Server</label>
-            <Select
-              value={selectedGuildId}
-              onChange={(e) => handleGuildChange(e.target.value)}
-            >
-              <option value="">Select a server...</option>
-              {guilds?.map((guild) => {
-                const isLinkedToOther =
-                  guild.linkedLeagueName !== null && guild.linkedLeagueName !== league.name;
-                return (
-                  <option key={guild.id} value={guild.id} disabled={isLinkedToOther}>
-                    {guild.name}
-                    {isLinkedToOther && ` (linked to ${guild.linkedLeagueName})`}
-                  </option>
-                );
-              })}
-            </Select>
-          </div>
+    <div className="space-y-4">
+      {!isConnected && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Add Bot to Server</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Invite the Draftmons bot to your Discord server to enable league commands and
+              notifications.
+            </p>
+            {inviteUrlData?.url && (
+              <Button variant="secondary" size="sm" asChild>
+                <a href={inviteUrlData.url} target="_blank" rel="noopener noreferrer">
+                  Invite Bot
+                  <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+                </a>
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-          {selectedGuildId && (
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Channel</label>
-              {channelsLoading ? (
-                <div className="flex items-center gap-2 py-2">
-                  <Spinner size={18} />
-                  <span className="text-sm text-muted-foreground">Loading channels...</span>
-                </div>
-              ) : (
+      {hasNoGuilds && !isConnected ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>No Servers Found</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              The Draftmons bot hasn&apos;t been added to any Discord servers yet. Use the invite
+              button above to add it to your server, then refresh this page.
+            </p>
+            <Button variant="ghost" size="sm" onClick={refetchGuilds}>
+              Refresh
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Connect Discord</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium">Server</label>
                 <Select
-                  value={selectedChannelId}
-                  onChange={(e) => setSelectedChannelId(e.target.value)}
+                  value={selectedGuildId}
+                  onChange={(e) => handleGuildChange(e.target.value)}
                 >
-                  <option value="">Select a channel...</option>
-                  {channels?.map((channel) => (
-                    <option key={channel.id} value={channel.id}>
-                      #{channel.name}
-                    </option>
-                  ))}
+                  <option value="">Select a server...</option>
+                  {guilds?.map((guild) => {
+                    const isLinkedToOther =
+                      guild.linkedLeagueName !== null && guild.linkedLeagueName !== league.name;
+                    return (
+                      <option key={guild.id} value={guild.id} disabled={isLinkedToOther}>
+                        {guild.name}
+                        {isLinkedToOther && ` (linked to ${guild.linkedLeagueName})`}
+                      </option>
+                    );
+                  })}
                 </Select>
+              </div>
+
+              {selectedGuildId && (
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Channel</label>
+                  {channelsLoading ? (
+                    <div className="flex items-center gap-2 py-2">
+                      <Spinner size={18} />
+                      <span className="text-sm text-muted-foreground">Loading channels...</span>
+                    </div>
+                  ) : (
+                    <Select
+                      value={selectedChannelId}
+                      onChange={(e) => setSelectedChannelId(e.target.value)}
+                    >
+                      <option value="">Select a channel...</option>
+                      {channels?.map((channel) => (
+                        <option key={channel.id} value={channel.id}>
+                          #{channel.name}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
 
-        {saveMutation.error && <ErrorAlert message={saveMutation.error} />}
+            {saveMutation.error && <ErrorAlert message={saveMutation.error} />}
 
-        <div className="flex gap-2">
-          <Button
-            onClick={handleSave}
-            disabled={!selectedGuildId || !selectedChannelId || saveMutation.loading}
-            size="sm"
-          >
-            {saveMutation.loading ? <Spinner size={18} /> : 'Save'}
-          </Button>
-          {isEditing && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setIsEditing(false);
-                setSelectedGuildId('');
-                setSelectedChannelId('');
-              }}
-            >
-              Cancel
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSave}
+                disabled={!selectedGuildId || !selectedChannelId || saveMutation.loading}
+                size="sm"
+              >
+                {saveMutation.loading ? <Spinner size={18} /> : 'Save'}
+              </Button>
+              {isEditing && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setSelectedGuildId('');
+                    setSelectedChannelId('');
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

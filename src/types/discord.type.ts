@@ -8,3 +8,7 @@ export interface DiscordChannel {
   id: string;
   name: string;
 }
+
+export interface DiscordInviteUrl {
+  url: string;
+}
