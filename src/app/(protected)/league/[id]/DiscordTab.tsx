@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, MessageSquare } from 'lucide-react';
 import {
   Button,
   Card,
@@ -26,6 +26,7 @@ import {
 import { useFetch, useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
+import { useAuthStore } from '@/stores';
 import type { LeagueInput, DiscordGuild, DiscordChannel, DiscordInviteUrl } from '@/types';
 
 interface DiscordTabProps {
@@ -35,6 +36,9 @@ interface DiscordTabProps {
 }
 
 export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
+  const { user } = useAuthStore();
+  const hasDiscordLinked = !!user?.discordId;
+
   const [selectedGuildId, setSelectedGuildId] = useState<string>('');
   const [selectedChannelId, setSelectedChannelId] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
@@ -112,6 +116,34 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
     if (!selectedGuildId || !selectedChannelId) return;
     await saveMutation.mutate({ guildId: selectedGuildId, channelId: selectedChannelId });
   };
+
+  // Discord account not linked state
+  if (!hasDiscordLinked) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Link Discord Account</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Link your Discord account to your profile to select a server. This lets us verify your
+            server membership.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 border-[#5865F2]/30 text-[#5865F2] hover:bg-[#5865F2]/10"
+            asChild
+          >
+            <a href={'/user/' + user?.id}>
+              <MessageSquare className="h-4 w-4" />
+              Go to Profile
+            </a>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Bot disabled state
   if (isBotDisabled) {

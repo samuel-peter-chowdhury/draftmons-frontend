@@ -2,6 +2,7 @@ export interface DiscordGuild {
   id: string;
   name: string;
   linkedLeagueName: string | null;
+  hasManagePermission: boolean;
 }
 
 export interface DiscordChannel {
