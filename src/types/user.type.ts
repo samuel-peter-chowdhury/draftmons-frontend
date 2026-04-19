@@ -9,6 +9,7 @@ export interface UserInput extends BaseInput {
   isAdmin: boolean;
   googleId: string;
   discordId: string | null;
+  hasDiscordLinked: boolean;
   showdownUsername: string;
   discordUsername: string;
   timezone: string;
@@ -23,6 +24,7 @@ export interface UserOutput extends BaseOutput {
   isAdmin: boolean;
   googleId?: string;
   discordId?: string | null;
+  hasDiscordLinked?: boolean;
   showdownUsername?: string;
   discordUsername?: string;
   timezone?: string;

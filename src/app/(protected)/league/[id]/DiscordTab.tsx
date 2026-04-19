@@ -37,7 +37,7 @@ interface DiscordTabProps {
 
 export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
   const { user } = useAuthStore();
-  const hasDiscordLinked = !!user?.discordId;
+  const hasDiscordLinked = !!user?.hasDiscordLinked;
 
   const [selectedGuildId, setSelectedGuildId] = useState<string>('');
   const [selectedChannelId, setSelectedChannelId] = useState<string>('');

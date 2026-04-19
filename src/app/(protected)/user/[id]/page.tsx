@@ -70,8 +70,7 @@ export default function UserDetailPage() {
   // Check if the current user is viewing their own profile
   const isOwnProfile = currentUser?.id === data?.id;
 
-  // Discord linked state: requires discordId (not just discordUsername)
-  const isLinked = !!data?.discordId;
+  const isLinked = !!data?.hasDiscordLinked;
 
   // Unlink mutation
   const unlinkMutation = useMutation<{ message: string }, void>(() => AuthApi.unlinkDiscord(), {
