@@ -1,5 +1,4 @@
 export * from './ability.api';
-export { DiscordApi } from './discord.api';
 export * from './auth.api';
 export * from './generation.api';
 export * from './item.api';

@@ -59,7 +59,6 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
   );
 
   const isConnected = !!league.discordGuildId && !!league.discordChannelId;
-  const isBotDisabled = guildsError !== null;
   const hasNoGuilds = !guildsLoading && guilds !== null && guilds.length === 0;
 
   const connectedGuild = guilds?.find((g) => g.id === league.discordGuildId);
@@ -70,8 +69,6 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
   const saveMutation = useMutation(
     ({ guildId, channelId }: { guildId: string; channelId: string }) =>
       LeagueApi.update(leagueId, {
-        name: league.name,
-        abbreviation: league.abbreviation,
         discordGuildId: guildId,
         discordChannelId: channelId,
       }),
@@ -86,10 +83,8 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
   );
 
   const disconnectMutation = useMutation<LeagueInput, void>(
-    (_v) =>
+    () =>
       LeagueApi.update(leagueId, {
-        name: league.name,
-        abbreviation: league.abbreviation,
         discordGuildId: null,
         discordChannelId: null,
       }),
@@ -114,7 +109,11 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
 
   const handleSave = async () => {
     if (!selectedGuildId || !selectedChannelId) return;
-    await saveMutation.mutate({ guildId: selectedGuildId, channelId: selectedChannelId });
+    try {
+      await saveMutation.mutate({ guildId: selectedGuildId, channelId: selectedChannelId });
+    } catch {
+      // error surfaced via saveMutation.error
+    }
   };
 
   // Discord account not linked state
@@ -145,14 +144,14 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
     );
   }
 
-  // Bot disabled state
-  if (isBotDisabled) {
+  if (guildsError) {
     return (
-      <Card className="opacity-60">
-        <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground">
-            Discord bot is not configured on this server. Contact your administrator.
-          </p>
+      <Card>
+        <CardContent className="space-y-3 py-8 text-center">
+          <ErrorAlert message={guildsError} />
+          <Button variant="ghost" size="sm" onClick={refetchGuilds}>
+            Retry
+          </Button>
         </CardContent>
       </Card>
     );
@@ -222,7 +221,13 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
             <AlertDialogFooter>
               <AlertDialogCancel disabled={disconnectMutation.loading}>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => disconnectMutation.mutate()}
+                onClick={async () => {
+                  try {
+                    await disconnectMutation.mutate();
+                  } catch {
+                    // error surfaced via disconnectMutation.error
+                  }
+                }}
                 disabled={disconnectMutation.loading}
               >
                 {disconnectMutation.loading ? <Spinner size={18} /> : 'Disconnect'}

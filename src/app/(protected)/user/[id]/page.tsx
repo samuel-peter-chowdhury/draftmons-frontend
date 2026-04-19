@@ -22,8 +22,7 @@ import {
   Spinner,
 } from '@/components';
 import { EditUserModal } from '@/components/modals/EditUserModal';
-import { addToast, useMutation } from '@/hooks';
-import { useFetch } from '@/hooks';
+import { addToast, useFetch, useMutation } from '@/hooks';
 import { buildUrl, AuthApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatUserDisplayName } from '@/lib/utils';
@@ -75,7 +74,7 @@ export default function UserDetailPage() {
   const isLinked = !!data?.discordId;
 
   // Unlink mutation
-  const unlinkMutation = useMutation(() => AuthApi.unlinkDiscord(), {
+  const unlinkMutation = useMutation<{ message: string }, void>(() => AuthApi.unlinkDiscord(), {
     onSuccess: () => {
       refetch();
       addToast('Discord account unlinked', 'success');
@@ -84,7 +83,7 @@ export default function UserDetailPage() {
 
   const handleUnlink = async () => {
     try {
-      await unlinkMutation.mutate(undefined as any);
+      await unlinkMutation.mutate();
     } catch {
       // error handled by mutation state
     }

@@ -135,7 +135,6 @@ export const Api = {
 // Re-export resource API clients
 export * from './api/ability.api';
 export * from './api/auth.api';
-export { DiscordApi } from './api/discord.api';
 export * from './api/generation.api';
 export * from './api/item.api';
 export * from './api/league.api';

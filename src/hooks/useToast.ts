@@ -8,10 +8,10 @@ export interface ToastData {
 
 // Singleton external store — no React context needed
 let toasts: ToastData[] = [];
-const listeners = new Set<(toasts: ToastData[]) => void>();
+const listeners = new Set<() => void>();
 
 function notifyListeners() {
-  listeners.forEach((listener) => listener([...toasts]));
+  listeners.forEach((listener) => listener());
 }
 
 export function addToast(message: string, variant: ToastVariant = 'success'): void {
@@ -30,8 +30,7 @@ export function dismissToast(id: string): void {
   notifyListeners();
 }
 
-// Stable references for useSyncExternalStore — must not be recreated per render
-const subscribe = (listener: (toasts: ToastData[]) => void) => {
+const subscribe = (listener: () => void) => {
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
