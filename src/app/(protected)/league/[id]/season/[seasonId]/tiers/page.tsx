@@ -6,7 +6,7 @@ import { ArrowRightLeft, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useFetch } from '@/hooks';
+import { useFetch, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { getStatColor, POKEMON_TYPE_ORDER } from '@/lib/pokemon';
@@ -54,8 +54,7 @@ export default function TierListPage() {
   const [view, setView] = useState<ViewMode>('classic');
   const [classicSortMap, setClassicSortMap] = useState<Record<string, TierSort>>({});
   const [typeSortMap, setTypeSortMap] = useState<Record<string, TierSort>>({});
-  const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(null);
-  const [pokemonModalOpen, setPokemonModalOpen] = useState(false);
+  const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
   const sortMap = view === 'classic' ? classicSortMap : typeSortMap;
   const setSortMap = view === 'classic' ? setClassicSortMap : setTypeSortMap;
@@ -155,10 +154,12 @@ export default function TierListPage() {
     [sortMap, defaultSort],
   );
 
-  const handleSpriteClick = useCallback((pokemonId: number) => {
-    setSelectedPokemonId(pokemonId);
-    setPokemonModalOpen(true);
-  }, []);
+  const handleSpriteClick = useCallback(
+    (pokemonId: number, seasonPokemonId?: number) => {
+      openModal(pokemonId, seasonPokemonId);
+    },
+    [openModal],
+  );
 
   const toggleView = useCallback(() => {
     setView((prev) => (prev === 'classic' ? 'type' : 'classic'));
@@ -247,7 +248,7 @@ export default function TierListPage() {
                                 spriteUrl={pkmn.spriteUrl}
                                 name={pkmn.name}
                                 className={`h-8 w-8 object-contain${isDrafted ? ' grayscale' : ''}`}
-                                onClick={handleSpriteClick}
+                                onClick={(id) => handleSpriteClick(id, sp.id)}
                               />
                               <span
                                 className={`truncate pr-1 text-xs capitalize${isDrafted ? ' line-through text-muted-foreground' : ''}`}
@@ -278,9 +279,11 @@ export default function TierListPage() {
       )}
 
       <PokemonModal
-        pokemonId={selectedPokemonId}
-        open={pokemonModalOpen}
-        onOpenChange={setPokemonModalOpen}
+        pokemonId={modalPokemonId}
+        open={modalOpen}
+        onOpenChange={onOpenChange}
+        seasonPokemonId={modalSeasonPokemonId}
+        leagueId={leagueId}
       />
     </div>
   );
