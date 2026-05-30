@@ -27,3 +27,4 @@ export * from './pokemon/PokemonFilterPanel';
 export * from './pokemon/PokemonTable';
 export * from './pokemon/PokemonModal';
 export * from './pokemon/PokemonSprite';
+export { Toaster } from './ui/toaster';

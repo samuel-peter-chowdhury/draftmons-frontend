@@ -66,7 +66,7 @@ export const LeagueApi = {
    * PUT /api/league/:id
    * Update an existing league
    */
-  update: (id: number, data: LeagueOutput) => {
+  update: (id: number, data: Partial<LeagueOutput>) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, id);
     return Api.put<LeagueInput>(url, data);
   },

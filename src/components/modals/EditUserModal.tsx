@@ -35,7 +35,6 @@ export function EditUserModal({
     firstName: '',
     lastName: '',
     showdownUsername: '',
-    discordUsername: '',
     timezone: '',
   });
 
@@ -57,7 +56,6 @@ export function EditUserModal({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         showdownUsername: user.showdownUsername || '',
-        discordUsername: user.discordUsername || '',
         timezone: user.timezone || '',
       });
     }
@@ -131,16 +129,6 @@ export function EditUserModal({
               id="showdownUsername"
               value={form.showdownUsername}
               onChange={(e) => setForm((f) => ({ ...f, showdownUsername: e.target.value }))}
-              disabled={updateMutation.loading}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="discordUsername">Discord Username</Label>
-            <Input
-              id="discordUsername"
-              value={form.discordUsername}
-              onChange={(e) => setForm((f) => ({ ...f, discordUsername: e.target.value }))}
               disabled={updateMutation.loading}
             />
           </div>

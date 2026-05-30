@@ -35,6 +35,7 @@ export const BASE_ENDPOINTS = {
   AUTH_STATUS: `${API_BASE_URL}/api/auth/status`,
   AUTH_GOOGLE: `${API_BASE_URL}/api/auth/google`,
   AUTH_LOGOUT: `${API_BASE_URL}/api/auth/logout`,
+  AUTH_DISCORD: `${API_BASE_URL}/api/auth/discord`,
   GENERATION_BASE: `${API_BASE_URL}/api/generation`,
   ITEM_BASE: `${API_BASE_URL}/api/item`,
   LEAGUE_BASE: `${API_BASE_URL}/api/league`,
@@ -51,6 +52,8 @@ export const BASE_ENDPOINTS = {
   TEAM_BUILD_SET_BASE: `${API_BASE_URL}/api/team-build-set`,
   TEAM_BASE: `${API_BASE_URL}/api/team`,
   USER_BASE: `${API_BASE_URL}/api/user`,
+  DISCORD_GUILDS: `${API_BASE_URL}/api/discord/guilds`,
+  DISCORD_INVITE_URL: `${API_BASE_URL}/api/discord/invite-url`,
 } as const;
 
 export const NAT_DEX_GENERATION_ID = 0;
