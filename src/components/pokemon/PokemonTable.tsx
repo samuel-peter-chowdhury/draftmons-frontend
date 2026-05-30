@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PokemonSprite } from './PokemonSprite';
 import { PokemonModal } from './PokemonModal';
-import type { PaginatedResponse, PokemonInput } from '@/types';
+import type { PaginatedResponse, PokemonInput, SeasonPokemonInput } from '@/types';
 
 type SortableColumn =
   | 'name'
@@ -25,7 +25,8 @@ type SortableColumn =
   | 'specialAttack'
   | 'specialDefense'
   | 'speed'
-  | 'baseStatTotal';
+  | 'baseStatTotal'
+  | 'seasonPoints';
 
 function SortableHeader({
   column,
@@ -54,8 +55,16 @@ function SortableHeader({
   );
 }
 
+interface PokemonRow {
+  pokemon: PokemonInput; 
+  pointValue?: number
+};
+
+export type PokemonVariant = 'pokemon' | 'seasonPokemon';
+
 export interface PokemonTableProps {
-  data: PaginatedResponse<PokemonInput> | null;
+  data: PaginatedResponse<PokemonInput> | PaginatedResponse<SeasonPokemonInput> | null;
+  variant: PokemonVariant;
   loading: boolean;
   error: string | null;
   sortBy: SortableColumn;
@@ -67,8 +76,18 @@ export interface PokemonTableProps {
   onPageSizeChange: (pageSize: number) => void;
 }
 
+function getRowData(item: PokemonInput | SeasonPokemonInput, variant: PokemonVariant): PokemonRow {
+  if (variant === 'pokemon') {
+    return {pokemon: item as PokemonInput} 
+  } else {
+    const seasonPokemon = item as SeasonPokemonInput;
+    return {pokemon: seasonPokemon.pokemon!, pointValue: seasonPokemon.pointValue}
+  }
+}
+
 export function PokemonTable({
   data,
+  variant,
   loading,
   error,
   sortBy,
@@ -130,6 +149,12 @@ export function PokemonTable({
                       <TableHead>
                         <SortableHeader column="baseStatTotal" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>BST</SortableHeader>
                       </TableHead>
+                      {variant === 'seasonPokemon' && (
+                          <TableHead>
+                            <SortableHeader column="baseStatTotal" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Pts</SortableHeader>
+                          </TableHead>
+                        )
+                      }
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -140,20 +165,22 @@ export function PokemonTable({
                         </TableCell>
                       </TableRow>
                     ) : (
-                      data.data.map((pokemon) => (
-                        <TableRow key={pokemon.id}>
+                      data.data.map((item) => { 
+                        const rowData: PokemonRow = getRowData(item, variant);
+                        return (
+                        <TableRow key={rowData.pokemon.id}>
                           <TableCell className="min-w-20 w-20">
                             <PokemonSprite
-                              pokemonId={pokemon.id}
-                              spriteUrl={pokemon.spriteUrl}
-                              name={pokemon.name}
+                              pokemonId={rowData.pokemon.id}
+                              spriteUrl={rowData.pokemon.spriteUrl}
+                              name={rowData.pokemon.name}
                               onClick={handleSpriteClick}
                             />
                           </TableCell>
-                          <TableCell className="font-medium capitalize">{pokemon.name}</TableCell>
+                          <TableCell className="font-medium capitalize">{rowData.pokemon.name}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {pokemon.pokemonTypes.map((type) => (
+                              {rowData.pokemon.pokemonTypes.map((type) => (
                                 <Badge
                                   key={type.id}
                                   className="capitalize"
@@ -171,7 +198,7 @@ export function PokemonTable({
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
                               <TooltipProvider delayDuration={100}>
-                                {pokemon.abilities.map((ability) => (
+                                {rowData.pokemon.abilities.map((ability) => (
                                   <Tooltip key={ability.id}>
                                     <TooltipTrigger asChild>
                                       <div>
@@ -191,15 +218,18 @@ export function PokemonTable({
                               </TooltipProvider>
                             </div>
                           </TableCell>
-                          <TableCell>{pokemon.hp}</TableCell>
-                          <TableCell>{pokemon.attack}</TableCell>
-                          <TableCell>{pokemon.defense}</TableCell>
-                          <TableCell>{pokemon.specialAttack}</TableCell>
-                          <TableCell>{pokemon.specialDefense}</TableCell>
-                          <TableCell>{pokemon.speed}</TableCell>
-                          <TableCell className="font-medium">{pokemon.baseStatTotal}</TableCell>
+                          <TableCell>{rowData.pokemon.hp}</TableCell>
+                          <TableCell>{rowData.pokemon.attack}</TableCell>
+                          <TableCell>{rowData.pokemon.defense}</TableCell>
+                          <TableCell>{rowData.pokemon.specialAttack}</TableCell>
+                          <TableCell>{rowData.pokemon.specialDefense}</TableCell>
+                          <TableCell>{rowData.pokemon.speed}</TableCell>
+                          <TableCell className="font-medium">{rowData.pokemon.baseStatTotal}</TableCell>
+                          {variant === 'seasonPokemon' && (
+                            <TableCell>{rowData.pointValue}</TableCell>
+                          )}
                         </TableRow>
-                      ))
+                      )})
                     )}
                   </TableBody>
                 </Table>
