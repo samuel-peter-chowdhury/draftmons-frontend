@@ -20,6 +20,7 @@ export interface SeasonInput extends BaseInput {
   rules?: string;
   pointLimit: number;
   maxPointValue: number;
+  numberOfGames: number;
   leagueId: number;
   generationId: number;
   league?: LeagueInput;
@@ -35,6 +36,7 @@ export interface SeasonOutput extends BaseOutput {
   rules?: string;
   pointLimit: number;
   maxPointValue: number;
+  numberOfGames?: number;
   leagueId: number;
   generationId: number;
 }
