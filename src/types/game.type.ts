@@ -9,6 +9,7 @@ export interface GameInput extends BaseInput {
   winningTeamId: number;
   differential: number;
   replayLink: string;
+  gameNumber?: number;
   match?: MatchInput;
   losingTeam?: TeamInput;
   winningTeam?: TeamInput;
@@ -21,4 +22,5 @@ export interface GameOutput extends BaseOutput {
   winningTeamId: number;
   differential: number;
   replayLink?: string;
+  gameNumber?: number;
 }
