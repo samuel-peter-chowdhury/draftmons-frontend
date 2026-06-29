@@ -45,11 +45,13 @@ export function CreateSeasonModal({
     status: season?.status || ('PRE_DRAFT' as SeasonStatus),
     pointLimit: season?.pointLimit ?? 100,
     maxPointValue: season?.maxPointValue ?? 20,
+    numberOfGames: season?.numberOfGames ?? 3,
     generationId: season?.generationId ?? 0,
     leagueId,
   });
 
   const [form, setForm] = useState<Omit<SeasonOutput, 'rules'>>(getDefaultForm());
+  const [numberOfGamesError, setNumberOfGamesError] = useState<string | null>(null);
 
   // Reset form when modal opens or season changes
   useEffect(() => {
@@ -89,6 +91,7 @@ export function CreateSeasonModal({
         status: form.status,
         pointLimit: form.pointLimit,
         maxPointValue: form.maxPointValue,
+        numberOfGames: form.numberOfGames,
         generationId: form.generationId,
       });
     } else {
@@ -200,6 +203,31 @@ export function CreateSeasonModal({
             />
           </div>
 
+          <div>
+            <Label htmlFor="season-number-of-games">Best-of-X (Number of Games)</Label>
+            <Input
+              id="season-number-of-games"
+              type="number"
+              min="1"
+              step="2"
+              value={form.numberOfGames ?? 3}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                setForm((f) => ({ ...f, numberOfGames: val }));
+                setNumberOfGamesError(
+                  val > 0 && val % 2 === 0
+                    ? 'Must be a positive odd number (e.g. 1, 3, 5)'
+                    : null,
+                );
+              }}
+              required
+              disabled={mutation.loading}
+            />
+            {numberOfGamesError && (
+              <p className="mt-1 text-xs text-destructive">{numberOfGamesError}</p>
+            )}
+          </div>
+
           <div className="flex items-center justify-end gap-2">
             <Button
               type="button"
@@ -209,7 +237,7 @@ export function CreateSeasonModal({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={mutation.loading}>
+            <Button type="submit" disabled={mutation.loading || !!numberOfGamesError}>
               {mutation.loading ? <Spinner size={18} /> : isEditMode ? 'Save' : 'Create'}
             </Button>
           </div>

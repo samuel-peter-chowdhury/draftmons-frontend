@@ -239,6 +239,12 @@ export default function Sidebar() {
                     >
                       Tier List
                     </NavLink>
+                    <NavLink
+                      href={seasonPrefix ? `${seasonPrefix}/admin/match-upload` : '#'}
+                      disabled={!seasonPrefix}
+                    >
+                      Match Upload
+                    </NavLink>
                   </div>
                 </AccordionContent>
               </AccordionItem>
