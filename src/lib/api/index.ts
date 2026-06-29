@@ -9,3 +9,4 @@ export * from './pokemonType.api';
 export * from './teamBuild.api';
 export * from './teamBuildSet.api';
 export * from './user.api';
+export * from './match-upload.api';
