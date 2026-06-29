@@ -379,6 +379,24 @@ function ReviewPanel({
           message: `Game ${game.gameNumber}: winning team not resolved.`,
         });
       }
+      if (game.loserTeamId === null) {
+        errors.push({
+          field: `games[${gi}].loserTeamId`,
+          code: PreviewErrorCode.GAME_INDECISIVE,
+          message: `Game ${game.gameNumber}: losing team not resolved.`,
+        });
+      }
+      if (
+        game.winnerTeamId !== null &&
+        game.loserTeamId !== null &&
+        game.winnerTeamId === game.loserTeamId
+      ) {
+        errors.push({
+          field: `games[${gi}].loserTeamId`,
+          code: PreviewErrorCode.GAME_INDECISIVE,
+          message: `Game ${game.gameNumber}: winning and losing team must be different.`,
+        });
+      }
       if (game.differential === null) {
         errors.push({
           field: `games[${gi}].differential`,
