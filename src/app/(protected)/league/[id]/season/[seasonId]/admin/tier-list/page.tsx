@@ -19,13 +19,23 @@ import {
   PokemonSearchCombobox,
   ConditionModal,
   DeleteConfirmDialog,
+  ImportCsvButton,
+  ImportResultsDialog,
+  ExportCsvButton,
 } from './_components';
 import { useFetch, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useLeagueStore, useIsModerator } from '@/stores/useLeagueStore';
 import { useAuthStore } from '@/stores';
-import type { SeasonPokemonInput, PaginatedResponse, PokemonInput } from '@/types';
+import type {
+  SeasonPokemonInput,
+  PaginatedResponse,
+  PokemonInput,
+  BulkUpsertInput,
+  BulkUpsertEntryInput,
+  BulkUpsertEntryResult,
+} from '@/types';
 
 export default function AdminTierListPage() {
   const params = useParams<{ id: string; seasonId: string }>();
@@ -69,6 +79,8 @@ export default function AdminTierListPage() {
   const [conditionModalOpen, setConditionModalOpen] = useState(false);
   const [deleteSp, setDeleteSp] = useState<SeasonPokemonInput | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [importResults, setImportResults] = useState<BulkUpsertEntryResult[] | null>(null);
+  const [importResultsOpen, setImportResultsOpen] = useState(false);
 
   // Separate mutation instances to avoid shared loading/error state conflicts
   const tierMutation = useMutation(
@@ -88,6 +100,10 @@ export default function AdminTierListPage() {
 
   const deleteMutation = useMutation((spId: number) =>
     LeagueApi.deleteSeasonPokemon(leagueId, spId),
+  );
+
+  const bulkUpsertMutation = useMutation((dto: BulkUpsertInput) =>
+    LeagueApi.bulkUpsertSeasonPokemon(leagueId, dto),
   );
 
   // Build tier columns: 0 (Unassigned) + maxPointValue..1
@@ -208,6 +224,21 @@ export default function AdminTierListPage() {
     [createMutation, seasonId, refetch],
   );
 
+  // Import CSV
+  const handleImportCsv = useCallback(
+    async (entries: BulkUpsertEntryInput[]) => {
+      try {
+        const results = await bulkUpsertMutation.mutate({ seasonId, entries });
+        setImportResults(results);
+        setImportResultsOpen(true);
+        refetch();
+      } catch {
+        // Transport/network error surfaced via bulkUpsertMutation.error
+      }
+    },
+    [bulkUpsertMutation, seasonId, refetch],
+  );
+
   // Delete pokemon
   const handleDeleteConfirm = useCallback(async () => {
     if (!deleteSp) return;
@@ -252,18 +283,23 @@ export default function AdminTierListPage() {
     <div className="mx-auto max-w-7xl p-4">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Admin Tier List</h1>
-        {season && (
-          <PokemonSearchCombobox
-            generationId={season.generationId}
-            existingPokemonIds={existingPokemonIds}
-            onSelect={handleAddPokemon}
-          />
-        )}
+        <div className="flex items-center gap-2">
+          {season && (
+            <PokemonSearchCombobox
+              generationId={season.generationId}
+              existingPokemonIds={existingPokemonIds}
+              onSelect={handleAddPokemon}
+            />
+          )}
+          <ExportCsvButton spData={spData?.data ?? []} seasonName={season?.name} />
+          <ImportCsvButton loading={bulkUpsertMutation.loading} onImport={handleImportCsv} />
+        </div>
       </div>
 
       {spError && <ErrorAlert message={spError} />}
       {tierMutation.error && <ErrorAlert message={tierMutation.error} />}
       {createMutation.error && <ErrorAlert message={createMutation.error} />}
+      {bulkUpsertMutation.error && <ErrorAlert message={bulkUpsertMutation.error} />}
 
       {(spLoading || seasonLoading) && !spData && (
         <div className="flex items-center justify-center py-10">
@@ -319,6 +355,12 @@ export default function AdminTierListPage() {
         onConfirm={handleDeleteConfirm}
         deleting={deleteMutation.loading}
         error={deleteMutation.error}
+      />
+
+      <ImportResultsDialog
+        results={importResults}
+        open={importResultsOpen}
+        onOpenChange={setImportResultsOpen}
       />
     </div>
   );
