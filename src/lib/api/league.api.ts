@@ -19,6 +19,8 @@ import type {
   WeekInput,
   WeekOutput,
   PaginatedResponse,
+  BulkUpsertInput,
+  BulkUpsertEntryResult,
 } from '@/types';
 
 /**
@@ -463,5 +465,15 @@ export const LeagueApi = {
   deleteSeasonPokemon: (leagueId: number, seasonPokemonId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon', seasonPokemonId);
     return Api.delete<void>(url);
+  },
+
+  /**
+   * POST /api/league/:leagueId/season-pokemon-bulk
+   * Returns BulkUpsertEntryResult[] (200, always) — per-entry results, never blocks
+   * on individual row failures (moderator-only, isAuthReadLeagueModWrite-gated).
+   */
+  bulkUpsertSeasonPokemon: (leagueId: number, data: BulkUpsertInput) => {
+    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-bulk');
+    return Api.post<BulkUpsertEntryResult[]>(url, data);
   },
 };
