@@ -7,3 +7,5 @@ export { DeleteConfirmDialog } from './DeleteConfirmDialog';
 export { ImportCsvButton } from './ImportCsvButton';
 export { ImportResultsDialog } from './ImportResultsDialog';
 export { ExportCsvButton } from './ExportCsvButton';
+export { RapidPlacementView } from './RapidPlacementView';
+export { RapidPlacementRow } from './RapidPlacementRow';
