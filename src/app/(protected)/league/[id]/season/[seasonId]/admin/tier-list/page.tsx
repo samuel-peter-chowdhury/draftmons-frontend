@@ -12,7 +12,8 @@ import {
   type DragStartEvent,
   type DragEndEvent,
 } from '@dnd-kit/core';
-import { Card, CardContent, ErrorAlert, Spinner } from '@/components';
+import { LayoutGrid, Zap } from 'lucide-react';
+import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
 import {
   TierColumn,
   DragOverlayRow,
@@ -22,6 +23,7 @@ import {
   ImportCsvButton,
   ImportResultsDialog,
   ExportCsvButton,
+  RapidPlacementView,
 } from './_components';
 import { useFetch, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
@@ -70,6 +72,9 @@ export default function AdminTierListPage() {
       pageSize: 9999,
     }),
   );
+
+  // View toggle (D-RAPID-02: client-only, not URL-synced; resets to Board on reload)
+  const [view, setView] = useState<'board' | 'rapid'>('board');
 
   // DnD state
   const [activeDragSp, setActiveDragSp] = useState<SeasonPokemonInput | null>(null);
@@ -284,6 +289,24 @@ export default function AdminTierListPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Admin Tier List</h1>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant={view === 'board' ? 'default' : 'outline'}
+              onClick={() => setView('board')}
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Board
+            </Button>
+            <Button
+              size="sm"
+              variant={view === 'rapid' ? 'default' : 'outline'}
+              onClick={() => setView('rapid')}
+            >
+              <Zap className="h-4 w-4" />
+              Rapid Placement
+            </Button>
+          </div>
           {season && (
             <PokemonSearchCombobox
               generationId={season.generationId}
@@ -299,6 +322,7 @@ export default function AdminTierListPage() {
       {spError && <ErrorAlert message={spError} />}
       {tierMutation.error && <ErrorAlert message={tierMutation.error} />}
       {createMutation.error && <ErrorAlert message={createMutation.error} />}
+      {deleteMutation.error && <ErrorAlert message={deleteMutation.error} />}
       {bulkUpsertMutation.error && <ErrorAlert message={bulkUpsertMutation.error} />}
 
       {(spLoading || seasonLoading) && !spData && (
@@ -307,7 +331,7 @@ export default function AdminTierListPage() {
         </div>
       )}
 
-      {spData && (
+      {spData && view === 'board' && (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -338,6 +362,20 @@ export default function AdminTierListPage() {
             {activeDragSp ? <DragOverlayRow sp={activeDragSp} /> : null}
           </DragOverlay>
         </DndContext>
+      )}
+
+      {spData && view === 'rapid' && season && (
+        <RapidPlacementView
+          leagueId={leagueId}
+          seasonId={seasonId}
+          generationId={season.generationId}
+          maxPointValue={maxPointValue}
+          spData={spData}
+          setSpData={setSpData}
+          createMutation={createMutation}
+          tierMutation={tierMutation}
+          deleteMutation={deleteMutation}
+        />
       )}
 
       <ConditionModal
