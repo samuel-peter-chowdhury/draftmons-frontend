@@ -299,11 +299,11 @@ export default function AdminTierListPage() {
         <div className="flex items-center gap-2">
           <Tabs value={view} onValueChange={(v) => setView(v as 'board' | 'rapid')}>
             <TabsList>
-              <TabsTrigger value="board">
+              <TabsTrigger value="board" className="gap-1.5">
                 <LayoutGrid className="h-4 w-4" />
                 Board
               </TabsTrigger>
-              <TabsTrigger value="rapid">
+              <TabsTrigger value="rapid" className="gap-1.5">
                 <Zap className="h-4 w-4" />
                 Rapid Placement
               </TabsTrigger>
