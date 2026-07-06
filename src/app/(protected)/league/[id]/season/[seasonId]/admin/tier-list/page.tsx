@@ -84,6 +84,11 @@ export default function AdminTierListPage() {
   // View toggle (D-RAPID-02: client-only, not URL-synced; resets to Board on reload)
   const [view, setView] = useState<'board' | 'rapid'>('board');
 
+  // Rapid Placement's row-scoped in-flight guard. Lifted here (rather than local to
+  // RapidPlacementView) because that component unmounts on every Board/Rapid toggle —
+  // component-local state would silently drop in-flight rows on tab-switch (CR-01).
+  const [pendingPokemonIds, setPendingPokemonIds] = useState<Set<number>>(new Set());
+
   // DnD state
   const [activeDragSp, setActiveDragSp] = useState<SeasonPokemonInput | null>(null);
 
@@ -377,6 +382,8 @@ export default function AdminTierListPage() {
           createMutation={createMutation}
           tierMutation={tierMutation}
           deleteMutation={deleteMutation}
+          pendingPokemonIds={pendingPokemonIds}
+          setPendingPokemonIds={setPendingPokemonIds}
         />
       )}
 

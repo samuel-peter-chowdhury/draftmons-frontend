@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useMemo, type Dispatch, type SetStateAction } from 'react';
 
 import { Card, CardContent, ErrorAlert, Spinner } from '@/components';
 import { useFetch } from '@/hooks';
@@ -36,6 +36,11 @@ interface RapidPlacementViewProps {
     SeasonPokemonInput
   >;
   deleteMutation: MutationLike<number, void>;
+  // Owned by page.tsx, not this component: RapidPlacementView unmounts on every
+  // Board/Rapid toggle, so component-local state would drop in-flight rows on
+  // tab-switch (CR-01).
+  pendingPokemonIds: Set<number>;
+  setPendingPokemonIds: Dispatch<SetStateAction<Set<number>>>;
 }
 
 // Note: `leagueId` is accepted for interface symmetry with the page's other
@@ -51,6 +56,8 @@ export function RapidPlacementView({
   createMutation,
   tierMutation,
   deleteMutation,
+  pendingPokemonIds,
+  setPendingPokemonIds,
 }: RapidPlacementViewProps) {
   const {
     data: dexData,
@@ -66,8 +73,6 @@ export function RapidPlacementView({
   );
 
   const spByPokemonId = useMemo(() => buildSpByPokemonId(spData?.data ?? []), [spData]);
-
-  const [pendingPokemonIds, setPendingPokemonIds] = useState<Set<number>>(new Set());
 
   const handleTierClick = useCallback(
     async (pokemonId: number, pointValue: number) => {
@@ -155,7 +160,16 @@ export function RapidPlacementView({
         });
       }
     },
-    [pendingPokemonIds, spByPokemonId, dexData, seasonId, tierMutation, createMutation, setSpData],
+    [
+      pendingPokemonIds,
+      setPendingPokemonIds,
+      spByPokemonId,
+      dexData,
+      seasonId,
+      tierMutation,
+      createMutation,
+      setSpData,
+    ],
   );
 
   const handleRemoveClick = useCallback(
@@ -189,7 +203,7 @@ export function RapidPlacementView({
         });
       }
     },
-    [pendingPokemonIds, spByPokemonId, deleteMutation, setSpData],
+    [pendingPokemonIds, setPendingPokemonIds, spByPokemonId, deleteMutation, setSpData],
   );
 
   if (dexLoading && !dexData) {
