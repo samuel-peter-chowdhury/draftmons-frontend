@@ -13,7 +13,15 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { LayoutGrid, Zap } from 'lucide-react';
-import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
+import {
+  Card,
+  CardContent,
+  ErrorAlert,
+  Spinner,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '@/components';
 import {
   TierColumn,
   DragOverlayRow,
@@ -289,24 +297,18 @@ export default function AdminTierListPage() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Admin Tier List</h1>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant={view === 'board' ? 'default' : 'outline'}
-              onClick={() => setView('board')}
-            >
-              <LayoutGrid className="h-4 w-4" />
-              Board
-            </Button>
-            <Button
-              size="sm"
-              variant={view === 'rapid' ? 'default' : 'outline'}
-              onClick={() => setView('rapid')}
-            >
-              <Zap className="h-4 w-4" />
-              Rapid Placement
-            </Button>
-          </div>
+          <Tabs value={view} onValueChange={(v) => setView(v as 'board' | 'rapid')}>
+            <TabsList>
+              <TabsTrigger value="board">
+                <LayoutGrid className="h-4 w-4" />
+                Board
+              </TabsTrigger>
+              <TabsTrigger value="rapid">
+                <Zap className="h-4 w-4" />
+                Rapid Placement
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           {season && (
             <PokemonSearchCombobox
               generationId={season.generationId}
