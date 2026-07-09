@@ -23,3 +23,6 @@ export * from './teamBuildSet.type';
 export * from './typeEffective.type';
 export * from './user.type';
 export * from './week.type';
+export * from './discord.type';
+export * from './match-upload.type';
+export * from './season-pokemon-bulk.type';

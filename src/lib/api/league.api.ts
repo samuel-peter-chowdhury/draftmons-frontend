@@ -19,6 +19,8 @@ import type {
   WeekInput,
   WeekOutput,
   PaginatedResponse,
+  BulkUpsertInput,
+  BulkUpsertEntryResult,
 } from '@/types';
 
 /**
@@ -66,7 +68,7 @@ export const LeagueApi = {
    * PUT /api/league/:id
    * Update an existing league
    */
-  update: (id: number, data: LeagueOutput) => {
+  update: (id: number, data: Partial<LeagueOutput>) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, id);
     return Api.put<LeagueInput>(url, data);
   },
@@ -424,8 +426,17 @@ export const LeagueApi = {
    * GET /api/league/:leagueId/season-pokemon/:seasonPokemonId
    * Get a specific season pokemon
    */
-  getSeasonPokemonById: (leagueId: number, seasonPokemonId: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon', seasonPokemonId);
+  getSeasonPokemonById: (
+    leagueId: number,
+    seasonPokemonId: number,
+    full?: boolean,
+    activeRelationsOnly?: boolean,
+  ) => {
+    const url = buildUrlWithQuery(
+      BASE_ENDPOINTS.LEAGUE_BASE,
+      [leagueId, 'season-pokemon', seasonPokemonId],
+      { full, activeRelationsOnly },
+    );
     return Api.get<SeasonPokemonInput>(url);
   },
 
@@ -454,5 +465,15 @@ export const LeagueApi = {
   deleteSeasonPokemon: (leagueId: number, seasonPokemonId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon', seasonPokemonId);
     return Api.delete<void>(url);
+  },
+
+  /**
+   * POST /api/league/:leagueId/season-pokemon-bulk
+   * Returns BulkUpsertEntryResult[] (200, always) — per-entry results, never blocks
+   * on individual row failures (moderator-only, isAuthReadLeagueModWrite-gated).
+   */
+  bulkUpsertSeasonPokemon: (leagueId: number, data: BulkUpsertInput) => {
+    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-bulk');
+    return Api.post<BulkUpsertEntryResult[]>(url, data);
   },
 };

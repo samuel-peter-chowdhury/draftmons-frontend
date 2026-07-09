@@ -41,3 +41,23 @@ export function formatGenerationName(name: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
+
+/**
+ * Converts a string into a URL/filename-safe slug: lowercases, trims,
+ * replaces runs of non-alphanumeric characters with a single hyphen, and
+ * strips leading/trailing hyphens.
+ *
+ * @param input - The raw string to slugify
+ * @returns The slugified string, or '' for empty/whitespace input
+ *
+ * @example
+ * slugify("Summer 2026") // Returns "summer-2026"
+ * slugify("  ") // Returns ""
+ */
+export function slugify(input: string): string {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}

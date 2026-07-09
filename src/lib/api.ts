@@ -145,3 +145,4 @@ export * from './api/pokemonType.api';
 export * from './api/teamBuild.api';
 export * from './api/teamBuildSet.api';
 export * from './api/user.api';
+export * from './api/match-upload.api';
