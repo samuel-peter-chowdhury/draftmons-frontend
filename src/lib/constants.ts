@@ -56,7 +56,7 @@ export const BASE_ENDPOINTS = {
   DISCORD_INVITE_URL: `${API_BASE_URL}/api/discord/invite-url`,
 } as const;
 
-export const NAT_DEX_GENERATION_ID = 0;
+export const NAT_DEX_GENERATION_ID = 1;
 
 /**
  * IANA timezone identifiers organized by region
