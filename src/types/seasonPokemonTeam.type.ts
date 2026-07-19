@@ -12,4 +12,5 @@ export interface SeasonPokemonTeamInput extends BaseInput {
 export interface SeasonPokemonTeamOutput extends BaseOutput {
   seasonPokemonId: number;
   teamId: number;
+  isActive?: boolean;
 }

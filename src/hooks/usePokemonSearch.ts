@@ -160,7 +160,7 @@ export function usePokemonSearch({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, sortBy, sortOrder, filters, selectedGenerationId, debouncedNameLike, endpoint, extraParamsKey]);
 
-  const { data, loading, error } = useFetch<PaginatedResponse<PokemonInput>>(pokemonUrl);
+  const { data, loading, error, refetch } = useFetch<PaginatedResponse<PokemonInput>>(pokemonUrl);
 
   const resetGeneration = useCallback((generationId: number) => {
     setSelectedGenerationId(generationId);
@@ -208,6 +208,7 @@ export function usePokemonSearch({
     data,
     loading,
     error,
+    refetch,
     // Reference data
     ...referenceData,
     // Filter panel props

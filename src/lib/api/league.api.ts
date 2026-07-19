@@ -12,6 +12,8 @@ import type {
   MatchOutput,
   SeasonPokemonInput,
   SeasonPokemonOutput,
+  SeasonPokemonTeamInput,
+  SeasonPokemonTeamOutput,
   SeasonInput,
   SeasonOutput,
   TeamInput,
@@ -179,12 +181,16 @@ export const LeagueApi = {
   // ==================== Team Operations ====================
 
   /**
-   * GET /api/league/:leagueId/team
+   * GET /api/league/:leagueId/team?full=true
    * Get all teams in a league
    */
-  getTeams: (leagueId: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'team');
-    return Api.get<TeamInput[]>(url);
+  getTeams: (leagueId: number, full = false) => {
+    const url = buildUrlWithQuery(
+      BASE_ENDPOINTS.LEAGUE_BASE,
+      [leagueId, 'team'],
+      full ? { full: 'true' } : undefined,
+    );
+    return Api.get<PaginatedResponse<TeamInput>>(url);
   },
 
   /**
@@ -475,5 +481,38 @@ export const LeagueApi = {
   bulkUpsertSeasonPokemon: (leagueId: number, data: BulkUpsertInput) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-bulk');
     return Api.post<BulkUpsertEntryResult[]>(url, data);
+  },
+
+  // ==================== Season Pokemon Team Operations ====================
+
+  /**
+   * POST /api/league/:leagueId/season-pokemon-team
+   * Create a new season pokemon team assignment
+   */
+  createSeasonPokemonTeam: (leagueId: number, data: SeasonPokemonTeamOutput) => {
+    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-team');
+    return Api.post<SeasonPokemonTeamInput>(url, data);
+  },
+
+  /**
+   * PUT /api/league/:leagueId/season-pokemon-team/:id
+   * Update a season pokemon team assignment (e.g. soft-unassign/reactivate via isActive)
+   */
+  updateSeasonPokemonTeam: (
+    leagueId: number,
+    id: number,
+    data: Partial<SeasonPokemonTeamOutput>,
+  ) => {
+    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-team', id);
+    return Api.put<SeasonPokemonTeamInput>(url, data);
+  },
+
+  /**
+   * DELETE /api/league/:leagueId/season-pokemon-team/:id
+   * Permanently delete a season pokemon team assignment
+   */
+  deleteSeasonPokemonTeam: (leagueId: number, id: number) => {
+    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-team', id);
+    return Api.delete<void>(url);
   },
 };

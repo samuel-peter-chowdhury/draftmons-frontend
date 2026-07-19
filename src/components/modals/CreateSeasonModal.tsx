@@ -5,6 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
   Button,
+  Checkbox,
   Input,
   Label,
   ErrorAlert,
@@ -46,6 +47,9 @@ export function CreateSeasonModal({
     pointLimit: season?.pointLimit ?? 100,
     maxPointValue: season?.maxPointValue ?? 20,
     numberOfGames: season?.numberOfGames ?? 3,
+    minRosterSize: season?.minRosterSize ?? 10,
+    maxRosterSize: season?.maxRosterSize ?? 12,
+    allowMultiTeamPokemon: season?.allowMultiTeamPokemon ?? false,
     generationId: season?.generationId ?? 0,
     leagueId,
   });
@@ -92,6 +96,9 @@ export function CreateSeasonModal({
         pointLimit: form.pointLimit,
         maxPointValue: form.maxPointValue,
         numberOfGames: form.numberOfGames,
+        minRosterSize: form.minRosterSize,
+        maxRosterSize: form.maxRosterSize,
+        allowMultiTeamPokemon: form.allowMultiTeamPokemon,
         generationId: form.generationId,
       });
     } else {
@@ -226,6 +233,46 @@ export function CreateSeasonModal({
             {numberOfGamesError && (
               <p className="mt-1 text-xs text-destructive">{numberOfGamesError}</p>
             )}
+          </div>
+
+          <div>
+            <Label htmlFor="season-min-roster-size">Min Roster Size</Label>
+            <Input
+              id="season-min-roster-size"
+              type="number"
+              value={form.minRosterSize}
+              onChange={(e) => setForm((f) => ({ ...f, minRosterSize: Number(e.target.value) }))}
+              required
+              disabled={mutation.loading}
+              min="1"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="season-max-roster-size">Max Roster Size</Label>
+            <Input
+              id="season-max-roster-size"
+              type="number"
+              value={form.maxRosterSize}
+              onChange={(e) => setForm((f) => ({ ...f, maxRosterSize: Number(e.target.value) }))}
+              required
+              disabled={mutation.loading}
+              min="1"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="season-allow-multi-team-pokemon"
+              checked={form.allowMultiTeamPokemon}
+              onCheckedChange={(checked) =>
+                setForm((f) => ({ ...f, allowMultiTeamPokemon: checked === true }))
+              }
+              disabled={mutation.loading}
+            />
+            <Label htmlFor="season-allow-multi-team-pokemon" className="text-sm font-medium">
+              Allow Multi-Team Pokémon
+            </Label>
           </div>
 
           <div className="flex items-center justify-end gap-2">

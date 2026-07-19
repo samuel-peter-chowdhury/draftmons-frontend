@@ -234,6 +234,12 @@ export default function Sidebar() {
                 <AccordionContent>
                   <div className="flex flex-col gap-1">
                     <NavLink
+                      href={seasonPrefix ? `${seasonPrefix}/admin/team` : '#'}
+                      disabled={!seasonPrefix}
+                    >
+                      Teams
+                    </NavLink>
+                    <NavLink
                       href={seasonPrefix ? `${seasonPrefix}/admin/tier-list` : '#'}
                       disabled={!seasonPrefix}
                     >
