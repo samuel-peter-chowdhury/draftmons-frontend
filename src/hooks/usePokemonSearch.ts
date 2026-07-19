@@ -71,6 +71,7 @@ interface UsePokemonSearchOptions {
   initialFilters?: Partial<PokemonFilters>;
   initialSortBy?: SortableColumn;
   initialSortOrder?: 'ASC' | 'DESC';
+  initialPageSize?: number;
 }
 
 function buildFilterParams(
@@ -122,9 +123,10 @@ export function usePokemonSearch({
   initialFilters,
   initialSortBy = 'name',
   initialSortOrder = 'ASC',
+  initialPageSize = 20,
 }: UsePokemonSearchOptions) {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(initialPageSize);
   const [sortBy, setSortBy] = useState<SortableColumn>(initialSortBy);
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>(initialSortOrder);
   const [selectedGenerationId, setSelectedGenerationId] = useState<number>(NAT_DEX_GENERATION_ID);

@@ -6,13 +6,14 @@ import Link from 'next/link';
 import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
 import { Badge } from '@/components/ui/badge';
 import { CreateTeamModal } from '@/components/modals/CreateTeamModal';
+import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import { useLeagueStore, useIsModerator } from '@/stores/useLeagueStore';
-import type { PaginatedResponse, SeasonPokemonInput } from '@/types';
+import type { PaginatedResponse, PokemonInput, SeasonPokemonInput } from '@/types';
 
 function rosterCountBadge(count: number, min: number, max: number) {
   if (count > max) {
@@ -67,12 +68,14 @@ export default function AdminTeamListPage() {
     useFetch<PaginatedResponse<SeasonPokemonInput>>(rosterUrl);
 
   const rosterByTeamId = useMemo(() => {
-    const map = new Map<number, { count: number; points: number }>();
+    const map = new Map<number, { count: number; points: number; pokemons: PokemonInput[] }>();
     for (const sp of rosterData?.data ?? []) {
+      if (!sp.pokemon) continue;
       for (const spt of sp.seasonPokemonTeams ?? []) {
-        const entry = map.get(spt.teamId) ?? { count: 0, points: 0 };
+        const entry = map.get(spt.teamId) ?? { count: 0, points: 0, pokemons: [] };
         entry.count += 1;
         entry.points += sp.pointValue;
+        entry.pokemons.push(sp.pokemon);
         map.set(spt.teamId, entry);
       }
     }
@@ -109,7 +112,7 @@ export default function AdminTeamListPage() {
       {season && season.teams && season.teams.length > 0 && (
         <div className="grid gap-3 md:grid-cols-2">
           {season.teams.map((team) => {
-            const stats = rosterByTeamId.get(team.id) ?? { count: 0, points: 0 };
+            const stats = rosterByTeamId.get(team.id) ?? { count: 0, points: 0, pokemons: [] };
             return (
               <Card key={team.id}>
                 <CardHeader>
@@ -127,13 +130,29 @@ export default function AdminTeamListPage() {
                     </Link>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-wrap gap-2">
+                <CardContent className="space-y-2">
                   {rosterLoading && !rosterData ? (
                     <Spinner size={16} />
                   ) : (
                     <>
-                      {rosterCountBadge(stats.count, season.minRosterSize, season.maxRosterSize)}
-                      {pointTotalBadge(stats.points, season.pointLimit)}
+                      {stats.pokemons.length > 0 && (
+                        <div className="flex flex-wrap gap-0.5">
+                          {stats.pokemons.map((pkmn) => (
+                            <PokemonSprite
+                              key={pkmn.id}
+                              pokemonId={pkmn.id}
+                              spriteUrl={pkmn.spriteUrl}
+                              name={pkmn.name}
+                              className="h-6 w-6 object-contain"
+                              disableClick
+                            />
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {rosterCountBadge(stats.count, season.minRosterSize, season.maxRosterSize)}
+                        {pointTotalBadge(stats.points, season.pointLimit)}
+                      </div>
                     </>
                   )}
                 </CardContent>

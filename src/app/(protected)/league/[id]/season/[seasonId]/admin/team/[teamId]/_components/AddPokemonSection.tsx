@@ -54,6 +54,7 @@ export function AddPokemonSection({
     endpoint: BASE_ENDPOINTS.SEASON_POKEMON_BASE,
     extraParams: { seasonId, full: true, _r: refreshKey },
     initialSortBy: 'name',
+    initialPageSize: 5,
   });
 
   useEffect(() => {
