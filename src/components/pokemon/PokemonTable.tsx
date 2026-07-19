@@ -66,6 +66,8 @@ export interface PokemonTableProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   leagueId?: number;
+  /** Renders an extra per-row actions cell (seasonPokemon variant only). */
+  rowActions?: (item: SeasonPokemonInput) => React.ReactNode;
 }
 
 function getRowData(
@@ -97,6 +99,7 @@ export function PokemonTable({
   onPageChange,
   onPageSizeChange,
   leagueId,
+  rowActions,
 }: PokemonTableProps) {
   const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
@@ -158,12 +161,19 @@ export function PokemonTable({
                           </TableHead>
                         )
                       }
+                      {variant === 'seasonPokemon' && rowActions && <TableHead></TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {data.data.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={variant === 'seasonPokemon' ? 12 : 11} className="text-center text-muted-foreground">
+                        <TableCell
+                          colSpan={
+                            (variant === 'seasonPokemon' ? 12 : 11) +
+                            (variant === 'seasonPokemon' && rowActions ? 1 : 0)
+                          }
+                          className="text-center text-muted-foreground"
+                        >
                           No pokemon found matching your filters.
                         </TableCell>
                       </TableRow>
@@ -233,6 +243,9 @@ export function PokemonTable({
                           <TableCell className="font-medium">{rowData.pokemon.baseStatTotal}</TableCell>
                           {variant === 'seasonPokemon' && (
                             <TableCell>{rowData.pointValue}</TableCell>
+                          )}
+                          {variant === 'seasonPokemon' && rowActions && (
+                            <TableCell>{rowActions(item as SeasonPokemonInput)}</TableCell>
                           )}
                         </TableRow>
                       )})

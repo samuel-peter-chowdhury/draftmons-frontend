@@ -71,6 +71,7 @@ interface UsePokemonSearchOptions {
   initialFilters?: Partial<PokemonFilters>;
   initialSortBy?: SortableColumn;
   initialSortOrder?: 'ASC' | 'DESC';
+  initialPageSize?: number;
 }
 
 function buildFilterParams(
@@ -122,9 +123,10 @@ export function usePokemonSearch({
   initialFilters,
   initialSortBy = 'name',
   initialSortOrder = 'ASC',
+  initialPageSize = 20,
 }: UsePokemonSearchOptions) {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(initialPageSize);
   const [sortBy, setSortBy] = useState<SortableColumn>(initialSortBy);
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>(initialSortOrder);
   const [selectedGenerationId, setSelectedGenerationId] = useState<number>(NAT_DEX_GENERATION_ID);
@@ -160,7 +162,7 @@ export function usePokemonSearch({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, sortBy, sortOrder, filters, selectedGenerationId, debouncedNameLike, endpoint, extraParamsKey]);
 
-  const { data, loading, error } = useFetch<PaginatedResponse<PokemonInput>>(pokemonUrl);
+  const { data, loading, error, refetch } = useFetch<PaginatedResponse<PokemonInput>>(pokemonUrl);
 
   const resetGeneration = useCallback((generationId: number) => {
     setSelectedGenerationId(generationId);
@@ -208,6 +210,7 @@ export function usePokemonSearch({
     data,
     loading,
     error,
+    refetch,
     // Reference data
     ...referenceData,
     // Filter panel props
