@@ -235,9 +235,18 @@ export const LeagueApi = {
    * GET /api/league/:leagueId/week
    * Get all weeks in a league
    */
-  getWeeks: (leagueId: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'week');
-    return Api.get<WeekInput[]>(url);
+  getWeeks: (
+    leagueId: number,
+    params?: {
+      seasonId?: number;
+      full?: boolean;
+      pageSize?: number;
+      sortBy?: string;
+      sortOrder?: 'ASC' | 'DESC';
+    },
+  ) => {
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'week'], params);
+    return Api.get<PaginatedResponse<WeekInput>>(url);
   },
 
   /**

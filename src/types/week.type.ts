@@ -4,6 +4,7 @@ import { SeasonInput } from './season.type';
 
 export interface WeekInput extends BaseInput {
   name: string;
+  weekNumber: number;
   seasonId: number;
   season?: SeasonInput;
   matches?: MatchInput[];
@@ -11,5 +12,6 @@ export interface WeekInput extends BaseInput {
 
 export interface WeekOutput extends BaseOutput {
   name: string;
+  weekNumber: number;
   seasonId: number;
 }
