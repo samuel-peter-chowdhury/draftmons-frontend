@@ -212,6 +212,9 @@ export default function Sidebar() {
                   <NavLink href={seasonPrefix ? `${seasonPrefix}/tools/search` : '#'} disabled={!seasonPrefix}>
                     Pokemon Search
                   </NavLink>
+                  <NavLink href={seasonPrefix ? `${seasonPrefix}/tools/roster` : '#'} disabled={!seasonPrefix}>
+                    Roster
+                  </NavLink>
                 </div>
               </AccordionContent>
             </AccordionItem>
