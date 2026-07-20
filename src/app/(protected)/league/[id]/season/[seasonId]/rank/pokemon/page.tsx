@@ -4,17 +4,20 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { Card, CardContent, ErrorAlert, Spinner } from '@/components';
-import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import {
+  Card,
+  CardContent,
+  ErrorAlert,
+  Spinner,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components';
+import { PokemonModal } from '@/components/pokemon/PokemonModal';
+import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { useFetch, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
@@ -126,7 +129,7 @@ export default function SeasonPokemonRankPage() {
       {main.length > 0 && (
         <Card>
           <CardContent className="p-0">
-            <Table>
+            <Table className="[&_td]:p-2 [&_th]:h-8 [&_th]:px-2 [&_th]:py-1">
               <TableHeader>
                 <TableRow>
                   <TableHead>#</TableHead>
@@ -153,7 +156,7 @@ export default function SeasonPokemonRankPage() {
           </p>
           <Card>
             <CardContent className="p-0">
-              <Table>
+              <Table className="[&_td]:p-2 [&_th]:h-8 [&_th]:px-2 [&_th]:py-1">
                 <TableHeader>
                   <TableRow>
                     <TableHead>#</TableHead>

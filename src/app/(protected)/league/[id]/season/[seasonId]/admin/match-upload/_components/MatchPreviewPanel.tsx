@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Button } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import { Badge, Button } from '@/components';
 import {
   Command,
   CommandEmpty,

@@ -24,7 +24,7 @@ function NavLink({
   const content = (
     <span
       className={cn(
-        'flex w-full items-center justify-between rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground',
+        'flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:bg-accent hover:text-accent-foreground',
         active && 'bg-accent text-accent-foreground',
         disabled && 'opacity-50'
       )}
@@ -59,7 +59,7 @@ function NavGroup({
   const content = (
     <div
       className={cn(
-        'flex items-center justify-between py-2 px-3 text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground rounded-md',
+        'flex items-center justify-between py-2 px-3 text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground rounded-lg',
         active && 'bg-accent text-accent-foreground',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
@@ -125,7 +125,7 @@ export default function Sidebar() {
       {/* Panel */}
       <aside
         className={cn(
-          'fixed left-0 top-[var(--header-h)] z-50 sidebar-w border-r border-border bg-background',
+          'fixed left-0 top-[var(--header-h)] z-50 sidebar-w border-r border-border/[0.08] bg-background/90 backdrop-blur-md',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
           'transition-transform'
         )}

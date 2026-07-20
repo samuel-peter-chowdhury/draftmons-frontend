@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Button, Input } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import { Badge, Button, Input, TableCell, TableRow } from '@/components';
 import {
   Command,
   CommandEmpty,
@@ -12,7 +11,6 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { TableCell, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import type { StatPreviewDto, SeasonPokemonInput } from '@/types';
 

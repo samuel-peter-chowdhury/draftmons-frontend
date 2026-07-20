@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Check, Pencil, X } from 'lucide-react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -17,7 +18,6 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components';
-import { Badge } from '@/components/ui/badge';
 import { useFetch, useMutation } from '@/hooks';
 import { buildUrlWithQuery, TeamBuildApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';

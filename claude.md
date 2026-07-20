@@ -14,7 +14,10 @@
 - **API base**: `NEXT_PUBLIC_API_BASE_URL` (defaults to `http://localhost:3000`)  
 - **Auth**: Google OAuth 2 via backend sessions (Passport). Routes under **`/api/auth/*`**.  
 - **Public route**: `/` only.  
-- **Protected routes**: `/home`, `/league`, `/league/create`, `/league/[id]`, plus **league-scoped tools** nested under `/league/[id]/*`.  
+- **Protected routes**: `/home`, `/user`, `/pokemon`, `/league`, `/league/[id]`, `/team-build`,
+  plus **league/season-scoped tools** nested under `/league/[id]/season/[seasonId]/*` (`tools/`,
+  `admin/`, `rank/`, `tiers`, `team-matchup`, `team`). League/season creation is dialog-driven
+  (`CreateLeagueModal`/`CreateSeasonModal`), not a separate route.  
 - **Dark theme only**. No theme toggle.  
 - **State**: Zustand (`useAuthStore`, `useUiStore`).  
 - **UI**: shadcn-style primitives (local), TailwindCSS, lucide-react icons.  
@@ -31,53 +34,77 @@ src/
   app/
     (public)/
       page.tsx          # "/" – landing with Google sign-in
-      layout.tsx        # no header on public routes
+      layout.tsx        # no header on public routes; mounts AmbientBackground
       loading.tsx
       error.tsx
     (protected)/
-      layout.tsx        # header + sidebar
+      layout.tsx        # header + sidebar; mounts AmbientBackground
       loading.tsx
       error.tsx
       home/page.tsx
-      league/page.tsx
-      league/create/page.tsx
-      league/[id]/page.tsx
-      league/[id]/team-matchup/page.tsx
-      league/[id]/tiers/classic/page.tsx
-      league/[id]/tiers/type/page.tsx
-      league/[id]/rank/team/page.tsx
-      league/[id]/rank/pokemon/page.tsx
-      league/[id]/tools/schedule/page.tsx
-      league/[id]/tools/rules/page.tsx
+      user/page.tsx
+      user/[id]/page.tsx           # profile, incl. Discord link/unlink
+      pokemon/page.tsx             # global Pokemon table (PokemonTable)
+      league/page.tsx              # list + CreateLeagueModal trigger
+      league/[id]/page.tsx         # league detail (Discord tab, seasons list)
+      league/[id]/season/page.tsx  # + CreateSeasonModal trigger
+      league/[id]/season/[seasonId]/
+        layout.tsx                 # season sub-nav
+        page.tsx                   # season overview
+        team/page.tsx
+        team/[teamId]/page.tsx
+        tiers/page.tsx             # classic/type toggle in one page (not separate routes)
+        rank/team/page.tsx
+        rank/pokemon/page.tsx
+        team-matchup/page.tsx      # renders shared components/comparison/*
+        tools/rules/page.tsx
+        tools/schedule/page.tsx
+        tools/search/page.tsx
+        tools/roster/page.tsx
+        admin/team/page.tsx
+        admin/team/[teamId]/page.tsx
+        admin/schedule/page.tsx
+        admin/match-upload/page.tsx
+        admin/tier-list/page.tsx   # drag-and-drop board (@dnd-kit/core) + rapid placement view
+      team-build/page.tsx
+      team-build/[teamBuildId]/page.tsx
+      team-build/compare/page.tsx  # uses components/comparison/* (shared with team-matchup)
   components/
     layout/Header.tsx
     layout/Sidebar.tsx
+    layout/AmbientBackground.tsx
+    layout/AuthProvider.tsx
     feedback/Spinner.tsx
     feedback/ErrorAlert.tsx
-    ui/accordion.tsx
-    ui/alert.tsx
-    ui/button.tsx
-    ui/card.tsx
-    ui/input.tsx
-    ui/label.tsx
-    ui/skeleton.tsx
-    index.ts
+    modals/                        # CreateLeagueModal, CreateSeasonModal, CreateTeamModal, EditUserModal, EditRulesModal, ...
+    pokemon/                       # PokemonTable, PokemonModal, PokemonFilterPanel, PokemonSprite, FilterDropdown
+    comparison/                    # TeamInfoColumn, CopyableField, SpecialMovesContent, CoverageMovesContent — shared by team-matchup and team-build/compare
+    home/                          # MyLeagueCard, LeagueSearch
+    ui/                            # 24 primitives — see "UI & theming" below
+    index.ts                       # barrel; re-exports every ui/* primitive plus the above
   hooks/
     useFetch.ts
+    useMutation.ts
+    usePokemonModal.ts
     index.ts
   lib/
-    api.ts            # fetch wrapper (credentials: 'include')
+    api.ts            # fetch wrapper (credentials: 'include'); buildUrl/buildUrlWithQuery
+    api/              # typed per-resource clients: LeagueApi, PokemonApi, AuthApi, TeamBuildApi, ...
     constants.ts      # ENDPOINTS + URLs
-    utils.ts          # cn()
+    pokemon.ts        # getStatColor/getEffectivenessColor, POKEMON_TYPE_ORDER
+    sanitize.ts       # sanitizeHtml for rich-text rendering
+    standings.ts      # computeStandings
+    utils.ts          # cn(), formatUserDisplayName, etc.
     index.ts
   stores/
     useAuthStore.ts   # auth status & logout
     useUiStore.ts     # sidebar + activeLeagueId
+    useLeagueStore.ts # active league/season cache + useIsModerator
     index.ts
   types/
     dto.ts            # DTOs: Base, User, League, PaginatedResponse, etc.
     index.ts
-app/globals.css       # Tailwind + dark tokens
+app/globals.css       # Tailwind + design tokens (Minimalist Dark/Amber — see below)
 middleware.ts         # SSR/edge protection
 tailwind.config.ts
 postcss.config.js
@@ -90,6 +117,14 @@ README.md
 ```
 
 **Index barrels** exist under `components`, `lib`, `stores`, `hooks`, and `types`.
+
+**`_components/` co-location**: page-specific components that aren't reused elsewhere live in a
+sibling `_components/` directory next to the `page.tsx` that uses them (e.g.
+`admin/tier-list/_components/TierColumn.tsx`, `team-build/[teamBuildId]/_components/DraftPrepTab.tsx`).
+The leading underscore opts the folder out of Next.js route matching. Each `_components/` directory
+has its own `index.ts` barrel. Promote a component out of `_components/` into `src/components/` only
+once a second, unrelated route needs it (see `components/comparison/*`, shared by `team-matchup` and
+`team-build/compare`).
 
 ---
 
@@ -153,9 +188,70 @@ README.md
 ### 6) UI & theming
 
 - Dark theme only. CSS variables defined in `globals.css` (shadcn-style tokens).  
-- Local shadcn-style primitives for: `Button`, `Input`, `Label`, `Card`, `Alert`, `Accordion`, `Skeleton`.  
+- Local shadcn-style primitives (`src/components/ui/*.tsx`, 24 files, all re-exported from the
+  `components` barrel): `Accordion`, `Alert`, `AlertDialog`, `Badge`, `Button`, `Card`, `Checkbox`,
+  `Combobox`, `Command`, `Dialog`, `Input`, `Label`, `Pagination`, `Popover`, `RichTextEditor`
+  (Tiptap-based), `Select`, `Skeleton`, `SortControls`, `Table`, `Tabs`, `Textarea`, `Toast`/
+  `Toaster` (+ `addToast` helper in `hooks/useToast.ts`), `Tooltip`. `Combobox`/`Command` wrap
+  `cmdk`. Add new primitives by hand (no `components.json`/shadcn CLI in this repo) and export them
+  from `components/index.ts` — every primitive should be reachable via the `@/components` barrel,
+  not a direct `@/components/ui/*` import.  
 - Icons via `lucide-react`.  
 - Header height is fixed (**64px**). Sidebar is **fixed** beneath header with an overlay; it **does not** shift page content.
+
+#### Design language — "Minimalist Dark / Amber"
+
+- **Palette**: layered slate backgrounds with a single warm amber accent
+  (`--primary` = `#F59E0B`) used **sparingly** — reserved for calls to
+  action (default `Button`, `Badge`, checkbox checked-state, links,
+  focus rings). `--accent` is a **neutral slate** hover/selected surface,
+  **not** amber; never map amber onto generic hover states. `--success` /
+  `--warning` are deliberately muted (sage / ochre), differentiated from
+  `--primary` by saturation, not hue.
+- **Tokens are alpha-ready**: colors map through the `<alpha-value>`
+  placeholder in `tailwind.config.ts`, so opacity modifiers composite for
+  real (`bg-card/60`, `border-border/[0.08]`). `--border` is pure white
+  consumed at low alpha — always pair `border`/`border-border` with an
+  explicit alpha (`border-border/[0.08]` default, `/[0.15]` on hover/focus);
+  a bare `border` will render solid white.
+- **Glass surfaces**: floating surfaces (card, dialog, popover, tooltip,
+  toast, command) use `bg-*/60`–`/90` + `backdrop-blur-md` (higher opacity
+  for text-dense surfaces).
+- **Motion**: interactive elements use `transition-all duration-200`
+  (`300` for cards/larger surfaces), amber `hover:shadow-glow-hover` +
+  `active:scale-[0.98]` on primary buttons.
+- **Typography**: `font-sans` (Inter) body default, `font-display`
+  (Space Grotesk) on headings/titles, `font-mono` (JetBrains Mono).
+  Extended scale `text-3xl`–`text-7xl` available for display headings.
+- **Radius**: standalone interactive elements `rounded-lg` (badges/inputs
+  as noted), containers `rounded-xl`.
+- **Ambient background**: `AmbientBackground` (amber radial glow + faint
+  noise) is mounted once per route-group layout — purely decorative,
+  `fixed`, `-z-10`, `pointer-events-none`; never affects scroll/layout.
+
+#### Spacing / typography density (per-page, not global)
+
+Two modes, chosen per page — Draftmons deliberately diverges from a blanket
+"generous spacing everywhere" because its data-dense views need to show more
+with less scrolling:
+
+- **Spacious** — public landing (`(public)/page.tsx`), the rules page
+  (`tools/rules/page.tsx`): generous padding/line-height for prose and
+  single-focus content. League/season "creation flows" are dialogs now
+  (`CreateLeagueModal`/`CreateSeasonModal`), not standalone pages — dialog
+  internal spacing is a `components/ui/dialog.tsx` concern, not a per-page
+  density choice.
+- **Compact** — Pokemon data tables (`PokemonTable.tsx`), ranking tables
+  (`rank/team`, `rank/pokemon`), the tier list (`tiers/page.tsx`,
+  `admin/tier-list/page.tsx`), all `admin/*` pages, `team-matchup/*` (and
+  `components/comparison/*`, which it shares with `team-build/compare`):
+  tight padding (`p-1`/`p-2`), small row heights, no large section padding.
+  `Table`/`TableHead`/`TableCell` default to shadcn's standard `h-12`/`p-4`
+  sizing — compact call sites override via `[&_th]:h-8 [&_th]:px-2
+  [&_th]:py-1 [&_td]:p-2` on the `Table` element rather than touching the
+  primitive itself.
+
+These compose independently of the design tokens above.
 
 ### 7) Errors & loading
 
@@ -165,7 +261,8 @@ README.md
 
 ### 8) File organization & naming
 
-- Co-locate small, page-specific components under the page directory when helpful.  
+- Co-locate small, page-specific components in a sibling `_components/` directory (see
+  "`_components/` co-location" under Repository layout above).  
 - Reusable components go under `src/components`.  
 - Prefer **barrel exports** for `components`, `lib`, `stores`, `hooks`, `types`.  
 - Use **absolute imports** via `@/*` path alias.  
@@ -206,8 +303,9 @@ README.md
 
 ## Routing & protection details
 
-- Paths treated as **protected** (see `middleware.ts`): `/home`, `/league`, `/pokemon`, `/user`.  
-  Add to `PROTECTED_PREFIXES` if new protected top-level routes are introduced.
+- Paths treated as **protected** (see `protectedRoutes` in `src/middleware.ts`): `/home`,
+  `/league`, `/user`, `/pokemon`, `/team-build`.  
+  Add new protected top-level routes to that array.
 - `middleware.ts` forwards cookies to the backend and checks `/api/auth/status`.  
   On failure, it redirects the user to `/` and preserves the intended path in `?next=`.
 

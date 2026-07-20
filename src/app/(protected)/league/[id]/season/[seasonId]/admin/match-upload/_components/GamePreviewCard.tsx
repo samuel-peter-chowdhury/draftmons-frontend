@@ -1,7 +1,16 @@
 'use client';
 
-import { Card, CardContent, Input, Select } from '@/components';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Card,
+  CardContent,
+  Input,
+  Select,
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components';
 import { cn } from '@/lib/utils';
 import type { GamePreviewDto, SeasonPokemonInput } from '@/types';
 import { StatOverrideRow } from './StatOverrideRow';
@@ -120,7 +129,7 @@ export function GamePreviewCard({
         </div>
 
         {/* Stats table */}
-        <Table>
+        <Table className="[&_td]:p-2 [&_th]:h-8 [&_th]:px-2 [&_th]:py-1">
           <TableHeader>
             <TableRow>
               <TableHead className="text-muted-foreground">Pokémon</TableHead>

@@ -29,7 +29,7 @@ export default function SeasonRulesPage() {
   const isModerator = useIsModerator(currentUser?.id);
 
   return (
-    <div className="mx-auto max-w-7xl p-4">
+    <div className="mx-auto max-w-4xl px-4 py-10 md:py-16">
       {seasonError && <ErrorAlert message={seasonError} />}
 
       {seasonLoading && !season && (
@@ -39,7 +39,7 @@ export default function SeasonRulesPage() {
       )}
 
       {season && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold">Rules</h1>
             {isModerator && (

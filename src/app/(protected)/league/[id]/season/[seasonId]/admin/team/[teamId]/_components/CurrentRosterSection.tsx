@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
 import { RemoveRosterEntryDialog } from './RemoveRosterEntryDialog';
@@ -28,9 +27,7 @@ function rosterCountBadge(count: number, min: number, max: number) {
   }
   if (count < min) {
     return (
-      <Badge className="border-amber-500/50 bg-amber-500/10 text-amber-400">
-        {count} / {min}-{max} roster (under min)
-      </Badge>
+      <Badge variant="warning">{count} / {min}-{max} roster (under min)</Badge>
     );
   }
   return <Badge variant="secondary">{count} / {min}-{max} roster</Badge>;

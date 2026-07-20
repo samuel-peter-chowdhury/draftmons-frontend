@@ -13,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
+  Badge,
   Button,
   Card,
   CardContent,
@@ -147,9 +148,9 @@ export default function UserDetailPage() {
                     <div className="flex items-center gap-2 text-sm">
                       <MessageSquare className="h-4 w-4 text-[#5865F2]" />
                       <span>{data.discordUsername}</span>
-                      <span className="rounded-full bg-[#5865F2]/20 px-2 py-0.5 text-xs text-[#5865F2]">
+                      <Badge className="border-transparent bg-[#5865F2]/20 text-[#5865F2]">
                         Linked
-                      </span>
+                      </Badge>
                       {isOwnProfile && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>

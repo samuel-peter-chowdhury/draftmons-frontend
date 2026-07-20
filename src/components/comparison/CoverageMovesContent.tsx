@@ -1,6 +1,5 @@
 import { memo, useMemo } from 'react';
-import { ErrorAlert, Spinner } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import { Badge, ErrorAlert, Spinner } from '@/components';
 import { POKEMON_TYPE_ORDER } from '@/lib/pokemon';
 import { MoveCategory } from '@/types';
 import type { PokemonInput } from '@/types';

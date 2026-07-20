@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ExternalLink, MessageSquare } from 'lucide-react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -11,7 +12,6 @@ import {
   Spinner,
   ErrorAlert,
 } from '@/components';
-import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
 import {
   AlertDialog,
@@ -173,11 +173,8 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
-              <Badge
-                className="border-green-500 bg-green-500/20 text-green-400"
-                variant="outline"
-              >
+              <div className="h-2.5 w-2.5 rounded-full bg-success" />
+              <Badge className="border-success bg-success/20 text-success" variant="outline">
                 Connected
               </Badge>
             </CardTitle>

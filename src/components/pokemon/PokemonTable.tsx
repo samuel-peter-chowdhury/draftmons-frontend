@@ -2,17 +2,24 @@
 
 import React, { useCallback } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { Card, CardContent, ErrorAlert, Spinner, Pagination } from '@/components';
 import {
+  Badge,
+  Card,
+  CardContent,
+  ErrorAlert,
+  Spinner,
+  Pagination,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components';
 import { PokemonSprite } from './PokemonSprite';
 import { PokemonModal } from './PokemonModal';
 import { usePokemonModal } from '@/hooks';
@@ -125,7 +132,7 @@ export function PokemonTable({
           <Card>
             <CardContent className="p-0">
               <div className={loading ? 'pointer-events-none opacity-50' : ''}>
-                <Table>
+                <Table className="[&_td]:p-2 [&_th]:h-8 [&_th]:px-2 [&_th]:py-1">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="min-w-20 w-20"></TableHead>

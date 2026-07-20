@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import { Badge, Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
 import { Pagination } from '@/components/ui/pagination';
 import { PokemonFilterPanel } from '@/components/pokemon/PokemonFilterPanel';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
