@@ -47,6 +47,7 @@ export function CreateSeasonModal({
     pointLimit: season?.pointLimit ?? 100,
     maxPointValue: season?.maxPointValue ?? 20,
     numberOfGames: season?.numberOfGames ?? 3,
+    numberOfWeeks: season?.numberOfWeeks ?? 10,
     minRosterSize: season?.minRosterSize ?? 10,
     maxRosterSize: season?.maxRosterSize ?? 12,
     allowMultiTeamPokemon: season?.allowMultiTeamPokemon ?? false,
@@ -96,6 +97,7 @@ export function CreateSeasonModal({
         pointLimit: form.pointLimit,
         maxPointValue: form.maxPointValue,
         numberOfGames: form.numberOfGames,
+        numberOfWeeks: form.numberOfWeeks,
         minRosterSize: form.minRosterSize,
         maxRosterSize: form.maxRosterSize,
         allowMultiTeamPokemon: form.allowMultiTeamPokemon,
@@ -233,6 +235,19 @@ export function CreateSeasonModal({
             {numberOfGamesError && (
               <p className="mt-1 text-xs text-destructive">{numberOfGamesError}</p>
             )}
+          </div>
+
+          <div>
+            <Label htmlFor="season-number-of-weeks">Number of Weeks</Label>
+            <Input
+              id="season-number-of-weeks"
+              type="number"
+              min="1"
+              value={form.numberOfWeeks}
+              onChange={(e) => setForm((f) => ({ ...f, numberOfWeeks: Number(e.target.value) }))}
+              required
+              disabled={mutation.loading}
+            />
           </div>
 
           <div>

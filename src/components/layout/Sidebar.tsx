@@ -249,6 +249,12 @@ export default function Sidebar() {
                       Tier List
                     </NavLink>
                     <NavLink
+                      href={seasonPrefix ? `${seasonPrefix}/admin/schedule` : '#'}
+                      disabled={!seasonPrefix}
+                    >
+                      Schedule
+                    </NavLink>
+                    <NavLink
                       href={seasonPrefix ? `${seasonPrefix}/admin/match-upload` : '#'}
                       disabled={!seasonPrefix}
                     >

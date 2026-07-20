@@ -21,6 +21,7 @@ export interface SeasonInput extends BaseInput {
   pointLimit: number;
   maxPointValue: number;
   numberOfGames: number;
+  numberOfWeeks: number;
   minRosterSize: number;
   maxRosterSize: number;
   allowMultiTeamPokemon: boolean;
@@ -40,6 +41,7 @@ export interface SeasonOutput extends BaseOutput {
   pointLimit: number;
   maxPointValue: number;
   numberOfGames?: number;
+  numberOfWeeks: number;
   minRosterSize: number;
   maxRosterSize: number;
   allowMultiTeamPokemon: boolean;
