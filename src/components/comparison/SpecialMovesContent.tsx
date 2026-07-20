@@ -3,7 +3,7 @@ import { ErrorAlert, Spinner, Tooltip, TooltipContent, TooltipProvider, TooltipT
 import { Badge } from '@/components/ui/badge';
 import { capitalizeFirst } from '@/lib/utils';
 import type { PokemonInput } from '@/types';
-import type { SpecialMoveGroup, SpecialMoveRow } from '../constants';
+import type { SpecialMoveGroup, SpecialMoveRow } from './constants';
 import { MoveSpritesRow } from './MoveSpritesRow';
 
 export const SpecialMovesContent = memo(function SpecialMovesContent({

@@ -88,6 +88,9 @@ export default function HomePage() {
         <Link href="/pokemon" className="hover:underline">
           Browse Pokemon
         </Link>
+        <Link href="/team-build" className="hover:underline">
+          Team Builds
+        </Link>
         <button type="button" onClick={() => setIsCreateModalOpen(true)} className="hover:underline">
           Create League
         </button>

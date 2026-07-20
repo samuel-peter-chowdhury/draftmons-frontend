@@ -39,9 +39,10 @@ export const TeamBuildApi = {
 
   /**
    * POST /api/team-build
-   * Create a new team build
+   * Create a new team build. `userId` is set from the session server-side and
+   * must not be sent by the client (it is ignored/overwritten regardless).
    */
-  create: (data: TeamBuildOutput) => {
+  create: (data: Omit<TeamBuildOutput, 'userId'>) => {
     return Api.post<TeamBuildInput>(BASE_ENDPOINTS.TEAM_BUILD_BASE, data);
   },
 

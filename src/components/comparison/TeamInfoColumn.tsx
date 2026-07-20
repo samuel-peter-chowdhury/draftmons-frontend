@@ -9,26 +9,129 @@ import type {
   SeasonPokemonTeamInput,
   PokemonInput,
   TeamInput,
+  TeamBuildInput,
   GameInput,
   GameStatInput,
 } from '@/types';
 import { CopyableField } from './CopyableField';
 
-export const TeamInfoColumn = memo(function TeamInfoColumn({
+type TeamInfoColumnProps =
+  | {
+      mode: 'team';
+      team: TeamInput | null;
+      teamPokemon: SeasonPokemonTeamInput[];
+      gameStats: GameStatInput[];
+      seasonTeams: TeamInput[];
+      loading: boolean;
+      error: string | null;
+      onSpriteClick: (pokemonId: number) => void;
+    }
+  | {
+      mode: 'teamBuild';
+      teamBuild: TeamBuildInput | null;
+      pointTotal: number;
+      loading: boolean;
+      error: string | null;
+    };
+
+/**
+ * Team Info column for the comparison views. Renders full team stats (records,
+ * kill leaders, match history) for a real Team, or lightweight metadata
+ * (generation / season / point total) for a TeamBuild.
+ */
+export const TeamInfoColumn = memo(function TeamInfoColumn(props: TeamInfoColumnProps) {
+  if (props.loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-10">
+        <Spinner size={24} />
+      </div>
+    );
+  }
+
+  if (props.error) {
+    return (
+      <div className="flex-1">
+        <ErrorAlert message={props.error} />
+      </div>
+    );
+  }
+
+  if (props.mode === 'teamBuild') {
+    return <TeamBuildInfo teamBuild={props.teamBuild} pointTotal={props.pointTotal} />;
+  }
+
+  return (
+    <TeamInfo
+      team={props.team}
+      teamPokemon={props.teamPokemon}
+      gameStats={props.gameStats}
+      seasonTeams={props.seasonTeams}
+      onSpriteClick={props.onSpriteClick}
+    />
+  );
+});
+
+function TeamBuildInfo({
+  teamBuild,
+  pointTotal,
+}: {
+  teamBuild: TeamBuildInput | null;
+  pointTotal: number;
+}) {
+  if (!teamBuild) {
+    return (
+      <div className="flex-1">
+        <p className="py-6 text-center text-sm text-muted-foreground">No build data available.</p>
+      </div>
+    );
+  }
+
+  const rosterCount = teamBuild.teamBuildSets?.length ?? 0;
+
+  return (
+    <div className="flex-1 space-y-4 overflow-x-auto">
+      <div>
+        <h3 className="text-sm font-semibold">{teamBuild.name}</h3>
+        <p className="text-xs text-muted-foreground">
+          {teamBuild.season?.name ?? 'Standalone'}
+        </p>
+      </div>
+
+      <div className="rounded-md border border-border p-3">
+        <div className="flex items-center justify-between py-1">
+          <span className="text-xs text-muted-foreground">Generation</span>
+          <span className="text-sm">{teamBuild.generation?.name ?? '—'}</span>
+        </div>
+        <div className="flex items-center justify-between py-1">
+          <span className="text-xs text-muted-foreground">Season</span>
+          <span className="text-sm">{teamBuild.season?.name ?? 'Standalone'}</span>
+        </div>
+        <div className="flex items-center justify-between py-1">
+          <span className="text-xs text-muted-foreground">Roster size</span>
+          <span className="text-sm">
+            {rosterCount} {rosterCount === 1 ? 'mon' : 'mons'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between py-1">
+          <span className="text-xs text-muted-foreground">Point total</span>
+          <span className="text-sm font-semibold">{pointTotal} pts</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TeamInfo({
   team,
   teamPokemon,
   gameStats,
   seasonTeams,
-  loading,
-  error,
   onSpriteClick,
 }: {
   team: TeamInput | null;
   teamPokemon: SeasonPokemonTeamInput[];
   gameStats: GameStatInput[];
   seasonTeams: TeamInput[];
-  loading: boolean;
-  error: string | null;
   onSpriteClick: (pokemonId: number) => void;
 }) {
   // Build seasonPokemonId → PokemonInput map from team's roster
@@ -118,22 +221,6 @@ export const TeamInfoColumn = memo(function TeamInfoColumn({
       }))
       .sort((a, b) => a.weekName.localeCompare(b.weekName, undefined, { numeric: true }));
   }, [team, teamNameMap]);
-
-  if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center py-10">
-        <Spinner size={24} />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex-1">
-        <ErrorAlert message={error} />
-      </div>
-    );
-  }
 
   if (!team) {
     return (
@@ -274,4 +361,4 @@ export const TeamInfoColumn = memo(function TeamInfoColumn({
       </div>
     </div>
   );
-});
+}

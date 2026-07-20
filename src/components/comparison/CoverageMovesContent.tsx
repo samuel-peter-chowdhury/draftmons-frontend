@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { POKEMON_TYPE_ORDER } from '@/lib/pokemon';
 import { MoveCategory } from '@/types';
 import type { PokemonInput } from '@/types';
-import type { CoverageRow } from '../constants';
+import type { CoverageRow } from './constants';
 import { MoveSpritesRow } from './MoveSpritesRow';
 
 export const CoverageMovesContent = memo(function CoverageMovesContent({

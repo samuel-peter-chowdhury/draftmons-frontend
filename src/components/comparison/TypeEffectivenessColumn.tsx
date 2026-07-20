@@ -9,7 +9,7 @@ import {
   getEffectivenessColor,
   getEffectivenessScore,
 } from '@/lib/pokemon';
-import type { TypeEffPokemon, TypeColumnInfo } from '../constants';
+import type { TypeEffPokemon, TypeColumnInfo } from './constants';
 
 export const TypeEffectivenessColumn = memo(function TypeEffectivenessColumn({
   teamName,

@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { ErrorAlert, Spinner } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { getStatColor } from '@/lib/pokemon';
-import type { SpeedTierPokemon } from '../constants';
+import type { SpeedTierPokemon } from './constants';
 
 export const SpeedTierColumn = memo(function SpeedTierColumn({
   teamName,
