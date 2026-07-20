@@ -18,4 +18,5 @@ export interface MatchOutput extends BaseOutput {
   weekId: number;
   losingTeamId?: number;
   winningTeamId?: number;
+  teamIds?: number[];
 }
