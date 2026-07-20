@@ -308,8 +308,8 @@ function TeamInfo({
                 key={match.matchId}
                 className={`rounded-md border-l-4 p-3 ${
                   match.matchWon
-                    ? 'border-l-green-500 bg-green-500/5'
-                    : 'border-l-red-500 bg-red-500/5'
+                    ? 'border-l-success bg-success/5'
+                    : 'border-l-destructive bg-destructive/5'
                 }`}
               >
                 <div className="mb-1 flex items-center justify-between">
@@ -318,7 +318,7 @@ function TeamInfo({
                     <span className="ml-1 text-muted-foreground">vs {match.opponentName}</span>
                   </span>
                   <span
-                    className={`text-xs font-semibold ${match.matchWon ? 'text-green-500' : 'text-red-500'}`}
+                    className={`text-xs font-semibold ${match.matchWon ? 'text-success' : 'text-destructive'}`}
                   >
                     {match.matchWon ? 'W' : 'L'}
                   </span>
@@ -333,7 +333,7 @@ function TeamInfo({
                       >
                         <span
                           className={`font-mono text-xs font-semibold ${
-                            gameWon ? 'text-green-500' : 'text-red-500'
+                            gameWon ? 'text-success' : 'text-destructive'
                           }`}
                         >
                           {gameWon ? '+' : '-'}

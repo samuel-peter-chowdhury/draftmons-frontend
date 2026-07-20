@@ -36,7 +36,7 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur header-h">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border/[0.08] bg-background/70 backdrop-blur-md header-h">
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-2">
           {shouldShowMenu && (
@@ -48,7 +48,7 @@ export default function Header() {
             <Home className="h-5 w-5" />
           </Button>
         </div>
-        <div className="text-sm font-medium">Draftmons</div>
+        <div className="font-display text-base font-semibold tracking-tight">Draftmons</div>
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"

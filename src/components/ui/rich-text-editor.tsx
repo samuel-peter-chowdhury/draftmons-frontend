@@ -134,9 +134,9 @@ function RichTextEditor({
   };
 
   return (
-    <div className={cn('rounded-md border border-input bg-background', className)}>
+    <div className={cn('rounded-lg border border-border/[0.08] bg-background', className)}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 border-b border-input p-2">
+      <div className="flex flex-wrap items-center gap-1 border-b border-border/[0.08] p-2">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
@@ -162,7 +162,7 @@ function RichTextEditor({
           <UnderlineIcon className="h-4 w-4" />
         </ToolbarButton>
 
-        <div className="mx-1 h-6 w-px bg-border" />
+        <div className="mx-1 h-6 w-px bg-border/[0.08]" />
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -189,7 +189,7 @@ function RichTextEditor({
           <Heading3 className="h-4 w-4" />
         </ToolbarButton>
 
-        <div className="mx-1 h-6 w-px bg-border" />
+        <div className="mx-1 h-6 w-px bg-border/[0.08]" />
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -208,7 +208,7 @@ function RichTextEditor({
           <ListOrdered className="h-4 w-4" />
         </ToolbarButton>
 
-        <div className="mx-1 h-6 w-px bg-border" />
+        <div className="mx-1 h-6 w-px bg-border/[0.08]" />
 
         <ToolbarButton
           onClick={setLink}

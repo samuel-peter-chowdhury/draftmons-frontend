@@ -2,15 +2,18 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
+  Badge,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   ErrorAlert,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@/components';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PokemonApi, LeagueApi } from '@/lib/api';
 import { getStatColor, calculateSpeedTiers } from '@/lib/pokemon';
 import type {

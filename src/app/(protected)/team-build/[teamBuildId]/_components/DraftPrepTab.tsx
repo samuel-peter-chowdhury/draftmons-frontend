@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -17,7 +18,6 @@ import {
   Select,
   Spinner,
 } from '@/components';
-import { Badge } from '@/components/ui/badge';
 import { Pagination } from '@/components/ui/pagination';
 import { PokemonFilterPanel } from '@/components/pokemon/PokemonFilterPanel';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
@@ -74,7 +74,7 @@ function rosterBadge(count: number, min?: number | null, max?: number | null) {
   }
   if (count < min) {
     return (
-      <Badge className="border-amber-500/50 bg-amber-500/10 text-amber-400">
+      <Badge variant="warning">
         {count} / {min}-{max} roster (under min)
       </Badge>
     );

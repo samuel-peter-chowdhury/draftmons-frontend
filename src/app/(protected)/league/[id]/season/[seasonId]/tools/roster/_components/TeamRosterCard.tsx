@@ -73,7 +73,7 @@ export function TeamRosterCard({ team, rosterRows, season, onSpriteClick }: Team
                 key={`empty-${index}`}
                 className={cn(
                   'flex min-h-[74px] flex-col items-center justify-center rounded-md border border-dashed p-2',
-                  required ? 'border-amber-500/50 bg-amber-500/5' : 'border-border',
+                  required ? 'border-warning/50 bg-warning/5' : 'border-border',
                 )}
               >
                 <span className="text-[10px] text-muted-foreground">

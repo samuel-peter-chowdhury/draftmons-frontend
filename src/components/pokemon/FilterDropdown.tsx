@@ -2,8 +2,7 @@
 
 import React from 'react';
 import { X } from 'lucide-react';
-import { Input, Label } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import { Badge, Input, Label } from '@/components';
 
 export interface FilterDropdownProps<T> {
   label: string;

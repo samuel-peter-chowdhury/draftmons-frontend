@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MoreVertical, Plus } from 'lucide-react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -13,7 +14,6 @@ import {
   PopoverTrigger,
   Skeleton,
 } from '@/components';
-import { Badge } from '@/components/ui/badge';
 import { useFetch, useMutation } from '@/hooks';
 import { buildUrlWithQuery, TeamBuildApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';

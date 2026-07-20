@@ -54,7 +54,6 @@ export default function LandingPage() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Welcome to Draftmons</CardTitle>
-            <CardDescription>Sign in to continue.</CardDescription>
           </CardHeader>
           <CardContent>
             {loading ? (

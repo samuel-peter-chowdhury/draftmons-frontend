@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Button, ErrorAlert, Input, Select, Spinner } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import { Badge, Button, ErrorAlert, Input, Select, Spinner } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { useFetch, useMutation } from '@/hooks';
 import { buildUrlWithQuery, TeamBuildSetApi } from '@/lib/api';
@@ -291,14 +290,7 @@ export function TeamBuildSetEditor({ set, build, onChanged }: TeamBuildSetEditor
         <div className="mb-1 flex items-center justify-between">
           <label className="text-xs text-muted-foreground">EVs</label>
           <Badge
-            variant={evTotal > 510 ? 'destructive' : 'secondary'}
-            className={
-              evTotal > 510
-                ? undefined
-                : evTotal > 508
-                  ? 'border-amber-500/50 bg-amber-500/10 text-amber-400'
-                  : undefined
-            }
+            variant={evTotal > 510 ? 'destructive' : evTotal > 508 ? 'warning' : 'secondary'}
           >
             EVs used: {evTotal} / 510
           </Badge>
@@ -344,7 +336,7 @@ export function TeamBuildSetEditor({ set, build, onChanged }: TeamBuildSetEditor
 
       <div className="flex items-center justify-end gap-3">
         {saved && !updateMutation.loading && (
-          <span className="text-sm text-green-500">Saved</span>
+          <span className="text-sm text-success">Saved</span>
         )}
         <Button onClick={handleSave} disabled={updateMutation.loading}>
           {updateMutation.loading ? <Spinner size={18} /> : 'Save'}

@@ -4,15 +4,18 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { Card, CardContent, ErrorAlert, Spinner } from '@/components';
 import {
+  Card,
+  CardContent,
+  ErrorAlert,
+  Spinner,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components';
 import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
@@ -57,7 +60,7 @@ export default function SeasonTeamRankPage() {
       {data && (
         <Card>
           <CardContent className="p-0">
-            <Table>
+            <Table className="[&_td]:p-2 [&_th]:h-8 [&_th]:px-2 [&_th]:py-1">
               <TableHeader>
                 <TableRow>
                   <TableHead>#</TableHead>

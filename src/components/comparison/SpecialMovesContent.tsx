@@ -1,6 +1,13 @@
 import { memo, useMemo } from 'react';
-import { ErrorAlert, Spinner, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import {
+  Badge,
+  ErrorAlert,
+  Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components';
 import { capitalizeFirst } from '@/lib/utils';
 import type { PokemonInput } from '@/types';
 import type { SpecialMoveGroup, SpecialMoveRow } from './constants';

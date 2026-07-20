@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
 import { CreateTeamModal } from '@/components/modals/CreateTeamModal';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { useFetch } from '@/hooks';
@@ -21,9 +20,7 @@ function rosterCountBadge(count: number, min: number, max: number) {
   }
   if (count < min) {
     return (
-      <Badge className="border-amber-500/50 bg-amber-500/10 text-amber-400">
-        {count} / {min}-{max} (under min)
-      </Badge>
+      <Badge variant="warning">{count} / {min}-{max} (under min)</Badge>
     );
   }
   return <Badge variant="secondary">{count} / {min}-{max}</Badge>;
