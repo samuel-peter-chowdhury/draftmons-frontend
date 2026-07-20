@@ -44,14 +44,15 @@ export interface TeamBuildSetInput extends BaseInput {
 export interface TeamBuildSetOutput extends BaseOutput {
   teamBuildId: number;
   pokemonId: number;
-  pointValue?: number;
-  condition?: string;
-  itemId?: number;
-  abilityId?: number;
-  move1Id?: number;
-  move2Id?: number;
-  move3Id?: number;
-  move4Id?: number;
+  // Nullable fields accept null to clear them on update
+  pointValue?: number | null;
+  condition?: string | null;
+  itemId?: number | null;
+  abilityId?: number | null;
+  move1Id?: number | null;
+  move2Id?: number | null;
+  move3Id?: number | null;
+  move4Id?: number | null;
   hpEv?: number;
   attackEv?: number;
   defenseEv?: number;
@@ -64,5 +65,5 @@ export interface TeamBuildSetOutput extends BaseOutput {
   specialAttackIv?: number;
   specialDefenseIv?: number;
   speedIv?: number;
-  natureId?: number;
+  natureId?: number | null;
 }

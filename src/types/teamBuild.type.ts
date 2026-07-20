@@ -18,6 +18,7 @@ export interface TeamBuildInput extends BaseInput {
 export interface TeamBuildOutput extends BaseOutput {
   name: string;
   userId: number;
-  seasonId?: number;
+  // null clears an existing season link on update; undefined leaves it unchanged
+  seasonId?: number | null;
   generationId: number;
 }

@@ -15,20 +15,19 @@ import {
   TabsTrigger,
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useFetch, usePokemonModal } from '@/hooks';
+import { useComparisonSide, useFetch, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { SeasonInput, PaginatedResponse, MoveInput, PokemonInput } from '@/types';
-import { MOVES_PAGE_SIZE } from './constants';
-import { useTeamData } from './useTeamData';
 import {
+  MOVES_PAGE_SIZE,
   CoverageMovesContent,
   NoTeamSelected,
   SpecialMovesContent,
   SpeedTierColumn,
   TeamInfoColumn,
   TypeEffectivenessColumn,
-} from './_components';
+} from '@/components/comparison';
 
 // localStorage keys
 const LS_TAB_KEY = 'teamMatchup_tab';
@@ -143,8 +142,8 @@ function TeamMatchupContent() {
   const teams = season?.teams ?? [];
 
   // Per-team data via shared hook
-  const teamA = useTeamData(teamAId, leagueId);
-  const teamB = useTeamData(teamBId, leagueId);
+  const teamA = useComparisonSide(teamAId ? { type: 'team', leagueId, teamId: teamAId } : null);
+  const teamB = useComparisonSide(teamBId ? { type: 'team', leagueId, teamId: teamBId } : null);
 
   // Fetch moves for all selected team Pokemon
   const allPokemonIds = useMemo(() => {
@@ -345,6 +344,7 @@ function TeamMatchupContent() {
                     <div className="flex gap-8">
                       {teamAId && (
                         <TeamInfoColumn
+                          mode="team"
                           team={teamA.teamFull}
                           teamPokemon={teamA.rosterData?.data ?? []}
                           gameStats={teamA.gameStats}
@@ -356,6 +356,7 @@ function TeamMatchupContent() {
                       )}
                       {teamBId && (
                         <TeamInfoColumn
+                          mode="team"
                           team={teamB.teamFull}
                           teamPokemon={teamB.rosterData?.data ?? []}
                           gameStats={teamB.gameStats}
