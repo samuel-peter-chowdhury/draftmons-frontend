@@ -1,8 +1,23 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { SeasonStatus } from '@/types';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+const SEASON_STATUS_LABELS: Record<SeasonStatus, string> = {
+  [SeasonStatus.PRE_DRAFT]: 'Pre-Draft',
+  [SeasonStatus.DRAFT]: 'Draft',
+  [SeasonStatus.PRE_SEASON]: 'Pre-Season',
+  [SeasonStatus.REGULAR_SEASON]: 'Regular Season',
+  [SeasonStatus.POST_SEASON]: 'Post-Season',
+  [SeasonStatus.PLAYOFFS]: 'Playoffs',
+};
+
+export function formatSeasonStatus(status: SeasonStatus): string {
+  return SEASON_STATUS_LABELS[status] ?? status;
 }
 
 /**
