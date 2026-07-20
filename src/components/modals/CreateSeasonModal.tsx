@@ -175,7 +175,7 @@ export function CreateSeasonModal({
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as SeasonStatus }))}
               required
-              disabled={mutation.loading}
+              disabled={mutation.loading || !isEditMode}
             >
               <option value="PRE_DRAFT">Pre-Draft</option>
               <option value="DRAFT">Draft</option>
