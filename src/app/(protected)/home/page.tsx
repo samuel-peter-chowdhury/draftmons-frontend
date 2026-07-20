@@ -1,13 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/stores';
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components';
+import { useState } from 'react';
+
+import { ErrorAlert, LeagueSearch, MyLeagueCard, Skeleton } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
+import { useFetch } from '@/hooks';
+import { buildUrlWithQuery } from '@/lib/api';
+import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatUserDisplayName } from '@/lib/utils';
-import type { LeagueInput } from '@/types';
+import { useAuthStore } from '@/stores';
+import type { LeagueInput, LeagueUserInput, PaginatedResponse } from '@/types';
 
 export default function HomePage() {
   const router = useRouter();
@@ -22,47 +26,71 @@ export default function HomePage() {
 
   const displayName = formatUserDisplayName(user, '');
 
+  const leagueUsersUrl = user
+    ? buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_USER_BASE, [], {
+        userId: user.id,
+        full: true,
+        pageSize: 100,
+      })
+    : null;
+  const {
+    data: leagueUsersResp,
+    loading: leagueUsersLoading,
+    error: leagueUsersError,
+  } = useFetch<PaginatedResponse<LeagueUserInput>>(leagueUsersUrl);
+
+  const leagueUsers = leagueUsersResp?.data ?? [];
+  const hasLeagues = leagueUsers.length > 0;
+
   return (
     <div className="mx-auto max-w-7xl p-4">
-      <h1 className="mb-4 text-2xl font-semibold">
+      <h1 className="mb-6 text-2xl font-semibold">
         Welcome{displayName ? `, ${displayName}` : ''} 👋
       </h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Leagues</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-2">
-            <Link href="/league">
-              <Button>Browse Leagues</Button>
-            </Link>
-            <Button variant="secondary" onClick={() => setIsCreateModalOpen(true)}>
-              Create League
-            </Button>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Users</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-2">
-            <Link href="/user">
-              <Button>Browse Users</Button>
-            </Link>
-          </CardContent>
-        </Card>
+      {leagueUsersLoading && (
+        <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-36 w-full" />
+          <Skeleton className="h-36 w-full" />
+        </div>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Pokemon</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-2">
-            <Link href="/pokemon">
-              <Button>Browse Pokemon</Button>
-            </Link>
-          </CardContent>
-        </Card>
+      {leagueUsersError && (
+        <div className="mb-8">
+          <ErrorAlert message={leagueUsersError} />
+        </div>
+      )}
+
+      {!leagueUsersLoading && !leagueUsersError && hasLeagues && (
+        <section className="mb-8">
+          <h2 className="mb-4 text-xl font-semibold">My Leagues</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {leagueUsers.map((leagueUser) => (
+              <MyLeagueCard key={leagueUser.id} leagueUser={leagueUser} userId={user!.id} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!leagueUsersLoading && (
+        <section className="mb-8">
+          <LeagueSearch variant={hasLeagues ? 'secondary' : 'primary'} />
+        </section>
+      )}
+
+      <div className="flex flex-wrap items-center gap-4 border-t pt-4 text-sm text-muted-foreground">
+        <Link href="/league" className="hover:underline">
+          Browse Leagues
+        </Link>
+        <Link href="/user" className="hover:underline">
+          Browse Users
+        </Link>
+        <Link href="/pokemon" className="hover:underline">
+          Browse Pokemon
+        </Link>
+        <button type="button" onClick={() => setIsCreateModalOpen(true)} className="hover:underline">
+          Create League
+        </button>
       </div>
 
       <CreateLeagueModal

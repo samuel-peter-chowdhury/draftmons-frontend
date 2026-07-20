@@ -32,14 +32,15 @@ export const LeagueApi = {
   // ==================== League Base Operations ====================
 
   /**
-   * GET /api/league?page=1&pageSize=10&sortBy=name&sortOrder=ASC
-   * Get paginated list of leagues
+   * GET /api/league?page=1&pageSize=10&sortBy=name&sortOrder=ASC&nameLike=foo
+   * Get paginated list of leagues, optionally searching by name/abbreviation
    */
   getAll: (params: {
     page: number;
     pageSize: number;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
+    nameLike?: string;
   }) => {
     const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [], params);
     return Api.get<PaginatedResponse<LeagueInput>>(url);
@@ -85,6 +86,19 @@ export const LeagueApi = {
   },
 
   // ==================== League User Operations ====================
+
+  /**
+   * GET /api/league-user?userId={userId}&full=true
+   * Get all league memberships for a given user, across leagues
+   */
+  getLeagueUsersForUser: (userId: number, full = false) => {
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_USER_BASE, [], {
+      userId,
+      full,
+      pageSize: 100,
+    });
+    return Api.get<PaginatedResponse<LeagueUserInput>>(url);
+  },
 
   /**
    * GET /api/league/:leagueId/league-user
@@ -134,12 +148,18 @@ export const LeagueApi = {
   // ==================== Season Operations ====================
 
   /**
-   * GET /api/league/:leagueId/season
-   * Get all seasons in a league
+   * GET /api/league/:leagueId/season?leagueId={leagueId}&pageSize=100
+   * Get all seasons in a league.
+   * The nested route's getWhere() doesn't scope by the leagueId path param
+   * (like the other league-nested endpoints), so leagueId is passed explicitly
+   * as a query filter, mirroring how those endpoints are scoped via seasonId.
    */
   getSeasons: (leagueId: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season');
-    return Api.get<SeasonInput[]>(url);
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season'], {
+      leagueId,
+      pageSize: 100,
+    });
+    return Api.get<PaginatedResponse<SeasonInput>>(url);
   },
 
   /**
@@ -186,7 +206,7 @@ export const LeagueApi = {
    */
   getTeams: (
     leagueId: number,
-    params?: { seasonId?: number; full?: boolean; pageSize?: number },
+    params?: { seasonId?: number; userId?: number; full?: boolean; pageSize?: number },
   ) => {
     const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'team'], params);
     return Api.get<PaginatedResponse<TeamInput>>(url);
