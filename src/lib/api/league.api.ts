@@ -184,12 +184,11 @@ export const LeagueApi = {
    * GET /api/league/:leagueId/team?full=true
    * Get all teams in a league
    */
-  getTeams: (leagueId: number, full = false) => {
-    const url = buildUrlWithQuery(
-      BASE_ENDPOINTS.LEAGUE_BASE,
-      [leagueId, 'team'],
-      full ? { full: 'true' } : undefined,
-    );
+  getTeams: (
+    leagueId: number,
+    params?: { seasonId?: number; full?: boolean; pageSize?: number },
+  ) => {
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'team'], params);
     return Api.get<PaginatedResponse<TeamInput>>(url);
   },
 
