@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Input, Spinner } from '@/components';
+import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Input, Spinner, TeamLogo } from '@/components';
 import { useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
 import type { TeamInput } from '@/types';
@@ -28,7 +28,10 @@ function TeamSkillLevelRow({ leagueId, team, onChanged }: TeamSkillLevelRowProps
   return (
     <div className="flex flex-col gap-1 border-b border-border py-2 last:border-0">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-sm">{team.name}</span>
+        <span className="flex items-center gap-1.5 text-sm">
+          <TeamLogo logoUrl={team.logoUrl} name={team.name} className="h-5 w-5 object-contain" />
+          {team.name}
+        </span>
         <div className="flex items-center gap-2">
           <Input
             type="number"

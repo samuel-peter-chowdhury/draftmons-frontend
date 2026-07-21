@@ -4,7 +4,7 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { Badge, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Skeleton } from '@/components';
+import { Badge, Card, CardContent, CardHeader, CardTitle, ErrorAlert, LeagueLogo, Skeleton, TeamLogo } from '@/components';
 import type { ApiError } from '@/lib/api';
 import { LeagueApi } from '@/lib/api';
 import { formatSeasonStatus } from '@/lib/utils';
@@ -134,13 +134,20 @@ export function MyLeagueCard({ leagueUser, userId }: MyLeagueCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">
-          {league?.name ?? `League #${leagueId}`}
-          {league?.abbreviation ? (
-            <span className="ml-1 text-sm font-normal text-muted-foreground">
-              ({league.abbreviation})
-            </span>
-          ) : null}
+        <CardTitle className="flex items-center gap-1.5 text-lg">
+          <LeagueLogo
+            logoUrl={league?.logoUrl}
+            name={league?.name ?? ''}
+            className="h-6 w-6 shrink-0 object-contain"
+          />
+          <span>
+            {league?.name ?? `League #${leagueId}`}
+            {league?.abbreviation ? (
+              <span className="ml-1 text-sm font-normal text-muted-foreground">
+                ({league.abbreviation})
+              </span>
+            ) : null}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -166,7 +173,10 @@ export function MyLeagueCard({ leagueUser, userId }: MyLeagueCardProps) {
 
             {team && (
               <div className="text-sm">
-                <p className="font-medium">Your team: {team.name}</p>
+                <p className="flex items-center gap-1.5 font-medium">
+                  <TeamLogo logoUrl={team.logoUrl} name={team.name} className="h-5 w-5 object-contain" />
+                  <span>Your team: {team.name}</span>
+                </p>
                 {opponentTeamName && (
                   <p className="text-muted-foreground">This week vs. {opponentTeamName}</p>
                 )}

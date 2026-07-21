@@ -16,6 +16,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  LeagueLogo,
 } from '@/components';
 import {
   AlertDialog,
@@ -85,10 +86,17 @@ export default function LeagueDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <div>
-                  <span>{data.name}</span>
-                  <div className="mt-1 text-sm font-normal text-muted-foreground">
-                    {data.abbreviation}
+                <div className="flex items-center gap-3">
+                  <LeagueLogo
+                    logoUrl={data.logoUrl}
+                    name={data.name}
+                    className="h-8 w-8 object-contain"
+                  />
+                  <div>
+                    <span>{data.name}</span>
+                    <div className="mt-1 text-sm font-normal text-muted-foreground">
+                      {data.abbreviation}
+                    </div>
                   </div>
                 </div>
                 {isModerator && (

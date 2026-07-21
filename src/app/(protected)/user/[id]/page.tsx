@@ -21,6 +21,7 @@ import {
   CardTitle,
   ErrorAlert,
   Spinner,
+  UserAvatar,
 } from '@/components';
 import { EditUserModal } from '@/components/modals/EditUserModal';
 import { addToast, useFetch, useMutation } from '@/hooks';
@@ -106,13 +107,20 @@ export default function UserDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <div>
-                  <span>{displayName}</span>
-                  {data.isAdmin && (
-                    <div className="mt-1 text-sm font-normal text-muted-foreground">
-                      Administrator
-                    </div>
-                  )}
+                <div className="flex items-center gap-3">
+                  <UserAvatar
+                    avatarUrl={data.avatarUrl}
+                    name={displayName}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                  <div>
+                    <span>{displayName}</span>
+                    {data.isAdmin && (
+                      <div className="mt-1 text-sm font-normal text-muted-foreground">
+                        Administrator
+                      </div>
+                    )}
+                  </div>
                 </div>
                 {isOwnProfile && (
                   <Button

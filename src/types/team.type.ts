@@ -10,6 +10,7 @@ export interface TeamInput extends BaseInput {
   seasonId: number;
   userId: number;
   skillLevel?: number | null;
+  logoUrl?: string | null;
   season?: SeasonInput;
   user?: UserInput;
   seasonPokemonTeams?: SeasonPokemonTeamInput[];
@@ -25,4 +26,5 @@ export interface TeamOutput extends BaseOutput {
   seasonId: number;
   userId: number;
   skillLevel?: number | null;
+  logoUrl?: string | null;
 }

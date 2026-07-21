@@ -11,6 +11,7 @@ import {
   CardTitle,
   ErrorAlert,
   Spinner,
+  TeamLogo,
 } from '@/components';
 import {
   AlertDialog,
@@ -151,7 +152,14 @@ export default function SeasonDetailPage() {
                     >
                       <div>
                         <div>
-                          <div className="text-sm font-medium justify-between">{team.name}</div>
+                          <div className="flex items-center gap-1.5">
+                            <TeamLogo
+                              logoUrl={team.logoUrl}
+                              name={team.name}
+                              className="h-5 w-5 object-contain"
+                            />
+                            <div className="text-sm font-medium justify-between">{team.name}</div>
+                          </div>
                           <div className="text-xs text-muted-foreground justify-between">
                             {formatUserDisplayName(team.user)}
                           </div>

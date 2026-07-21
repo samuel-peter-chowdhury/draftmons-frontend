@@ -13,6 +13,7 @@ import {
   Spinner,
   Pagination,
   SortControls,
+  LeagueLogo,
 } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
 import { useFetch } from '@/hooks';
@@ -95,7 +96,14 @@ export default function LeagueListPage() {
                 <Card key={league.id}>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                      <span>{league.name}</span>
+                      <span className="flex items-center gap-1.5">
+                        <LeagueLogo
+                          logoUrl={league.logoUrl}
+                          name={league.name}
+                          className="h-6 w-6 object-contain"
+                        />
+                        {league.name}
+                      </span>
                       <span className="text-sm text-muted-foreground">{league.abbreviation}</span>
                     </CardTitle>
                   </CardHeader>

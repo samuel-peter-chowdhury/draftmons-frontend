@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { Badge, Card, CardContent, ErrorAlert, Input, Skeleton } from '@/components';
+import { Badge, Card, CardContent, ErrorAlert, Input, LeagueLogo, Skeleton, TeamLogo } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import type { ApiError } from '@/lib/api';
 import { Api, buildUrlWithQuery, LeagueApi } from '@/lib/api';
@@ -212,7 +212,17 @@ export function LeagueSearch({ variant }: LeagueSearchProps) {
                 selectedLeague?.id === league.id && 'border-primary bg-accent',
               )}
             >
-              {league.name} <span className="text-muted-foreground">({league.abbreviation})</span>
+              <span className="inline-flex items-center gap-1.5">
+                <LeagueLogo
+                  logoUrl={league.logoUrl}
+                  name={league.name}
+                  className="h-4 w-4 object-contain"
+                />
+                <span>
+                  {league.name}{' '}
+                  <span className="text-muted-foreground">({league.abbreviation})</span>
+                </span>
+              </span>
             </button>
           ))}
           {total > SEARCH_PAGE_SIZE && (
@@ -242,7 +252,12 @@ export function LeagueSearch({ variant }: LeagueSearchProps) {
             {!preview.loading && !preview.error && preview.season && (
               <>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">
+                  <h3 className="flex items-center gap-1.5 font-semibold">
+                    <LeagueLogo
+                      logoUrl={selectedLeague.logoUrl}
+                      name={selectedLeague.name}
+                      className="h-5 w-5 object-contain"
+                    />
                     {selectedLeague.name} — {preview.season.name}
                   </h3>
                   <Badge variant="secondary">{formatSeasonStatus(preview.season.status)}</Badge>
@@ -258,8 +273,16 @@ export function LeagueSearch({ variant }: LeagueSearchProps) {
                     ) : (
                       <ol className="space-y-1 text-sm">
                         {preview.standingsTop5.map((row, index) => (
-                          <li key={row.team.id}>
-                            {index + 1}. {row.team.name} ({row.matchWins}-{row.matchLosses})
+                          <li key={row.team.id} className="flex items-center gap-1.5">
+                            <span>{index + 1}.</span>
+                            <TeamLogo
+                              logoUrl={row.team.logoUrl}
+                              name={row.team.name}
+                              className="h-4 w-4 object-contain"
+                            />
+                            <span>
+                              {row.team.name} ({row.matchWins}-{row.matchLosses})
+                            </span>
                           </li>
                         ))}
                       </ol>

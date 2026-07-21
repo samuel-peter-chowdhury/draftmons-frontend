@@ -15,6 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TeamLogo,
 } from '@/components';
 import { useFetch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
@@ -85,12 +86,19 @@ export default function SeasonTeamRankPage() {
                     <TableRow key={row.team.id}>
                       <TableCell>{index + 1}</TableCell>
                       <TableCell className="font-medium">
-                        <Link
-                          href={`/league/${leagueId}/season/${seasonId}/team/${row.team.id}`}
-                          className="hover:underline"
-                        >
-                          {row.team.name}
-                        </Link>
+                        <span className="flex items-center gap-1.5">
+                          <TeamLogo
+                            logoUrl={row.team.logoUrl}
+                            name={row.team.name}
+                            className="h-5 w-5 object-contain"
+                          />
+                          <Link
+                            href={`/league/${leagueId}/season/${seasonId}/team/${row.team.id}`}
+                            className="hover:underline"
+                          >
+                            {row.team.name}
+                          </Link>
+                        </span>
                       </TableCell>
                       <TableCell>{formatUserDisplayName(row.team.user)}</TableCell>
                       <TableCell>

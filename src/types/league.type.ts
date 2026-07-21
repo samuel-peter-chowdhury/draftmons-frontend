@@ -7,6 +7,7 @@ export interface LeagueInput extends BaseInput {
   abbreviation: string;
   discordGuildId?: string | null;
   discordChannelId?: string | null;
+  logoUrl?: string | null;
   leagueUsers?: LeagueUserInput[];
   seasons?: SeasonInput[];
 }
@@ -16,4 +17,5 @@ export interface LeagueOutput extends BaseOutput {
   abbreviation: string;
   discordGuildId?: string | null;
   discordChannelId?: string | null;
+  logoUrl?: string | null;
 }

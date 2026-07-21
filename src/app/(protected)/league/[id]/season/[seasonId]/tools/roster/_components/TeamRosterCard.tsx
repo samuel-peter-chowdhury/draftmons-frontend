@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components';
+import { Card, CardContent, CardHeader, CardTitle, TeamLogo } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { cn } from '@/lib/utils';
 import type { SeasonInput, SeasonPokemonInput, TeamInput } from '@/types';
@@ -29,7 +29,10 @@ export function TeamRosterCard({ team, rosterRows, season, onSpriteClick }: Team
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-base">
-          <span>{team.name}</span>
+          <span className="flex items-center gap-1.5">
+            <TeamLogo logoUrl={team.logoUrl} name={team.name} className="h-5 w-5 object-contain" />
+            {team.name}
+          </span>
           <span
             className={cn(
               'text-sm font-medium',

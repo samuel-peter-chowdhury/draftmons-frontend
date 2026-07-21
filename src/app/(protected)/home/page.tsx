@@ -94,6 +94,11 @@ export default function HomePage() {
         <button type="button" onClick={() => setIsCreateModalOpen(true)} className="hover:underline">
           Create League
         </button>
+        {user?.isAdmin && (
+          <Link href="/admin" className="hover:underline">
+            Admin
+          </Link>
+        )}
       </div>
 
       <CreateLeagueModal

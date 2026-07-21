@@ -8,6 +8,7 @@ import {
   Input,
   Label,
   ErrorAlert,
+  ImageUploadField,
   Spinner,
 } from '@/components';
 import { useMutation } from '@/hooks';
@@ -45,6 +46,14 @@ export function CreateLeagueModal({
       onSuccess?.(result);
     },
   });
+
+  // Logo upload is edit-mode only: a league must already exist (have an id)
+  // before a logo can be uploaded to logos/league/{id}/. Persists via the
+  // league's own PUT and refreshes the parent so the new logo renders.
+  const logoMutation = useMutation(
+    (logoUrl: string | null) => LeagueApi.update(league!.id, { logoUrl }),
+    { onSuccess: (result) => onSuccess?.(result) },
+  );
 
   useEffect(() => {
     if (league) {
@@ -107,6 +116,22 @@ export function CreateLeagueModal({
               disabled={loading}
             />
           </div>
+
+          {isEditMode && league && (
+            <div>
+              <Label>Logo</Label>
+              <ImageUploadField
+                uploadTokenEndpoint={`/api/league/${league.id}/logo-upload-token`}
+                pathPrefix={`logos/league/${league.id}/`}
+                currentUrl={league.logoUrl}
+                label="Upload logo"
+                disabled={logoMutation.loading}
+                onUploadComplete={(url) => logoMutation.mutate(url)}
+                onRemove={() => logoMutation.mutate(null)}
+              />
+              {logoMutation.error && <ErrorAlert message={logoMutation.error} />}
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-2">
             <Button

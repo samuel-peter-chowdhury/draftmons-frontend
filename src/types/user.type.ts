@@ -13,6 +13,7 @@ export interface UserInput extends BaseInput {
   showdownUsername: string;
   discordUsername: string;
   timezone: string;
+  avatarUrl?: string | null;
   leagueUsers?: LeagueUserInput[];
   teams?: TeamInput[];
 }
@@ -28,4 +29,5 @@ export interface UserOutput extends BaseOutput {
   showdownUsername?: string;
   discordUsername?: string;
   timezone?: string;
+  avatarUrl?: string | null;
 }

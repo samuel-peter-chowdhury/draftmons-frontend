@@ -8,6 +8,7 @@ import {
   Input,
   Label,
   ErrorAlert,
+  ImageUploadField,
   Spinner,
   Select,
 } from '@/components';
@@ -37,6 +38,20 @@ export function EditUserModal({
     showdownUsername: '',
     timezone: '',
   });
+  // Local preview state so the avatar updates immediately in the modal without
+  // waiting for the parent to refetch.
+  const [avatarUrl, setAvatarUrl] = useState<string | null | undefined>(user?.avatarUrl);
+
+  const avatarMutation = useMutation(
+    (nextAvatarUrl: string | null) => UserApi.update(user!.id, { avatarUrl: nextAvatarUrl }),
+    {
+      onSuccess: (result) => {
+        setAvatarUrl(result.avatarUrl);
+        setUser(result);
+        onSuccess?.();
+      },
+    },
+  );
 
   const updateMutation = useMutation(
     (data: Partial<UserOutput>) => UserApi.update(user!.id, data),
@@ -58,6 +73,7 @@ export function EditUserModal({
         showdownUsername: user.showdownUsername || '',
         timezone: user.timezone || '',
       });
+      setAvatarUrl(user.avatarUrl);
     }
   }, [user, open]);
 
@@ -83,6 +99,22 @@ export function EditUserModal({
         </DialogHeader>
 
         {updateMutation.error && <ErrorAlert message={updateMutation.error} />}
+
+        {user && (
+          <div>
+            <Label>Profile Picture</Label>
+            <ImageUploadField
+              uploadTokenEndpoint={`/api/user/${user.id}/avatar-upload-token`}
+              pathPrefix={`avatars/user/${user.id}/`}
+              currentUrl={avatarUrl}
+              label="Upload picture"
+              disabled={avatarMutation.loading}
+              onUploadComplete={(url) => avatarMutation.mutate(url)}
+              onRemove={() => avatarMutation.mutate(null)}
+            />
+            {avatarMutation.error && <ErrorAlert message={avatarMutation.error} />}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
