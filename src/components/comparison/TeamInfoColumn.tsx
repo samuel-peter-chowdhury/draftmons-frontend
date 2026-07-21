@@ -257,7 +257,7 @@ function TeamInfo({
                 <span className="text-xs font-semibold text-muted-foreground">{index + 1}</span>
                 <PokemonSprite
                   pokemonId={leader.pokemon.id}
-                  spriteUrl={leader.pokemon.spriteUrl}
+                  spriteUrl={leader.pokemon.spritePngUrl}
                   name={leader.pokemon.name}
                   className="h-8 w-8 object-contain"
                   onClick={onSpriteClick}

@@ -45,7 +45,7 @@ export function DraggablePokemonRow({
       >
         <PokemonSprite
           pokemonId={pkmn.id}
-          spriteUrl={pkmn.spriteUrl}
+          spriteUrl={pkmn.spritePngUrl}
           name={pkmn.name}
           className="h-8 w-8 shrink-0 object-contain"
           disableClick

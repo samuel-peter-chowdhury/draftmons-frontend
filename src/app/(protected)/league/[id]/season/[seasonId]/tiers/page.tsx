@@ -192,7 +192,7 @@ export default function TierListPage() {
       {tiers.length > 0 && (
         <Card>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="max-h-[calc(100vh-220px)] overflow-auto">
               <div className="flex">
                 {tiers.map((tier, idx) => {
                   const groupKey = String(tier.key);
@@ -204,31 +204,34 @@ export default function TierListPage() {
                       key={tier.key}
                       className={`w-44 shrink-0${idx < tiers.length - 1 ? ' border-r border-border' : ''}`}
                     >
-                      {/* Group header */}
-                      <div
-                        className="border-b border-border bg-secondary/30 px-3 py-1.5 text-center text-sm font-bold capitalize"
-                        style={tier.color ? { color: tier.color } : undefined}
-                      >
-                        {tier.label}
-                      </div>
+                      {/* Sticky header block */}
+                      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-md">
+                        {/* Group header */}
+                        <div
+                          className="border-b border-border bg-secondary/30 px-3 py-1.5 text-center text-sm font-bold capitalize"
+                          style={tier.color ? { color: tier.color } : undefined}
+                        >
+                          {tier.label}
+                        </div>
 
-                      {/* Column headers */}
-                      <div className="grid grid-cols-[36px_1fr_48px] items-center border-b border-border px-2 py-1">
-                        <span />
-                        <button
-                          className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                          onClick={() => handleSort(groupKey, 'name')}
-                        >
-                          Name
-                          <SortIndicator field="name" sort={sort} />
-                        </button>
-                        <button
-                          className="inline-flex items-center justify-end gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                          onClick={() => handleSort(groupKey, valueColumn)}
-                        >
-                          {valueLabel}
-                          <SortIndicator field={valueColumn} sort={sort} />
-                        </button>
+                        {/* Column headers */}
+                        <div className="grid grid-cols-[36px_1fr_48px] items-center border-b border-border px-2 py-1">
+                          <span />
+                          <button
+                            className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                            onClick={() => handleSort(groupKey, 'name')}
+                          >
+                            Name
+                            <SortIndicator field="name" sort={sort} />
+                          </button>
+                          <button
+                            className="inline-flex items-center justify-end gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                            onClick={() => handleSort(groupKey, valueColumn)}
+                          >
+                            {valueLabel}
+                            <SortIndicator field={valueColumn} sort={sort} />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Pokemon rows */}
@@ -245,7 +248,7 @@ export default function TierListPage() {
                             >
                               <PokemonSprite
                                 pokemonId={pkmn.id}
-                                spriteUrl={pkmn.spriteUrl}
+                                spriteUrl={pkmn.spritePngUrl}
                                 name={pkmn.name}
                                 className={`h-8 w-8 object-contain${isDrafted ? ' grayscale' : ''}`}
                                 onClick={(id) => handleSpriteClick(id, sp.id)}

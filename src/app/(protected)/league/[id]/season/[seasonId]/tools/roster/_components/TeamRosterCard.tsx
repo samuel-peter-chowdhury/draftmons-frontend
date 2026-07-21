@@ -57,7 +57,7 @@ export function TeamRosterCard({ team, rosterRows, season, onSpriteClick }: Team
                 >
                   <PokemonSprite
                     pokemonId={row.pokemon!.id}
-                    spriteUrl={row.pokemon!.spriteUrl}
+                    spriteUrl={row.pokemon!.spritePngUrl}
                     name={row.pokemon!.name}
                     className="h-14 w-14 object-contain"
                     onClick={(id) => onSpriteClick(id, row.id)}

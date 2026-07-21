@@ -347,7 +347,7 @@ export default function AdminTierListPage() {
         >
           <Card>
             <CardContent className="p-0">
-              <div className="overflow-x-auto">
+              <div className="max-h-[calc(100vh-220px)] overflow-auto">
                 <div className="flex">
                   {tierColumns.map((col, idx) => (
                     <TierColumn

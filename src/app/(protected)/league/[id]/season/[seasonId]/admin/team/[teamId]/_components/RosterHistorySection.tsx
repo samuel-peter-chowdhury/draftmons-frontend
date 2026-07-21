@@ -92,7 +92,7 @@ export function RosterHistorySection({
                         {sp.pokemon && (
                           <PokemonSprite
                             pokemonId={sp.pokemon.id}
-                            spriteUrl={sp.pokemon.spriteUrl}
+                            spriteUrl={sp.pokemon.spritePngUrl}
                             name={sp.pokemon.name}
                             className="h-8 w-8 object-contain"
                             disableClick

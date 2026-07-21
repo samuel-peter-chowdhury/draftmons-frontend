@@ -138,7 +138,7 @@ export function CurrentRosterSection({
                   >
                     <PokemonSprite
                       pokemonId={sp.pokemon.id}
-                      spriteUrl={sp.pokemon.spriteUrl}
+                      spriteUrl={sp.pokemon.spritePngUrl}
                       name={sp.pokemon.name}
                       className="h-14 w-14 object-contain"
                       onClick={(id) => openModal(id, sp.id)}

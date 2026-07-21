@@ -138,7 +138,7 @@ export default function AdminTeamListPage() {
                             <PokemonSprite
                               key={pkmn.id}
                               pokemonId={pkmn.id}
-                              spriteUrl={pkmn.spriteUrl}
+                              spriteUrl={pkmn.spritePngUrl}
                               name={pkmn.name}
                               className="h-6 w-6 object-contain"
                               disableClick

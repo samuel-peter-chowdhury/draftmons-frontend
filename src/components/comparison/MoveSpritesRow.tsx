@@ -27,7 +27,7 @@ export const MoveSpritesRow = memo(function MoveSpritesRow({
               <PokemonSprite
                 key={pkmn.id}
                 pokemonId={pkmn.id}
-                spriteUrl={pkmn.spriteUrl}
+                spriteUrl={pkmn.spritePngUrl}
                 name={pkmn.name}
                 className="h-7 w-7 object-contain"
                 onClick={onSpriteClick}
@@ -52,7 +52,7 @@ export const MoveSpritesRow = memo(function MoveSpritesRow({
               <PokemonSprite
                 key={pkmn.id}
                 pokemonId={pkmn.id}
-                spriteUrl={pkmn.spriteUrl}
+                spriteUrl={pkmn.spritePngUrl}
                 name={pkmn.name}
                 className="h-7 w-7 object-contain"
                 onClick={onSpriteClick}

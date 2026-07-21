@@ -91,7 +91,7 @@ export function PokemonSearchCombobox({
                           <div className="flex items-center gap-2">
                             <PokemonSprite
                               pokemonId={pokemon.id}
-                              spriteUrl={pokemon.spriteUrl}
+                              spriteUrl={pokemon.spritePngUrl}
                               name={pokemon.name}
                               className="h-8 w-8 object-contain"
                               disableClick

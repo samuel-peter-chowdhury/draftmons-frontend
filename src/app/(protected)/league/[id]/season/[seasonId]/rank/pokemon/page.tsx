@@ -73,7 +73,7 @@ export default function SeasonPokemonRankPage() {
             <div className="flex items-center gap-2">
               <PokemonSprite
                 pokemonId={pkmn.id}
-                spriteUrl={pkmn.spriteUrl}
+                spriteUrl={pkmn.spritePngUrl}
                 name={pkmn.name}
                 className="h-8 w-8 object-contain"
                 onClick={() => openModal(pkmn.id, row.seasonPokemon.id)}

@@ -41,7 +41,7 @@ export function TierColumn({
       )}
     >
       {/* Header */}
-      <div className="border-b border-border bg-secondary/30 px-3 py-1.5 text-center text-sm font-bold">
+      <div className="sticky top-0 z-10 border-b border-border bg-secondary/95 px-3 py-1.5 text-center text-sm font-bold backdrop-blur-md">
         {label}
       </div>
 

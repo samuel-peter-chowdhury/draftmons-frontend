@@ -154,12 +154,12 @@ export function PokemonModal({
             <div className="grid gap-6 md:grid-cols-2">
               {/* Left column: Sprite and Types */}
               <div className="flex flex-col items-center gap-4">
-                {pokemon.spriteUrl && (
+                {pokemon.spriteGifUrl && (
                   <TooltipProvider delayDuration={100}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <img
-                          src={pokemon.spriteUrl}
+                          src={pokemon.spriteGifUrl}
                           alt={pokemon.name}
                           className="h-40 w-40 cursor-help object-contain"
                         />
