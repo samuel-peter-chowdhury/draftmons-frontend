@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { AuthApi, ApiError } from '@/lib/api';
-import type { AuthResponse, UserInput } from '@/types';
+import type { UserInput } from '@/types';
 
 type AuthState = {
   user: UserInput | null;
