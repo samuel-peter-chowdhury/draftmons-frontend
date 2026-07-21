@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'archives.bulbagarden.net',
       },
+      {
+        // Vercel Blob store public delivery hostname (uploaded logos/avatars/sprites).
+        protocol: 'https',
+        hostname: 'vcxdskshtqjxcydf.public.blob.vercel-storage.com',
+      },
     ],
   },
   async rewrites() {
@@ -58,8 +63,11 @@ const nextConfig: NextConfig = {
               // A `sprite` override URL from a host not already listed here (and in
               // images.remotePatterns above) will silently fail to render — add the
               // host to both before using it.
-              "img-src 'self' https://raw.githubusercontent.com https://www.smogon.com https://play.pokemonshowdown.com https://archives.bulbagarden.net data:",
-              `connect-src 'self' ${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'}`,
+              "img-src 'self' https://raw.githubusercontent.com https://www.smogon.com https://play.pokemonshowdown.com https://archives.bulbagarden.net https://vcxdskshtqjxcydf.public.blob.vercel-storage.com data:",
+              // connect-src also allows the Vercel Blob API + store host so the
+              // client-side upload() XHR (token exchange returns a token, then the
+              // file is PUT to Blob) isn't blocked by CSP.
+              `connect-src 'self' ${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'} https://vercel.com https://blob.vercel-storage.com https://vcxdskshtqjxcydf.public.blob.vercel-storage.com`,
               "font-src 'self'",
               "frame-ancestors 'none'",
               "base-uri 'self'",

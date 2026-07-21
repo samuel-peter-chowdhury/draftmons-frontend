@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner } from '@/components';
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner, TeamLogo } from '@/components';
 import { CreateTeamModal } from '@/components/modals/CreateTeamModal';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { useFetch } from '@/hooks';
@@ -115,7 +115,14 @@ export default function AdminTeamListPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between text-base">
                     <div>
-                      <div>{team.name}</div>
+                      <div className="flex items-center gap-1.5">
+                        <TeamLogo
+                          logoUrl={team.logoUrl}
+                          name={team.name}
+                          className="h-6 w-6 object-contain"
+                        />
+                        <div>{team.name}</div>
+                      </div>
                       <div className="mt-1 text-sm font-normal text-muted-foreground">
                         {formatUserDisplayName(team.user)}
                       </div>

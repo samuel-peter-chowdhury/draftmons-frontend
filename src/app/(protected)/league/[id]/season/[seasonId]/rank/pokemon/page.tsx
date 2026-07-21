@@ -15,6 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TeamLogo,
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
@@ -88,12 +89,19 @@ export default function SeasonPokemonRankPage() {
           </TableCell>
           <TableCell>
             {row.team ? (
-              <Link
-                href={`/league/${leagueId}/season/${seasonId}/team/${row.team.id}`}
-                className="hover:underline"
-              >
-                {row.team.name}
-              </Link>
+              <span className="flex items-center gap-1.5">
+                <TeamLogo
+                  logoUrl={row.team.logoUrl}
+                  name={row.team.name}
+                  className="h-5 w-5 object-contain"
+                />
+                <Link
+                  href={`/league/${leagueId}/season/${seasonId}/team/${row.team.id}`}
+                  className="hover:underline"
+                >
+                  {row.team.name}
+                </Link>
+              </span>
             ) : (
               '—'
             )}

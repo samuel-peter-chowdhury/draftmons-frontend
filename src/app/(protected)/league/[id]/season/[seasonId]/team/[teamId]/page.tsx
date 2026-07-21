@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, ErrorAlert, PokemonTable, Spinner } from '@/components';
+import { Card, CardHeader, CardTitle, ErrorAlert, PokemonTable, Spinner, TeamLogo } from '@/components';
 import { useFetch } from '@/hooks';
 import { BASE_ENDPOINTS, buildUrlWithQuery, formatUserDisplayName } from '@/lib';
 import { PaginatedResponse, SeasonPokemonInput, SortableColumn, TeamInput } from '@/types';
@@ -72,7 +72,14 @@ export default function TeamDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div>
-                  <span>{team.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <TeamLogo
+                      logoUrl={team.logoUrl}
+                      name={team.name}
+                      className="h-6 w-6 object-contain"
+                    />
+                    <span>{team.name}</span>
+                  </div>
                   <div className="mt-1 text-sm font-normal text-muted-foreground">
                     {formatUserDisplayName(team.user)}
                   </div>

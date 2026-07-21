@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useMemo } from 'react';
-import { ErrorAlert, Spinner } from '@/components';
+import { ErrorAlert, Spinner, TeamLogo } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { ExternalLink } from 'lucide-react';
 import { formatUserDisplayName } from '@/lib/utils';
@@ -236,7 +236,10 @@ function TeamInfo({
     <div className="flex-1 space-y-4 overflow-x-auto">
       {/* Team Header */}
       <div>
-        <h3 className="text-sm font-semibold">{team.name}</h3>
+        <div className="flex items-center gap-1.5">
+          <TeamLogo logoUrl={team.logoUrl} name={team.name} className="h-5 w-5 object-contain" />
+          <h3 className="text-sm font-semibold">{team.name}</h3>
+        </div>
         <p className="text-xs text-muted-foreground">{formatUserDisplayName(team.user)}</p>
       </div>
 

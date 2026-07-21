@@ -1,6 +1,6 @@
-import { Api, buildUrlWithQuery } from '@/lib/api';
+import { Api, buildUrl, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { PokemonInput, PaginatedResponse } from '@/types';
+import type { PokemonInput, PokemonOutput, PaginatedResponse } from '@/types';
 
 export interface PokemonFilterParams {
   page?: number;
@@ -57,5 +57,15 @@ export const PokemonApi = {
   getById: (id: number, full?: boolean) => {
     const url = buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_BASE, [id], full ? { full: true } : {});
     return Api.get<PokemonInput>(url);
+  },
+
+  /**
+   * PUT /api/pokemon/:id
+   * Update a pokemon (admin-only). Used for the sprite override: set `sprite` to
+   * a URL to override, or `''` to revert to the computed Smogon/Showdown sprites.
+   */
+  update: (id: number, data: Partial<PokemonOutput>) => {
+    const url = buildUrl(BASE_ENDPOINTS.POKEMON_BASE, id);
+    return Api.put<PokemonInput>(url, data);
   },
 };

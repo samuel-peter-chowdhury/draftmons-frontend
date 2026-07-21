@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Input, Label, Select, Spinner } from '@/components';
+import { Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, ImageUploadField, Input, Label, Select, Spinner } from '@/components';
 import {
   Dialog,
   DialogContent,
@@ -45,6 +45,11 @@ export function TeamDetailsCard({
     { onSuccess: () => onSaved() },
   );
 
+  const logoMutation = useMutation(
+    (logoUrl: string | null) => LeagueApi.updateTeam(leagueId, teamId, { logoUrl }),
+    { onSuccess: () => onSaved() },
+  );
+
   const deleteMutation = useMutation(() => LeagueApi.deleteTeam(leagueId, teamId), {
     onSuccess: () => {
       setDeleteDialogOpen(false);
@@ -66,6 +71,20 @@ export function TeamDetailsCard({
       </CardHeader>
       <CardContent className="space-y-4">
         {saveMutation.error && <ErrorAlert message={saveMutation.error} />}
+
+        <div>
+          <Label>Logo</Label>
+          <ImageUploadField
+            uploadTokenEndpoint={`/api/league/${leagueId}/team/${teamId}/logo-upload-token`}
+            pathPrefix={`logos/team/${teamId}/`}
+            currentUrl={team.logoUrl}
+            label="Upload logo"
+            disabled={logoMutation.loading}
+            onUploadComplete={(url) => logoMutation.mutate(url)}
+            onRemove={() => logoMutation.mutate(null)}
+          />
+          {logoMutation.error && <ErrorAlert message={logoMutation.error} />}
+        </div>
 
         <form onSubmit={handleSave} className="space-y-4">
           <div>

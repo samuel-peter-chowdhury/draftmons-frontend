@@ -1,8 +1,9 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, LogOut, Menu, User } from 'lucide-react';
+import { Home, LogOut, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { UserAvatar } from '@/components/user/UserAvatar';
 import { useAuthStore, useUiStore } from '@/stores';
 
 // Regex pattern to match paths where the menu icon should be visible
@@ -57,7 +58,11 @@ export default function Header() {
             onClick={onNavigateToProfile}
             disabled={!user?.id}
           >
-            <User className="h-5 w-5" />
+            <UserAvatar
+              avatarUrl={user?.avatarUrl}
+              name={user?.firstName || 'Profile'}
+              className="h-5 w-5 rounded-full object-cover"
+            />
           </Button>
           <Button variant="ghost" size="icon" aria-label="Logout" onClick={onLogout}>
             <LogOut className="h-5 w-5" />
