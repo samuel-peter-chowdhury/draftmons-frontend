@@ -355,10 +355,11 @@ These compose independently of the design tokens above.
 
 ## Deployment notes (Vercel)
 
-- No special config required; this repo is Vercel-ready.  
-- Ensure the backend is accessible from the Vercel region.  
-- Edge middleware calls `${API_BASE}/api/auth/status`; confirm reachability and latency.  
-- If needed later, add a `vercel.json` for headers/caching.
+> **Production deployment is documented in [`DEPLOYMENT.md`](./DEPLOYMENT.md)** — as-built URLs, required env vars, and the cross-domain session fix. Read it before changing `next.config.ts`, auth env vars, or `NEXT_PUBLIC_API_BASE_URL`.
+
+- **Not** zero-config: `next.config.ts` proxies `/api/*` to the backend (a `rewrites()` entry) so the backend session cookie is first-party to the Vercel origin — otherwise the edge middleware can't see it and every protected route bounces to `/?next=`. Do **not** point `NEXT_PUBLIC_API_BASE_URL` at the raw backend URL.  
+- Edge middleware calls `${INTERNAL_API_BASE_URL}/api/auth/status`; confirm reachability and latency.  
+- `next.config.ts` injects a CSP whose `connect-src` is baked from `NEXT_PUBLIC_API_BASE_URL` at build time — a wrong value silently blocks fetches. Redeploy (not restart) when it changes.
 
 ---
 
