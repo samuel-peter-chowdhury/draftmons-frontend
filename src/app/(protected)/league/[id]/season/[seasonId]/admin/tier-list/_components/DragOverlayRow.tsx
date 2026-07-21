@@ -11,7 +11,7 @@ export function DragOverlayRow({ sp }: { sp: SeasonPokemonInput }) {
     <div className="grid grid-cols-[36px_1fr] items-center rounded-md border border-border bg-background px-2 py-0.5 shadow-lg">
       <PokemonSprite
         pokemonId={pkmn.id}
-        spriteUrl={pkmn.spriteUrl}
+        spriteUrl={pkmn.spritePngUrl}
         name={pkmn.name}
         className="h-8 w-8 object-contain"
         disableClick

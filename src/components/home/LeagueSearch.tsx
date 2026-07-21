@@ -281,7 +281,7 @@ export function LeagueSearch({ variant }: LeagueSearchProps) {
                               <span>{index + 1}.</span>
                               <PokemonSprite
                                 pokemonId={pkmn.id}
-                                spriteUrl={pkmn.spriteUrl}
+                                spriteUrl={pkmn.spritePngUrl}
                                 name={pkmn.name}
                                 className="size-6 object-contain"
                                 disableClick

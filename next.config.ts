@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'www.smogon.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'play.pokemonshowdown.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'archives.bulbagarden.net',
+      },
     ],
   },
   async rewrites() {
@@ -47,7 +55,10 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' https://raw.githubusercontent.com https://www.smogon.com data:",
+              // A `sprite` override URL from a host not already listed here (and in
+              // images.remotePatterns above) will silently fail to render — add the
+              // host to both before using it.
+              "img-src 'self' https://raw.githubusercontent.com https://www.smogon.com https://play.pokemonshowdown.com https://archives.bulbagarden.net data:",
               `connect-src 'self' ${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'}`,
               "font-src 'self'",
               "frame-ancestors 'none'",

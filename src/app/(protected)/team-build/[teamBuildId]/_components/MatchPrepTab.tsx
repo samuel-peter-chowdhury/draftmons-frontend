@@ -62,7 +62,7 @@ export function MatchPrepTab({ build, onChanged, onGoToDraftPrep }: MatchPrepTab
                 >
                   <PokemonSprite
                     pokemonId={pkmn.id}
-                    spriteUrl={pkmn.spriteUrl}
+                    spriteUrl={pkmn.spritePngUrl}
                     name={pkmn.name}
                     className="size-12 object-contain"
                     disableClick

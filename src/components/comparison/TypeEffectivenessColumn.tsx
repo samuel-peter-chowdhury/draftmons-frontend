@@ -116,7 +116,7 @@ export const TypeEffectivenessColumn = memo(function TypeEffectivenessColumn({
             >
               <PokemonSprite
                 pokemonId={pkmn.id}
-                spriteUrl={pkmn.spriteUrl}
+                spriteUrl={pkmn.spritePngUrl}
                 name={pkmn.name}
                 className="h-8 w-8 object-contain"
                 onClick={onSpriteClick}

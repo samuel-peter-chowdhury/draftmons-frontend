@@ -192,7 +192,7 @@ export function PokemonTable({
                           <TableCell className="min-w-20 w-20">
                             <PokemonSprite
                               pokemonId={rowData.pokemon.id}
-                              spriteUrl={rowData.pokemon.spriteUrl}
+                              spriteUrl={rowData.pokemon.spritePngUrl}
                               name={rowData.pokemon.name}
                               onClick={(id) =>
                                 handleSpriteClick(id, rowData.seasonPokemonId)

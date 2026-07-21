@@ -157,7 +157,7 @@ export function AddPokemonSection({
                     {sp.pokemon && (
                       <PokemonSprite
                         pokemonId={sp.pokemon.id}
-                        spriteUrl={sp.pokemon.spriteUrl}
+                        spriteUrl={sp.pokemon.spritePngUrl}
                         name={sp.pokemon.name}
                         className="h-10 w-10 object-contain"
                         disableClick

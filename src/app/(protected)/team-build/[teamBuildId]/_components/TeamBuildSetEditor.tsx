@@ -203,7 +203,7 @@ export function TeamBuildSetEditor({ set, build, onChanged }: TeamBuildSetEditor
         {pokemon && (
           <PokemonSprite
             pokemonId={pokemon.id}
-            spriteUrl={pokemon.spriteUrl}
+            spriteUrl={pokemon.spritePngUrl}
             name={pokemon.name}
             className="size-12 object-contain"
             disableClick

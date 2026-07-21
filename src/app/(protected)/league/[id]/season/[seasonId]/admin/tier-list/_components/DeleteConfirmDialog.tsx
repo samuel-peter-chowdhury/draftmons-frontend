@@ -40,7 +40,7 @@ export function DeleteConfirmDialog({
           <DialogTitle className="flex items-center gap-3">
             <PokemonSprite
               pokemonId={pkmn.id}
-              spriteUrl={pkmn.spriteUrl}
+              spriteUrl={pkmn.spritePngUrl}
               name={pkmn.name}
               className="h-10 w-10 object-contain"
               disableClick
