@@ -15,6 +15,22 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    // Proxy all /api/* calls through the frontend origin to the backend.
+    // This makes the backend's session cookie first-party to the frontend
+    // domain, so the edge middleware (which forwards the request's cookies)
+    // can see it. Without this, cross-domain (vercel.app vs railway.app)
+    // cookies aren't sent on frontend-domain requests and every protected
+    // route bounces to /?next=. In local dev the browser hits the backend
+    // directly (NEXT_PUBLIC_API_BASE_URL=localhost:3000), so this is unused.
+    const backend = process.env.INTERNAL_API_BASE_URL || 'http://localhost:3000';
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backend}/api/:path*`,
+      },
+    ];
+  },
   async headers() {
     return [
       {
