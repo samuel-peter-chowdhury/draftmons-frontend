@@ -60,7 +60,6 @@ function RichTextEditor({
   onChange,
   disabled = false,
   className,
-  placeholder = 'Start typing...',
 }: RichTextEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,

@@ -101,7 +101,19 @@ export async function apiFetch<T>(url: string, options: RequestInit = {}): Promi
   });
   const contentType = res.headers.get('content-type') || '';
   const isJson = contentType.includes('application/json');
-  const body = isJson ? await res.json() : await res.text();
+  let body: any;
+  if (isJson) {
+    const text = await res.text();
+    try {
+      body = text ? JSON.parse(text) : undefined;
+    } catch {
+      // Malformed/truncated JSON body (e.g. a proxy timeout mid-response) — fall back to raw text
+      // rather than letting a cryptic SyntaxError bubble up as the user-facing error message.
+      body = text;
+    }
+  } else {
+    body = await res.text();
+  }
 
   if (!res.ok) {
     // On 401, redirect to login with current path (including query params)

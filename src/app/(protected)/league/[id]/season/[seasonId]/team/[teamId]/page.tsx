@@ -22,7 +22,6 @@ export default function TeamDetailPage() {
     data: team,
     loading: teamLoading,
     error: teamError,
-    refetch: refetchSeason,
   } = useFetch<TeamInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.TEAM_BASE, [teamId], { full: true }),
   );
@@ -59,8 +58,9 @@ export default function TeamDetailPage() {
   return (
     <div className="mx-auto max-w-7xl p-4">
       {error && <ErrorAlert message={error} />}
+      {teamError && <ErrorAlert message={teamError} />}
 
-      {loading && !team && (
+      {(loading || teamLoading) && !team && (
         <div className="flex items-center justify-center py-10">
           <Spinner size={32} />
         </div>

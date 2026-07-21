@@ -100,7 +100,6 @@ export function PokemonTable({
   error,
   sortBy,
   sortOrder,
-  page,
   pageSize,
   onSort,
   onPageChange,

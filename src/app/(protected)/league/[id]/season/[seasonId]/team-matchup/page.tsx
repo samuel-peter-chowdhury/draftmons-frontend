@@ -115,14 +115,17 @@ function TeamMatchupContent() {
       // Persist selections to localStorage
       if ('teamAId' in updates) {
         const k = lsTeamKey(leagueId, seasonId, 'teamAId');
-        updates.teamAId ? localStorage.setItem(k, updates.teamAId) : localStorage.removeItem(k);
+        if (updates.teamAId) localStorage.setItem(k, updates.teamAId);
+        else localStorage.removeItem(k);
       }
       if ('teamBId' in updates) {
         const k = lsTeamKey(leagueId, seasonId, 'teamBId');
-        updates.teamBId ? localStorage.setItem(k, updates.teamBId) : localStorage.removeItem(k);
+        if (updates.teamBId) localStorage.setItem(k, updates.teamBId);
+        else localStorage.removeItem(k);
       }
       if ('tab' in updates) {
-        updates.tab ? localStorage.setItem(LS_TAB_KEY, updates.tab) : localStorage.removeItem(LS_TAB_KEY);
+        if (updates.tab) localStorage.setItem(LS_TAB_KEY, updates.tab);
+        else localStorage.removeItem(LS_TAB_KEY);
       }
     },
     [searchParams, pathname, router, leagueId, seasonId],

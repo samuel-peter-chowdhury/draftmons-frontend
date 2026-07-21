@@ -206,7 +206,6 @@ export default function MatchUploadPage() {
 function ReviewPanel({
   workingPreview,
   setWorkingPreview,
-  preview,
   pool,
   pageState,
   setPageState,
