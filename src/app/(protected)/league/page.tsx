@@ -94,20 +94,22 @@ export default function LeagueListPage() {
             <div className="grid gap-3 md:grid-cols-2">
               {data.data.map((league) => (
                 <Card key={league.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <LeagueLogo
-                          logoUrl={league.logoUrl}
-                          name={league.name}
-                          className="h-6 w-6 object-contain"
-                        />
-                        {league.name}
-                      </span>
-                      <span className="text-sm text-muted-foreground">{league.abbreviation}</span>
+                  <CardHeader className="items-center pb-3 text-center">
+                    <CardTitle className="flex flex-col items-center gap-2">
+                      <LeagueLogo
+                        logoUrl={league.logoUrl}
+                        name={league.name}
+                        className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
+                      />
+                      <div>
+                        <div>{league.name}</div>
+                        <div className="mt-0.5 text-sm font-normal text-muted-foreground">
+                          {league.abbreviation}
+                        </div>
+                      </div>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex items-center justify-end">
+                  <CardContent className="flex items-center justify-center">
                     <Link href={`/league/${league.id}`}>
                       <Button variant="secondary">Open</Button>
                     </Link>

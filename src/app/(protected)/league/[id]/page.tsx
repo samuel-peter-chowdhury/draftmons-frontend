@@ -84,31 +84,30 @@ export default function LeagueDetailPage() {
       {data && (
         <div className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <LeagueLogo
-                    logoUrl={data.logoUrl}
-                    name={data.name}
-                    className="h-8 w-8 object-contain"
-                  />
-                  <div>
-                    <span>{data.name}</span>
-                    <div className="mt-1 text-sm font-normal text-muted-foreground">
-                      {data.abbreviation}
-                    </div>
+            <CardHeader className="relative items-center pb-4 text-center">
+              {isModerator && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditLeagueModalOpen(true)}
+                  aria-label="Edit league"
+                  className="absolute right-4 top-4"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+              <CardTitle className="flex flex-col items-center gap-3">
+                <LeagueLogo
+                  logoUrl={data.logoUrl}
+                  name={data.name}
+                  className="h-20 w-20 rounded-xl sm:h-24 sm:w-24 md:h-28 md:w-28"
+                />
+                <div>
+                  <div>{data.name}</div>
+                  <div className="mt-1 text-sm font-normal text-muted-foreground">
+                    {data.abbreviation}
                   </div>
                 </div>
-                {isModerator && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditLeagueModalOpen(true)}
-                    aria-label="Edit league"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">

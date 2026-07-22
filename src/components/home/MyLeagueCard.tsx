@@ -133,12 +133,12 @@ export function MyLeagueCard({ leagueUser, userId }: MyLeagueCardProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-1.5 text-lg">
+      <CardHeader className="items-center pb-3 text-center">
+        <CardTitle className="flex flex-col items-center gap-2 text-lg">
           <LeagueLogo
             logoUrl={league?.logoUrl}
             name={league?.name ?? ''}
-            className="h-6 w-6 shrink-0 object-contain"
+            className="h-16 w-16 shrink-0 rounded-lg sm:h-20 sm:w-20"
           />
           <span>
             {league?.name ?? `League #${leagueId}`}
@@ -173,8 +173,8 @@ export function MyLeagueCard({ leagueUser, userId }: MyLeagueCardProps) {
 
             {team && (
               <div className="text-sm">
-                <p className="flex items-center gap-1.5 font-medium">
-                  <TeamLogo logoUrl={team.logoUrl} name={team.name} className="h-5 w-5 object-contain" />
+                <p className="flex items-center gap-2 font-medium">
+                  <TeamLogo logoUrl={team.logoUrl} name={team.name} className="h-7 w-7" />
                   <span>Your team: {team.name}</span>
                 </p>
                 {opponentTeamName && (
