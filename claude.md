@@ -332,6 +332,19 @@ These compose independently of the design tokens above.
 
 ---
 
+## Verifying UI changes with Chrome DevTools MCP
+
+When using Chrome DevTools MCP to visually verify a frontend change, log in via the
+backend's dev-login backdoor (`POST /api/auth/dev-login`) instead of real Google OAuth —
+it logs a user in directly and 403s only when `NODE_ENV=production`. Requires both dev
+servers running (`draftmons-backend/` on 3000, this project on 3333). Because the two
+run on different origins in dev, `navigate_page` to a `localhost:3333` page first, then
+use `evaluate_script` to fire the dev-login request with `credentials: 'include'` so the
+session cookie lands correctly — see
+`../.claude/skills/execute-spec/references/browser-verification.md` for the exact
+request (including the required CSRF-token round trip) and default test credentials.
+Only stop dev servers you started yourself.
+
 ## Linting, formatting, and commits
 
 - Run `npm run lint` before pushing.  

@@ -86,11 +86,11 @@ export default function SeasonTeamRankPage() {
                     <TableRow key={row.team.id}>
                       <TableCell>{index + 1}</TableCell>
                       <TableCell className="font-medium">
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-2">
                           <TeamLogo
                             logoUrl={row.team.logoUrl}
                             name={row.team.name}
-                            className="h-5 w-5 object-contain"
+                            className="h-7 w-7"
                           />
                           <Link
                             href={`/league/${leagueId}/season/${seasonId}/team/${row.team.id}`}

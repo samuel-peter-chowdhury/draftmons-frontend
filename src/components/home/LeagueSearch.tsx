@@ -212,12 +212,8 @@ export function LeagueSearch({ variant }: LeagueSearchProps) {
                 selectedLeague?.id === league.id && 'border-primary bg-accent',
               )}
             >
-              <span className="inline-flex items-center gap-1.5">
-                <LeagueLogo
-                  logoUrl={league.logoUrl}
-                  name={league.name}
-                  className="h-4 w-4 object-contain"
-                />
+              <span className="inline-flex items-center gap-2">
+                <LeagueLogo logoUrl={league.logoUrl} name={league.name} className="h-6 w-6" />
                 <span>
                   {league.name}{' '}
                   <span className="text-muted-foreground">({league.abbreviation})</span>
@@ -252,11 +248,11 @@ export function LeagueSearch({ variant }: LeagueSearchProps) {
             {!preview.loading && !preview.error && preview.season && (
               <>
                 <div className="flex items-center gap-2">
-                  <h3 className="flex items-center gap-1.5 font-semibold">
+                  <h3 className="flex items-center gap-2 font-semibold">
                     <LeagueLogo
                       logoUrl={selectedLeague.logoUrl}
                       name={selectedLeague.name}
-                      className="h-5 w-5 object-contain"
+                      className="h-7 w-7"
                     />
                     {selectedLeague.name} — {preview.season.name}
                   </h3>
@@ -273,12 +269,12 @@ export function LeagueSearch({ variant }: LeagueSearchProps) {
                     ) : (
                       <ol className="space-y-1 text-sm">
                         {preview.standingsTop5.map((row, index) => (
-                          <li key={row.team.id} className="flex items-center gap-1.5">
+                          <li key={row.team.id} className="flex items-center gap-2">
                             <span>{index + 1}.</span>
                             <TeamLogo
                               logoUrl={row.team.logoUrl}
                               name={row.team.name}
-                              className="h-4 w-4 object-contain"
+                              className="h-6 w-6"
                             />
                             <span>
                               {row.team.name} ({row.matchWins}-{row.matchLosses})

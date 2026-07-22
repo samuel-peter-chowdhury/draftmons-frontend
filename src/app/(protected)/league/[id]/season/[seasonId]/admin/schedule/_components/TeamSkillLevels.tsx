@@ -28,8 +28,8 @@ function TeamSkillLevelRow({ leagueId, team, onChanged }: TeamSkillLevelRowProps
   return (
     <div className="flex flex-col gap-1 border-b border-border py-2 last:border-0">
       <div className="flex items-center justify-between gap-3">
-        <span className="flex items-center gap-1.5 text-sm">
-          <TeamLogo logoUrl={team.logoUrl} name={team.name} className="h-5 w-5 object-contain" />
+        <span className="flex items-center gap-2 text-sm">
+          <TeamLogo logoUrl={team.logoUrl} name={team.name} className="h-7 w-7" />
           {team.name}
         </span>
         <div className="flex items-center gap-2">

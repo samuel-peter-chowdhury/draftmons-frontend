@@ -28,8 +28,8 @@ export function LeagueLogo({ logoUrl, name, className = 'h-6 w-6' }: LeagueLogoP
       <Image
         src={logoUrl}
         alt={`${name} logo`}
-        width={48}
-        height={48}
+        width={128}
+        height={128}
         unoptimized
         className="h-full w-full object-cover"
       />

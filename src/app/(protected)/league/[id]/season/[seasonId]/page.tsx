@@ -148,40 +148,37 @@ export default function SeasonDetailPage() {
                   {season.teams.map((team) => (
                     <div
                       key={team.id}
-                      className="rounded-md border border-border bg-card p-3"
+                      className="relative rounded-md border border-border bg-card p-3"
                     >
-                      <div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <TeamLogo
-                              logoUrl={team.logoUrl}
-                              name={team.name}
-                              className="h-5 w-5 object-contain"
-                            />
-                            <div className="text-sm font-medium justify-between">{team.name}</div>
-                          </div>
-                          <div className="text-xs text-muted-foreground justify-between">
-                            {formatUserDisplayName(team.user)}
-                          </div>
-                        </div>
-                        <div className="justify-self-end">
-                          <Link href={`/league/${params.id}/season/${season.id}/team/${team.id}`}>
-                            <Button variant="secondary" size="sm">
-                              Open
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
                       {isModerator && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setTeamToDelete(team.id)}
                           aria-label={`Remove ${team.name}`}
+                          className="absolute right-1 top-1"
                         >
                           <X className="h-4 w-4" />
                         </Button>
                       )}
+                      <div className="flex flex-col items-center gap-2 text-center">
+                        <TeamLogo
+                          logoUrl={team.logoUrl}
+                          name={team.name}
+                          className="h-12 w-12 rounded-lg sm:h-14 sm:w-14"
+                        />
+                        <div>
+                          <div className="text-sm font-medium">{team.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatUserDisplayName(team.user)}
+                          </div>
+                        </div>
+                        <Link href={`/league/${params.id}/season/${season.id}/team/${team.id}`}>
+                          <Button variant="secondary" size="sm">
+                            Open
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   ))}
                 </div>

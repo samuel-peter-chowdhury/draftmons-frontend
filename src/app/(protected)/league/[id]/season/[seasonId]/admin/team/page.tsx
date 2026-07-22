@@ -112,29 +112,29 @@ export default function AdminTeamListPage() {
             const stats = rosterByTeamId.get(team.id) ?? { count: 0, points: 0, pokemons: [] };
             return (
               <Card key={team.id}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between text-base">
+                <CardHeader className="items-center pb-3 text-center">
+                  <CardTitle className="flex flex-col items-center gap-2 text-base">
+                    <TeamLogo
+                      logoUrl={team.logoUrl}
+                      name={team.name}
+                      className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
+                    />
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <TeamLogo
-                          logoUrl={team.logoUrl}
-                          name={team.name}
-                          className="h-6 w-6 object-contain"
-                        />
-                        <div>{team.name}</div>
-                      </div>
-                      <div className="mt-1 text-sm font-normal text-muted-foreground">
+                      <div>{team.name}</div>
+                      <div className="mt-0.5 text-sm font-normal text-muted-foreground">
                         {formatUserDisplayName(team.user)}
                       </div>
                     </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-center">
                     <Link href={`/league/${leagueId}/season/${seasonId}/admin/team/${team.id}`}>
                       <Button variant="secondary" size="sm">
                         Manage
                       </Button>
                     </Link>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
+                  </div>
                   {rosterLoading && !rosterData ? (
                     <Spinner size={16} />
                   ) : (
