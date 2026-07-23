@@ -27,23 +27,25 @@ export function TeamRosterCard({ team, rosterRows, season, onSpriteClick }: Team
 
   return (
     <Card>
-      <CardHeader className="items-center pb-3 text-center">
-        <CardTitle className="flex flex-col items-center gap-2 text-base">
+      <CardHeader className="pb-3">
+        <div className="flex items-start gap-3">
           <TeamLogo
             logoUrl={team.logoUrl}
             name={team.name}
             className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
           />
-          {team.name}
-        </CardTitle>
-        <span
-          className={cn(
-            'text-sm font-medium',
-            pointsRemaining < 0 ? 'text-destructive' : 'text-muted-foreground',
-          )}
-        >
-          {pointsRemaining} pts remaining
-        </span>
+          <div className="flex min-w-0 flex-col gap-1">
+            <CardTitle className="text-base">{team.name}</CardTitle>
+            <span
+              className={cn(
+                'text-sm font-medium',
+                pointsRemaining < 0 ? 'text-destructive' : 'text-muted-foreground',
+              )}
+            >
+              {pointsRemaining} pts remaining
+            </span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">

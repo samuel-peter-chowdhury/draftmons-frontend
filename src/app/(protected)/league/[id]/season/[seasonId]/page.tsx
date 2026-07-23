@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { X, Pencil } from 'lucide-react';
 import {
   Button,
@@ -36,6 +36,7 @@ import Link from 'next/link';
 
 export default function SeasonDetailPage() {
   const params = useParams<{ id: string; seasonId: string }>();
+  const router = useRouter();
   const leagueId = Number(params.id);
   const seasonId = Number(params.seasonId);
   const { user: currentUser } = useAuthStore();
@@ -148,36 +149,37 @@ export default function SeasonDetailPage() {
                   {season.teams.map((team) => (
                     <div
                       key={team.id}
-                      className="relative rounded-md border border-border bg-card p-3"
+                      onClick={() =>
+                        router.push(`/league/${params.id}/season/${season.id}/team/${team.id}`)
+                      }
+                      className="relative cursor-pointer rounded-md border border-border bg-card p-3 transition-colors hover:border-primary/50"
                     >
                       {isModerator && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setTeamToDelete(team.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTeamToDelete(team.id);
+                          }}
                           aria-label={`Remove ${team.name}`}
                           className="absolute right-1 top-1"
                         >
                           <X className="h-4 w-4" />
                         </Button>
                       )}
-                      <div className="flex flex-col items-center gap-2 text-center">
+                      <div className="flex items-start gap-3">
                         <TeamLogo
                           logoUrl={team.logoUrl}
                           name={team.name}
                           className="h-12 w-12 rounded-lg sm:h-14 sm:w-14"
                         />
-                        <div>
+                        <div className="flex min-w-0 flex-col">
                           <div className="text-sm font-medium">{team.name}</div>
                           <div className="text-xs text-muted-foreground">
                             {formatUserDisplayName(team.user)}
                           </div>
                         </div>
-                        <Link href={`/league/${params.id}/season/${season.id}/team/${team.id}`}>
-                          <Button variant="secondary" size="sm">
-                            Open
-                          </Button>
-                        </Link>
                       </div>
                     </div>
                   ))}

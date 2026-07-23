@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner, TeamLogo } from '@/components';
 import { CreateTeamModal } from '@/components/modals/CreateTeamModal';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
@@ -111,30 +110,27 @@ export default function AdminTeamListPage() {
           {season.teams.map((team) => {
             const stats = rosterByTeamId.get(team.id) ?? { count: 0, points: 0, pokemons: [] };
             return (
-              <Card key={team.id}>
-                <CardHeader className="items-center pb-3 text-center">
-                  <CardTitle className="flex flex-col items-center gap-2 text-base">
+              <Card
+                key={team.id}
+                className="cursor-pointer transition-colors hover:border-primary/50"
+                onClick={() => router.push(`/league/${leagueId}/season/${seasonId}/admin/team/${team.id}`)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start gap-3">
                     <TeamLogo
                       logoUrl={team.logoUrl}
                       name={team.name}
                       className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
                     />
-                    <div>
-                      <div>{team.name}</div>
-                      <div className="mt-0.5 text-sm font-normal text-muted-foreground">
+                    <div className="flex min-w-0 flex-col">
+                      <CardTitle className="text-base">{team.name}</CardTitle>
+                      <div className="text-sm font-normal text-muted-foreground">
                         {formatUserDisplayName(team.user)}
                       </div>
                     </div>
-                  </CardTitle>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <div className="flex justify-center">
-                    <Link href={`/league/${leagueId}/season/${seasonId}/admin/team/${team.id}`}>
-                      <Button variant="secondary" size="sm">
-                        Manage
-                      </Button>
-                    </Link>
-                  </div>
                   {rosterLoading && !rosterData ? (
                     <Spinner size={16} />
                   ) : (

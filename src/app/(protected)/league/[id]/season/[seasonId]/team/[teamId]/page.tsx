@@ -69,20 +69,20 @@ export default function TeamDetailPage() {
       {team && (
         <div className="mb-4">
           <Card>
-            <CardHeader className="items-center text-center">
-              <CardTitle className="flex flex-col items-center gap-3">
+            <CardHeader>
+              <div className="flex items-start gap-3">
                 <TeamLogo
                   logoUrl={team.logoUrl}
                   name={team.name}
                   className="h-20 w-20 rounded-xl sm:h-24 sm:w-24 md:h-28 md:w-28"
                 />
-                <div>
-                  <div>{team.name}</div>
+                <div className="flex min-w-0 flex-col">
+                  <CardTitle>{team.name}</CardTitle>
                   <div className="mt-1 text-sm font-normal text-muted-foreground">
                     {formatUserDisplayName(team.user)}
                   </div>
                 </div>
-              </CardTitle>
+              </div>
             </CardHeader>
           </Card>
         </div>

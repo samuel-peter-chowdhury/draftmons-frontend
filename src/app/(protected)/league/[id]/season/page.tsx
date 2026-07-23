@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   Button,
   Card,
@@ -29,6 +28,7 @@ const SEASON_SORT_OPTIONS = [
 
 export default function SeasonsPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const leagueId = Number(params.id);
   const { user: currentUser } = useAuthStore();
 
@@ -138,7 +138,11 @@ export default function SeasonsPage() {
               <div className={loading ? 'pointer-events-none opacity-50' : ''}>
                 <div className="grid gap-3 md:grid-cols-2">
                   {seasons.map((season) => (
-                    <Card key={season.id}>
+                    <Card
+                      key={season.id}
+                      className="cursor-pointer transition-colors hover:border-primary/50"
+                      onClick={() => router.push(`/league/${leagueId}/season/${season.id}`)}
+                    >
                       <CardHeader>
                         <CardTitle className="flex items-center justify-between">
                           <span>{season.name}</span>
@@ -149,17 +153,10 @@ export default function SeasonsPage() {
                           </span>
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="space-y-1 text-sm text-muted-foreground">
-                          <div>Status: {season.status.replace(/_/g, ' ')}</div>
-                          <div>Point Limit: {season.pointLimit}</div>
-                          <div>Max Point Value: {season.maxPointValue}</div>
-                        </div>
-                        <div className="flex items-center justify-end">
-                          <Link href={`/league/${leagueId}/season/${season.id}`}>
-                            <Button variant="secondary">Open</Button>
-                          </Link>
-                        </div>
+                      <CardContent className="space-y-1 text-sm text-muted-foreground">
+                        <div>Status: {season.status.replace(/_/g, ' ')}</div>
+                        <div>Point Limit: {season.pointLimit}</div>
+                        <div>Max Point Value: {season.maxPointValue}</div>
                       </CardContent>
                     </Card>
                   ))}
