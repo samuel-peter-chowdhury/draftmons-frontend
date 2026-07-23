@@ -21,7 +21,7 @@ import {
 import { Pagination } from '@/components/ui/pagination';
 import { PokemonFilterPanel } from '@/components/pokemon/PokemonFilterPanel';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
-import { useFetch, useMutation, usePokemonSearch } from '@/hooks';
+import { useApiSWR, useMutation, usePokemonSearch } from '@/hooks';
 import { addToast } from '@/hooks/useToast';
 import { buildUrlWithQuery, TeamBuildSetApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
@@ -300,7 +300,7 @@ function CopyRosterSection({
     build.seasonId && teams.length === 0
       ? buildUrlWithQuery(BASE_ENDPOINTS.SEASON_BASE, [build.seasonId], { full: true })
       : null;
-  const { data: seasonFull } = useFetch<{ teams?: { id: number; name: string }[] }>(seasonUrl);
+  const { data: seasonFull } = useApiSWR<{ teams?: { id: number; name: string }[] }>(seasonUrl);
   const availableTeams = teams.length > 0 ? teams : (seasonFull?.teams ?? []);
 
   const rosterUrl = selectedTeamId
@@ -312,7 +312,7 @@ function CopyRosterSection({
       })
     : null;
   const { data: rosterData, loading: rosterLoading } =
-    useFetch<PaginatedResponse<SeasonPokemonTeamInput>>(rosterUrl);
+    useApiSWR<PaginatedResponse<SeasonPokemonTeamInput>>(rosterUrl);
 
   const copyMutation = useMutation<{ added: number; skipped: number }, void>(
     async () => {

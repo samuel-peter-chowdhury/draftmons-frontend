@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useFetch } from '@/hooks/useFetch';
+import { useApiSWR } from '@/hooks/useApiSWR';
 import { usePokemonReferenceData } from '@/hooks/usePokemonReferenceData';
 import { buildUrlWithQuery } from '@/lib/api';
 import { NAT_DEX_GENERATION_ID } from '@/lib/constants';
@@ -162,7 +162,7 @@ export function usePokemonSearch({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, sortBy, sortOrder, filters, selectedGenerationId, debouncedNameLike, endpoint, extraParamsKey]);
 
-  const { data, loading, error, refetch } = useFetch<PaginatedResponse<PokemonInput>>(pokemonUrl);
+  const { data, loading, error, refetch } = useApiSWR<PaginatedResponse<PokemonInput>>(pokemonUrl);
 
   const resetGeneration = useCallback((generationId: number) => {
     setSelectedGenerationId(generationId);

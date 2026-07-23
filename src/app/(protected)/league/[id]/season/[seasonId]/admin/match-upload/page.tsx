@@ -10,7 +10,7 @@ import {
   OverwriteDialog,
   SuccessState,
 } from './_components';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { MatchUploadApi, buildUrlWithQuery, type ApiRequestError } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useLeagueStore, useIsModerator } from '@/stores/useLeagueStore';
@@ -83,7 +83,7 @@ export default function MatchUploadPage() {
     data: spData,
     loading: spLoading,
     error: spError,
-  } = useFetch<PaginatedResponse<SeasonPokemonInput>>(
+  } = useApiSWR<PaginatedResponse<SeasonPokemonInput>>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season-pokemon'], {
       seasonId,
       full: true,

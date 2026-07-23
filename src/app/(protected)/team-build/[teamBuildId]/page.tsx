@@ -18,7 +18,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { buildUrlWithQuery, TeamBuildApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { TeamBuildInput } from '@/types';
@@ -45,7 +45,7 @@ function TeamBuildDetailContent() {
     loading,
     error,
     refetch,
-  } = useFetch<TeamBuildInput>(
+  } = useApiSWR<TeamBuildInput>(
     Number.isNaN(teamBuildId)
       ? null
       : buildUrlWithQuery(BASE_ENDPOINTS.TEAM_BUILD_BASE, [teamBuildId], { full: true }),

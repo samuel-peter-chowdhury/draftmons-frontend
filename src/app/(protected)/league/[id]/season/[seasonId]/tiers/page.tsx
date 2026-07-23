@@ -6,7 +6,7 @@ import { ArrowRightLeft, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useFetch, usePokemonModal } from '@/hooks';
+import { useApiSWR, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { getStatColor, POKEMON_TYPE_ORDER } from '@/lib/pokemon';
@@ -59,7 +59,7 @@ export default function TierListPage() {
   const sortMap = view === 'classic' ? classicSortMap : typeSortMap;
   const setSortMap = view === 'classic' ? setClassicSortMap : setTypeSortMap;
 
-  const { data, loading, error } = useFetch<PaginatedResponse<SeasonPokemonInput>>(
+  const { data, loading, error } = useApiSWR<PaginatedResponse<SeasonPokemonInput>>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season-pokemon'], {
       seasonId,
       full: true,

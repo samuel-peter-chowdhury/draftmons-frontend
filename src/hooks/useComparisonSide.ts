@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useFetch } from '@/hooks/useFetch';
+import { useApiSWR } from '@/hooks/useApiSWR';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { calculateSpeedTiers } from '@/lib/pokemon';
@@ -64,7 +64,7 @@ export function useComparisonSide(source: ComparisonSource | null) {
     data: rosterData,
     loading: rosterLoadingRaw,
     error: rosterErrorRaw,
-  } = useFetch<PaginatedResponse<SeasonPokemonTeamInput>>(rosterUrl);
+  } = useApiSWR<PaginatedResponse<SeasonPokemonTeamInput>>(rosterUrl);
 
   const fullUrl =
     teamId && leagueId
@@ -74,7 +74,7 @@ export function useComparisonSide(source: ComparisonSource | null) {
     data: teamFull,
     loading: fullLoadingRaw,
     error: fullErrorRaw,
-  } = useFetch<TeamInput>(fullUrl);
+  } = useApiSWR<TeamInput>(fullUrl);
 
   const gameIds = useMemo(() => {
     if (!teamFull) return null;
@@ -95,7 +95,7 @@ export function useComparisonSide(source: ComparisonSource | null) {
     data: statsRaw,
     loading: statsLoadingRaw,
     error: statsErrorRaw,
-  } = useFetch<PaginatedResponse<GameStatInput>>(statsUrl);
+  } = useApiSWR<PaginatedResponse<GameStatInput>>(statsUrl);
 
   const teamGameStats = useMemo<GameStatInput[]>(() => extractPaginatedData(statsRaw), [statsRaw]);
 
@@ -107,7 +107,7 @@ export function useComparisonSide(source: ComparisonSource | null) {
     data: teamBuild,
     loading: buildLoading,
     error: buildError,
-  } = useFetch<TeamBuildInput>(buildUrl);
+  } = useApiSWR<TeamBuildInput>(buildUrl);
 
   // ---- Normalized derivations ----
   const speedTierPokemon = useMemo<SpeedTierPokemon[]>(() => {

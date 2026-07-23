@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button, Select } from '@/components';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useAuthStore } from '@/stores';
@@ -75,10 +75,10 @@ export function SidePicker({ label, value, onChange }: SidePickerProps) {
         sortOrder: 'ASC',
       })
     : null;
-  const { data: builds } = useFetch<PaginatedResponse<TeamBuildInput>>(buildsUrl);
+  const { data: builds } = useApiSWR<PaginatedResponse<TeamBuildInput>>(buildsUrl);
 
   // Leagues → Seasons → Teams cascade
-  const { data: leagues } = useFetch<PaginatedResponse<LeagueInput>>(
+  const { data: leagues } = useApiSWR<PaginatedResponse<LeagueInput>>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [], {
       page: 1,
       pageSize: 100,
@@ -93,7 +93,7 @@ export function SidePicker({ label, value, onChange }: SidePickerProps) {
         pageSize: 100,
       })
     : null;
-  const { data: seasons } = useFetch<PaginatedResponse<SeasonInput>>(seasonsUrl);
+  const { data: seasons } = useApiSWR<PaginatedResponse<SeasonInput>>(seasonsUrl);
 
   const teamsUrl =
     leagueId && seasonId
@@ -104,7 +104,7 @@ export function SidePicker({ label, value, onChange }: SidePickerProps) {
           sortOrder: 'ASC',
         })
       : null;
-  const { data: teams } = useFetch<PaginatedResponse<TeamInput>>(teamsUrl);
+  const { data: teams } = useApiSWR<PaginatedResponse<TeamInput>>(teamsUrl);
 
   const selectBuild = (id: number | null) => {
     setBuildId(id);

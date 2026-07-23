@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardHeader, CardTitle, ErrorAlert, PokemonTable, Spinner, TeamLogo } from '@/components';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { BASE_ENDPOINTS, buildUrlWithQuery, formatUserDisplayName } from '@/lib';
 import { PaginatedResponse, SeasonPokemonInput, SortableColumn, TeamInput } from '@/types';
 import { useParams } from 'next/navigation';
@@ -22,7 +22,7 @@ export default function TeamDetailPage() {
     data: team,
     loading: teamLoading,
     error: teamError,
-  } = useFetch<TeamInput>(
+  } = useApiSWR<TeamInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.TEAM_BASE, [teamId], { full: true }),
   );
 
@@ -32,7 +32,7 @@ export default function TeamDetailPage() {
     [page, pageSize, sortBy, sortOrder, teamId],
   );
   const { data, loading, error } =
-    useFetch<PaginatedResponse<SeasonPokemonInput>>(seasonPokemonUrl);
+    useApiSWR<PaginatedResponse<SeasonPokemonInput>>(seasonPokemonUrl);
 
   const handleSort = useCallback(
     (column: SortableColumn) => {

@@ -13,7 +13,7 @@ import {
   Pagination,
   SortControls,
 } from '@/components';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatUserDisplayName } from '@/lib/utils';
@@ -35,7 +35,7 @@ export default function UserListPage() {
     [page, pageSize, sortBy, sortOrder],
   );
 
-  const { data, loading, error } = useFetch<PaginatedResponse<UserInput>>(url);
+  const { data, loading, error } = useApiSWR<PaginatedResponse<UserInput>>(url);
 
   const handleSortChange = (newSortBy: string, newSortOrder: 'ASC' | 'DESC') => {
     setSortBy(newSortBy);

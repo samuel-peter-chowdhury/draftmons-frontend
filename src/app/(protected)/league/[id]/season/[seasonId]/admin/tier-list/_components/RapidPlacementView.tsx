@@ -3,7 +3,7 @@
 import { useCallback, useMemo, type Dispatch, type SetStateAction } from 'react';
 
 import { Card, CardContent, ErrorAlert, Spinner } from '@/components';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { PaginatedResponse, PokemonInput, SeasonPokemonInput } from '@/types';
@@ -63,7 +63,7 @@ export function RapidPlacementView({
     data: dexData,
     loading: dexLoading,
     error: dexError,
-  } = useFetch<PaginatedResponse<PokemonInput>>(
+  } = useApiSWR<PaginatedResponse<PokemonInput>>(
     buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_BASE, [], {
       generationIds: generationId,
       pageSize: 9999,

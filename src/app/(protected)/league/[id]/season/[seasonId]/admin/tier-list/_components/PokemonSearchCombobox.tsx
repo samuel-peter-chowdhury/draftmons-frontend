@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
-import { useFetch, useDebounce } from '@/hooks';
+import { useApiSWR, useDebounce } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { PaginatedResponse, PokemonInput } from '@/types';
@@ -31,7 +31,7 @@ export function PokemonSearchCombobox({
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data, loading } = useFetch<PaginatedResponse<PokemonInput>>(
+  const { data, loading } = useApiSWR<PaginatedResponse<PokemonInput>>(
     debouncedSearch.length >= 2
       ? buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_BASE, [], {
           nameLike: debouncedSearch,

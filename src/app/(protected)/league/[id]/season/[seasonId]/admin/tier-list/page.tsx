@@ -33,7 +33,7 @@ import {
   ExportCsvButton,
   RapidPlacementView,
 } from './_components';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useLeagueStore, useIsModerator } from '@/stores/useLeagueStore';
@@ -72,7 +72,7 @@ export default function AdminTierListPage() {
     error: spError,
     refetch,
     setData: setSpData,
-  } = useFetch<PaginatedResponse<SeasonPokemonInput>>(
+  } = useApiSWR<PaginatedResponse<SeasonPokemonInput>>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season-pokemon'], {
       seasonId,
       full: true,

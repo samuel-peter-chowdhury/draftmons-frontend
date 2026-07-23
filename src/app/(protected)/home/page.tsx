@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 import { ErrorAlert, LeagueSearch, MyLeagueCard, Skeleton } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatUserDisplayName } from '@/lib/utils';
@@ -37,7 +37,7 @@ export default function HomePage() {
     data: leagueUsersResp,
     loading: leagueUsersLoading,
     error: leagueUsersError,
-  } = useFetch<PaginatedResponse<LeagueUserInput>>(leagueUsersUrl);
+  } = useApiSWR<PaginatedResponse<LeagueUserInput>>(leagueUsersUrl);
 
   const leagueUsers = leagueUsersResp?.data ?? [];
   const hasLeagues = leagueUsers.length > 0;

@@ -16,7 +16,7 @@ import {
   LeagueLogo,
 } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { LeagueInput, PaginatedResponse } from '@/types';
@@ -39,7 +39,7 @@ export default function LeagueListPage() {
     [page, pageSize, sortBy, sortOrder],
   );
 
-  const { data, loading, error } = useFetch<PaginatedResponse<LeagueInput>>(url);
+  const { data, loading, error } = useApiSWR<PaginatedResponse<LeagueInput>>(url);
 
   const handleLeagueCreated = (league?: LeagueInput) => {
     if (league?.id) {

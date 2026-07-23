@@ -22,7 +22,7 @@ import {
   TypeEffectivenessColumn,
 } from '@/components/comparison';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useComparisonSide, useFetch, usePokemonModal } from '@/hooks';
+import { useComparisonSide, useApiSWR, usePokemonModal } from '@/hooks';
 import type { ComparisonSource } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
@@ -157,7 +157,7 @@ function CompareContent() {
       })
     : null;
   const { data: movesData, loading: movesLoading, error: movesError } =
-    useFetch<PaginatedResponse<MoveInput>>(movesUrl);
+    useApiSWR<PaginatedResponse<MoveInput>>(movesUrl);
 
   const pokemonMovesMap = useMemo(() => {
     const map = new Map<number, MoveInput[]>();

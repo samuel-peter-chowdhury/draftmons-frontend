@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ErrorAlert, Spinner } from '@/components';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useAuthStore } from '@/stores';
@@ -43,7 +43,7 @@ export default function AdminSchedulePage() {
     loading: weeksLoading,
     error: weeksError,
     refetch: refetchWeeks,
-  } = useFetch<PaginatedResponse<WeekInput>>(weeksUrl);
+  } = useApiSWR<PaginatedResponse<WeekInput>>(weeksUrl);
 
   const weeks = useMemo(
     () => [...(weeksData?.data ?? [])].sort((a, b) => a.weekNumber - b.weekNumber),

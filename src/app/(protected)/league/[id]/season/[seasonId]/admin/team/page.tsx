@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, ErrorAlert, Spinner, TeamLogo } from '@/components';
 import { CreateTeamModal } from '@/components/modals/CreateTeamModal';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatUserDisplayName } from '@/lib/utils';
@@ -62,7 +62,7 @@ export default function AdminTeamListPage() {
     pageSize: 9999,
   });
   const { data: rosterData, loading: rosterLoading, error: rosterError, refetch: refetchRoster } =
-    useFetch<PaginatedResponse<SeasonPokemonInput>>(rosterUrl);
+    useApiSWR<PaginatedResponse<SeasonPokemonInput>>(rosterUrl);
 
   const rosterByTeamId = useMemo(() => {
     const map = new Map<number, { count: number; points: number; pokemons: PokemonInput[] }>();
