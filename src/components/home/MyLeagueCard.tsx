@@ -133,22 +133,37 @@ export function MyLeagueCard({ leagueUser, userId }: MyLeagueCardProps) {
 
   return (
     <Card>
-      <CardHeader className="items-center pb-3 text-center">
-        <CardTitle className="flex flex-col items-center gap-2 text-lg">
+      <CardHeader className="pb-3">
+        <div className="flex items-start gap-3">
           <LeagueLogo
             logoUrl={league?.logoUrl}
             name={league?.name ?? ''}
             className="h-16 w-16 shrink-0 rounded-lg sm:h-20 sm:w-20"
           />
-          <span>
-            {league?.name ?? `League #${leagueId}`}
-            {league?.abbreviation ? (
-              <span className="ml-1 text-sm font-normal text-muted-foreground">
-                ({league.abbreviation})
-              </span>
-            ) : null}
-          </span>
-        </CardTitle>
+          <div className="flex min-w-0 flex-col gap-1">
+            <CardTitle className="text-lg">
+              <Link href={`/league/${leagueId}`} className="transition-colors hover:text-primary">
+                {league?.name ?? `League #${leagueId}`}
+              </Link>
+              {league?.abbreviation ? (
+                <span className="ml-1 text-sm font-normal text-muted-foreground">
+                  ({league.abbreviation})
+                </span>
+              ) : null}
+            </CardTitle>
+            {!loading && !error && hasSeasons && season && (
+              <div className="flex items-center gap-2 text-sm">
+                <Link
+                  href={`/league/${leagueId}/season/${season.id}`}
+                  className="text-muted-foreground transition-colors hover:text-primary"
+                >
+                  {season.name}
+                </Link>
+                <Badge variant="secondary">{formatSeasonStatus(season.status)}</Badge>
+              </div>
+            )}
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {loading && (
@@ -166,11 +181,6 @@ export function MyLeagueCard({ leagueUser, userId }: MyLeagueCardProps) {
 
         {!loading && !error && hasSeasons && season && (
           <>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">{season.name}</span>
-              <Badge variant="secondary">{formatSeasonStatus(season.status)}</Badge>
-            </div>
-
             {team && (
               <div className="text-sm">
                 <p className="flex items-center gap-2 font-medium">

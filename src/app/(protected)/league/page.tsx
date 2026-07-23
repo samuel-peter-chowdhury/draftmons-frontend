@@ -1,12 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Button,
   Card,
-  CardContent,
   CardHeader,
   CardTitle,
   ErrorAlert,
@@ -93,27 +91,26 @@ export default function LeagueListPage() {
           <div className={loading ? 'pointer-events-none opacity-50' : ''}>
             <div className="grid gap-3 md:grid-cols-2">
               {data.data.map((league) => (
-                <Card key={league.id}>
-                  <CardHeader className="items-center pb-3 text-center">
-                    <CardTitle className="flex flex-col items-center gap-2">
+                <Card
+                  key={league.id}
+                  className="cursor-pointer transition-colors hover:border-primary/50"
+                  onClick={() => router.push(`/league/${league.id}`)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
                       <LeagueLogo
                         logoUrl={league.logoUrl}
                         name={league.name}
                         className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
                       />
-                      <div>
-                        <div>{league.name}</div>
+                      <div className="flex min-w-0 flex-col">
+                        <CardTitle>{league.name}</CardTitle>
                         <div className="mt-0.5 text-sm font-normal text-muted-foreground">
                           {league.abbreviation}
                         </div>
                       </div>
-                    </CardTitle>
+                    </div>
                   </CardHeader>
-                  <CardContent className="flex items-center justify-center">
-                    <Link href={`/league/${league.id}`}>
-                      <Button variant="secondary">Open</Button>
-                    </Link>
-                  </CardContent>
                 </Card>
               ))}
             </div>

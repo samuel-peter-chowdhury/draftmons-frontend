@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { X, Pencil } from 'lucide-react';
 import {
   Button,
@@ -41,6 +40,7 @@ import { DiscordTab } from './DiscordTab';
 
 export default function LeagueDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { user: currentUser } = useAuthStore();
   const { data, loading, error, refetch } = useApiSWR<LeagueInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [params.id], { full: true }),
@@ -84,7 +84,7 @@ export default function LeagueDetailPage() {
       {data && (
         <div className="space-y-6">
           <Card>
-            <CardHeader className="relative items-center pb-4 text-center">
+            <CardHeader className="relative pb-4">
               {isModerator && (
                 <Button
                   variant="ghost"
@@ -96,19 +96,19 @@ export default function LeagueDetailPage() {
                   <Pencil className="h-4 w-4" />
                 </Button>
               )}
-              <CardTitle className="flex flex-col items-center gap-3">
+              <div className="flex items-start gap-3">
                 <LeagueLogo
                   logoUrl={data.logoUrl}
                   name={data.name}
                   className="h-20 w-20 rounded-xl sm:h-24 sm:w-24 md:h-28 md:w-28"
                 />
-                <div>
-                  <div>{data.name}</div>
+                <div className="flex min-w-0 flex-col">
+                  <CardTitle>{data.name}</CardTitle>
                   <div className="mt-1 text-sm font-normal text-muted-foreground">
                     {data.abbreviation}
                   </div>
                 </div>
-              </CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <div>
@@ -199,7 +199,8 @@ export default function LeagueDetailPage() {
                       {data.seasons.map((season) => (
                         <div
                           key={season.id}
-                          className="rounded-md border border-border bg-card p-3"
+                          onClick={() => router.push(`/league/${params.id}/season/${season.id}`)}
+                          className="cursor-pointer rounded-md border border-border bg-card p-3 transition-colors hover:border-primary/50"
                         >
                           <div className="mb-2 flex items-center justify-between">
                             <div className="font-medium">{season.name}</div>
@@ -213,13 +214,6 @@ export default function LeagueDetailPage() {
                             <div>Status: {season.status.replace(/_/g, ' ')}</div>
                             <div>Point Limit: {season.pointLimit}</div>
                             <div>Max Point Value: {season.maxPointValue}</div>
-                          </div>
-                          <div className="mt-3">
-                            <Link href={`/league/${params.id}/season/${season.id}`}>
-                              <Button variant="secondary" size="sm">
-                                Open
-                              </Button>
-                            </Link>
                           </div>
                         </div>
                       ))}
