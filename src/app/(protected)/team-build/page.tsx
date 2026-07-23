@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
   Skeleton,
 } from '@/components';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { buildUrlWithQuery, TeamBuildApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useAuthStore } from '@/stores';
@@ -43,7 +43,7 @@ export default function TeamBuildListPage() {
         sortOrder: 'ASC',
       })
     : null;
-  const { data, loading, error, refetch } = useFetch<PaginatedResponse<TeamBuildInput>>(buildsUrl);
+  const { data, loading, error, refetch } = useApiSWR<PaginatedResponse<TeamBuildInput>>(buildsUrl);
 
   const deleteMutation = useMutation((id: number) => TeamBuildApi.delete(id), {
     onSuccess: () => {

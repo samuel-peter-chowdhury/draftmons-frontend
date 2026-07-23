@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, ErrorAlert, Spinner } from '@/components';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { MatchInput, PaginatedResponse, WeekInput } from '@/types';
@@ -27,7 +27,7 @@ export default function SeasonSchedulePage() {
     sortBy: 'weekNumber',
     sortOrder: 'ASC',
   });
-  const { data, loading, error } = useFetch<PaginatedResponse<WeekInput>>(weeksUrl);
+  const { data, loading, error } = useApiSWR<PaginatedResponse<WeekInput>>(weeksUrl);
 
   const weeks = useMemo(
     () => [...(data?.data ?? [])].sort((a, b) => a.weekNumber - b.weekNumber),

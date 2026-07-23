@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useFetch } from '@/hooks/useFetch';
+import { useApiSWR } from '@/hooks/useApiSWR';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type {
@@ -69,14 +69,14 @@ export function usePokemonReferenceData({
     return buildUrlWithQuery(BASE_ENDPOINTS.MOVE_BASE, [], params);
   }, [selectedGenerationId, debouncedMoveSearch]);
 
-  const { data: typesData } = useFetch<PaginatedResponse<PokemonTypeInput>>(typesUrl);
-  const { data: generationsData } = useFetch<PaginatedResponse<GenerationInput>>(generationsUrl);
+  const { data: typesData } = useApiSWR<PaginatedResponse<PokemonTypeInput>>(typesUrl);
+  const { data: generationsData } = useApiSWR<PaginatedResponse<GenerationInput>>(generationsUrl);
   const { data: specialMoveCategoriesData } =
-    useFetch<PaginatedResponse<SpecialMoveCategoryInput>>(specialMoveCategoriesUrl);
+    useApiSWR<PaginatedResponse<SpecialMoveCategoryInput>>(specialMoveCategoriesUrl);
   const { data: abilitySearchData, loading: abilitySearchLoading } =
-    useFetch<PaginatedResponse<AbilityInput>>(abilitySearchUrl);
+    useApiSWR<PaginatedResponse<AbilityInput>>(abilitySearchUrl);
   const { data: moveSearchData, loading: moveSearchLoading } =
-    useFetch<PaginatedResponse<MoveInput>>(moveSearchUrl);
+    useApiSWR<PaginatedResponse<MoveInput>>(moveSearchUrl);
 
   return {
     types: typesData?.data || [],

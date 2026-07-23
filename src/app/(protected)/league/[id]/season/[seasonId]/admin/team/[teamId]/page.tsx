@@ -9,7 +9,7 @@ import {
   AddPokemonSection,
   RosterHistorySection,
 } from './_components';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useAuthStore } from '@/stores';
@@ -52,7 +52,7 @@ export default function AdminTeamEditPage() {
     loading: rosterLoading,
     error: rosterError,
     refetch: refetchRoster,
-  } = useFetch<PaginatedResponse<SeasonPokemonInput>>(rosterUrl);
+  } = useApiSWR<PaginatedResponse<SeasonPokemonInput>>(rosterUrl);
 
   const [rosterRefreshKey, setRosterRefreshKey] = useState(0);
 

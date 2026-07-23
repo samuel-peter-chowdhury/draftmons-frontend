@@ -13,7 +13,7 @@ import {
   Select,
   Spinner,
 } from '@/components';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { buildUrlWithQuery, TeamBuildApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type {
@@ -59,12 +59,12 @@ export function CreateTeamBuildModal({
   const [seasonId, setSeasonId] = useState<number | null>(null);
 
   // Reference data — fetched while the modal is open
-  const { data: generations } = useFetch<PaginatedResponse<GenerationOutput>>(
+  const { data: generations } = useApiSWR<PaginatedResponse<GenerationOutput>>(
     open ? GENERATIONS_URL : null,
   );
-  const { data: leagues } = useFetch<PaginatedResponse<LeagueInput>>(open ? LEAGUES_URL : null);
+  const { data: leagues } = useApiSWR<PaginatedResponse<LeagueInput>>(open ? LEAGUES_URL : null);
   const seasonsUrl = open && leagueId ? seasonsUrlFor(leagueId) : null;
-  const { data: seasons } = useFetch<PaginatedResponse<SeasonInput>>(seasonsUrl);
+  const { data: seasons } = useApiSWR<PaginatedResponse<SeasonInput>>(seasonsUrl);
 
   // Reset form whenever the modal opens or the edit target changes
   useEffect(() => {

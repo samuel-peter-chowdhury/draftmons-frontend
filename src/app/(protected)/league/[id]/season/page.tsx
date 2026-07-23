@@ -15,7 +15,7 @@ import {
   SortControls,
 } from '@/components';
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
@@ -46,7 +46,7 @@ export default function SeasonsPage() {
     loading: leagueLoading,
     error: leagueError,
     refetch: refetchLeague,
-  } = useFetch<LeagueInput>(
+  } = useApiSWR<LeagueInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId], { full: true }),
   );
 
@@ -68,7 +68,7 @@ export default function SeasonsPage() {
     loading: seasonsLoading,
     error: seasonsError,
     refetch: refetchSeasons,
-  } = useFetch<PaginatedResponse<SeasonInput>>(seasonsUrl);
+  } = useApiSWR<PaginatedResponse<SeasonInput>>(seasonsUrl);
 
   // Check if the current user is a moderator of this league
   const isModerator =

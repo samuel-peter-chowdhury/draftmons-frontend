@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useAuthStore } from '@/stores';
@@ -49,12 +49,12 @@ export function DiscordTab({ leagueId, league, onUpdate }: DiscordTabProps) {
     loading: guildsLoading,
     error: guildsError,
     refetch: refetchGuilds,
-  } = useFetch<DiscordGuild[]>(BASE_ENDPOINTS.DISCORD_GUILDS);
+  } = useApiSWR<DiscordGuild[]>(BASE_ENDPOINTS.DISCORD_GUILDS);
 
-  const { data: inviteUrlData } = useFetch<DiscordInviteUrl>(BASE_ENDPOINTS.DISCORD_INVITE_URL);
+  const { data: inviteUrlData } = useApiSWR<DiscordInviteUrl>(BASE_ENDPOINTS.DISCORD_INVITE_URL);
 
   const channelsFetchGuildId = selectedGuildId || league.discordGuildId;
-  const { data: channels, loading: channelsLoading } = useFetch<DiscordChannel[]>(
+  const { data: channels, loading: channelsLoading } = useApiSWR<DiscordChannel[]>(
     channelsFetchGuildId ? `${BASE_ENDPOINTS.DISCORD_GUILDS}/${channelsFetchGuildId}/channels` : null,
   );
 

@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
-import { useDebounce, useFetch, useMutation } from '@/hooks';
+import { useDebounce, useApiSWR, useMutation } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { PokemonApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
@@ -39,7 +39,7 @@ export function PokemonSpriteOverrideCard() {
   const [selected, setSelected] = useState<PokemonInput | null>(null);
   const debouncedSearch = useDebounce(search, 300);
 
-  const { data, loading } = useFetch<PaginatedResponse<PokemonInput>>(
+  const { data, loading } = useApiSWR<PaginatedResponse<PokemonInput>>(
     debouncedSearch.length >= 2
       ? buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_BASE, [], {
           nameLike: debouncedSearch,

@@ -15,7 +15,7 @@ import {
   TabsTrigger,
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useComparisonSide, useFetch, usePokemonModal } from '@/hooks';
+import { useComparisonSide, useApiSWR, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { SeasonInput, PaginatedResponse, MoveInput, PokemonInput } from '@/types';
@@ -138,7 +138,7 @@ function TeamMatchupContent() {
     data: season,
     loading: seasonLoading,
     error: seasonError,
-  } = useFetch<SeasonInput>(
+  } = useApiSWR<SeasonInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season', seasonId], { full: true }),
   );
 
@@ -165,7 +165,7 @@ function TeamMatchupContent() {
     data: movesData,
     loading: movesLoading,
     error: movesError,
-  } = useFetch<PaginatedResponse<MoveInput>>(movesUrl);
+  } = useApiSWR<PaginatedResponse<MoveInput>>(movesUrl);
 
   // Build pokemonId → MoveInput[] map from the moves response
   const pokemonMovesMap = useMemo(() => {

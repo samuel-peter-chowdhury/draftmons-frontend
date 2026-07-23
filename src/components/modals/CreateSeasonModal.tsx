@@ -12,7 +12,7 @@ import {
   Spinner,
   Select,
 } from '@/components';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
@@ -37,7 +37,7 @@ export function CreateSeasonModal({
   const isEditMode = !!season;
 
   const { data: generationsResponse, loading: generationsLoading, error: generationsError } =
-    useFetch<PaginatedResponse<GenerationOutput>>(open ? BASE_ENDPOINTS.GENERATION_BASE : null);
+    useApiSWR<PaginatedResponse<GenerationOutput>>(open ? BASE_ENDPOINTS.GENERATION_BASE : null);
 
   const generations = generationsResponse?.data;
 

@@ -31,7 +31,7 @@ import {
 import { AddLeagueUsersModal } from '@/components/modals/AddLeagueUsersModal';
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
@@ -42,7 +42,7 @@ import { DiscordTab } from './DiscordTab';
 export default function LeagueDetailPage() {
   const params = useParams<{ id: string }>();
   const { user: currentUser } = useAuthStore();
-  const { data, loading, error, refetch } = useFetch<LeagueInput>(
+  const { data, loading, error, refetch } = useApiSWR<LeagueInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [params.id], { full: true }),
   );
 

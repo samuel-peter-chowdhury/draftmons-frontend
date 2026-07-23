@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useFetch, usePokemonSearch } from '@/hooks';
+import { useApiSWR, usePokemonSearch } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
@@ -49,7 +49,7 @@ export default function SeasonPokemonSearchPage() {
   });
 
   // Fetch season data
-  const { data: season } = useFetch<SeasonInput>(
+  const { data: season } = useApiSWR<SeasonInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.SEASON_BASE, [seasonId], { full: true }),
   );
 

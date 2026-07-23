@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Badge, Button, ErrorAlert, Input, Select, Spinner } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { buildUrlWithQuery, TeamBuildSetApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { StatType } from '@/types';
@@ -111,11 +111,11 @@ export function TeamBuildSetEditor({ set, build, onChanged }: TeamBuildSetEditor
   }, [set]);
 
   // Full Pokemon (for movepool + abilities — the build's set.pokemon omits moves).
-  const { data: pokemon, loading: pokemonLoading } = useFetch<PokemonInput>(
+  const { data: pokemon, loading: pokemonLoading } = useApiSWR<PokemonInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.POKEMON_BASE, [set.pokemonId], { full: true }),
   );
 
-  const { data: itemsResp } = useFetch<PaginatedResponse<ItemInput>>(
+  const { data: itemsResp } = useApiSWR<PaginatedResponse<ItemInput>>(
     buildUrlWithQuery(BASE_ENDPOINTS.ITEM_BASE, [], {
       generationId: build.generationId,
       pageSize: 10000,
@@ -124,7 +124,7 @@ export function TeamBuildSetEditor({ set, build, onChanged }: TeamBuildSetEditor
     }),
   );
 
-  const { data: naturesResp } = useFetch<PaginatedResponse<NatureInput>>(
+  const { data: naturesResp } = useApiSWR<PaginatedResponse<NatureInput>>(
     buildUrlWithQuery(BASE_ENDPOINTS.NATURE_BASE, [], { pageSize: 100, sortBy: 'name' }),
   );
 

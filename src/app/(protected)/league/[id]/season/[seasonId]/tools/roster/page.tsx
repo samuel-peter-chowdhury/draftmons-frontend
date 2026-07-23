@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 
 import { ErrorAlert, Spinner } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useFetch, usePokemonModal } from '@/hooks';
+import { useApiSWR, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useLeagueStore } from '@/stores';
@@ -42,7 +42,7 @@ export default function SeasonRosterPage() {
     data: rosterData,
     loading: rosterLoading,
     error: rosterError,
-  } = useFetch<PaginatedResponse<SeasonPokemonInput>>(rosterUrl);
+  } = useApiSWR<PaginatedResponse<SeasonPokemonInput>>(rosterUrl);
 
   // Group active roster rows by teamId — a row may belong to more than one
   // team when allowMultiTeamPokemon is enabled for the season.

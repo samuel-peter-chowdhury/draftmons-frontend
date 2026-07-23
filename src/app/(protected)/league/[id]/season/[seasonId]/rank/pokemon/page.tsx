@@ -19,7 +19,7 @@ import {
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
-import { useFetch, usePokemonModal } from '@/hooks';
+import { useApiSWR, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { computePokemonRanks, type PokemonRankRow } from '@/lib/pokemonStats';
@@ -36,7 +36,7 @@ export default function SeasonPokemonRankPage() {
 
   const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
-  const { data, loading, error } = useFetch<PaginatedResponse<SeasonPokemonInput>>(
+  const { data, loading, error } = useApiSWR<PaginatedResponse<SeasonPokemonInput>>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season-pokemon'], {
       seasonId,
       full: true,
@@ -44,7 +44,7 @@ export default function SeasonPokemonRankPage() {
     }),
   );
 
-  const { data: teamsData } = useFetch<PaginatedResponse<TeamInput>>(
+  const { data: teamsData } = useApiSWR<PaginatedResponse<TeamInput>>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'team'], {
       seasonId,
       pageSize: 100,

@@ -24,7 +24,7 @@ import {
   UserAvatar,
 } from '@/components';
 import { EditUserModal } from '@/components/modals/EditUserModal';
-import { addToast, useFetch, useMutation } from '@/hooks';
+import { addToast, useApiSWR, useMutation } from '@/hooks';
 import { buildUrl, AuthApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatUserDisplayName } from '@/lib/utils';
@@ -36,7 +36,7 @@ export default function UserDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user: currentUser } = useAuthStore();
-  const { data, loading, error, refetch } = useFetch<UserInput>(
+  const { data, loading, error, refetch } = useApiSWR<UserInput>(
     buildUrl(BASE_ENDPOINTS.USER_BASE, params.id),
   );
 

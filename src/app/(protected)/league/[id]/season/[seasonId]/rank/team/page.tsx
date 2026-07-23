@@ -17,7 +17,7 @@ import {
   TableRow,
   TeamLogo,
 } from '@/components';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { computeStandings } from '@/lib/standings';
@@ -42,7 +42,7 @@ export default function SeasonTeamRankPage() {
     full: true,
     pageSize: 100,
   });
-  const { data, loading, error } = useFetch<PaginatedResponse<TeamInput>>(teamsUrl);
+  const { data, loading, error } = useApiSWR<PaginatedResponse<TeamInput>>(teamsUrl);
 
   const standings = useMemo(() => computeStandings(data?.data ?? []), [data]);
 

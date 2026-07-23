@@ -14,7 +14,7 @@ import {
 } from '@/components';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { buildUrlWithQuery, LeagueApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { PaginatedResponse, SeasonPokemonInput } from '@/types';
@@ -41,7 +41,7 @@ export function RosterHistorySection({
     pageSize: 200,
     _r: refreshKey,
   });
-  const { data, loading, error, refetch } = useFetch<PaginatedResponse<SeasonPokemonInput>>(url);
+  const { data, loading, error, refetch } = useApiSWR<PaginatedResponse<SeasonPokemonInput>>(url);
 
   const historyRows = useMemo(() => {
     return (data?.data ?? [])
