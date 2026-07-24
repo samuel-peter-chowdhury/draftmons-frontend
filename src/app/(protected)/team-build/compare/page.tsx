@@ -14,6 +14,7 @@ import {
 } from '@/components';
 import {
   CoverageMovesContent,
+  ExportForAiButton,
   MOVES_PAGE_SIZE,
   NoTeamSelected,
   SpecialMovesContent,
@@ -24,6 +25,7 @@ import {
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
 import { useComparisonSide, useApiSWR, usePokemonModal } from '@/hooks';
 import type { ComparisonSource } from '@/hooks';
+import { pointMapForSide, type ExportSide } from '@/lib/aiTeamBuilder/buildExport';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { MoveInput, PaginatedResponse, PokemonInput } from '@/types';
@@ -190,6 +192,36 @@ function CompareContent() {
   const aSelected = sourceA !== null;
   const bSelected = sourceB !== null;
 
+  // Export sides for the "Export for AI" action (null until selected & non-empty).
+  const exportSideA = useMemo<ExportSide | null>(() => {
+    if (!aSelected || sideAWithMoves.length === 0) return null;
+    return {
+      label: sideAName,
+      pointTotal: sideA.pointTotal,
+      pokemon: sideAWithMoves,
+      pointByPokemonId: pointMapForSide({
+        rosterData: sideA.rosterData,
+        teamBuild: sideA.teamBuild,
+      }),
+    };
+  }, [aSelected, sideAName, sideA.pointTotal, sideA.rosterData, sideA.teamBuild, sideAWithMoves]);
+
+  const exportSideB = useMemo<ExportSide | null>(() => {
+    if (!bSelected || sideBWithMoves.length === 0) return null;
+    return {
+      label: sideBName,
+      pointTotal: sideB.pointTotal,
+      pokemon: sideBWithMoves,
+      pointByPokemonId: pointMapForSide({
+        rosterData: sideB.rosterData,
+        teamBuild: sideB.teamBuild,
+      }),
+    };
+  }, [bSelected, sideBName, sideB.pointTotal, sideB.rosterData, sideB.teamBuild, sideBWithMoves]);
+
+  const exportGenerationName =
+    sideA.teamBuild?.generation?.name ?? sideB.teamBuild?.generation?.name;
+
   const renderInfoColumn = (
     source: ComparisonSource | null,
     side: ReturnType<typeof useComparisonSide>,
@@ -235,6 +267,16 @@ function CompareContent() {
             label="Side B"
             value={sideBValue}
             onChange={(v) => updateSearchParams({ sideB: v })}
+          />
+        </div>
+
+        {/* Export for AI */}
+        <div className="flex justify-end">
+          <ExportForAiButton
+            sideA={exportSideA}
+            sideB={exportSideB}
+            context="teamBuildCompare"
+            generationName={exportGenerationName}
           />
         </div>
 

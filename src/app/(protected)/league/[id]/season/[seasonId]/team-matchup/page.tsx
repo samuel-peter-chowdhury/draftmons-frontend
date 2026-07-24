@@ -16,12 +16,14 @@ import {
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
 import { useComparisonSide, useApiSWR, usePokemonModal } from '@/hooks';
+import { pointMapForSide, type ExportSide } from '@/lib/aiTeamBuilder/buildExport';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { SeasonInput, PaginatedResponse, MoveInput, PokemonInput } from '@/types';
 import {
   MOVES_PAGE_SIZE,
   CoverageMovesContent,
+  ExportForAiButton,
   NoTeamSelected,
   SpecialMovesContent,
   SpeedTierColumn,
@@ -214,6 +216,33 @@ function TeamMatchupContent() {
     [teams, teamBId],
   );
 
+  // Export sides for the "Export for AI" action (null until selected & non-empty).
+  const exportSideA = useMemo<ExportSide | null>(() => {
+    if (!teamAId || teamAWithMoves.length === 0) return null;
+    return {
+      label: teamAName,
+      pointTotal: teamA.pointTotal,
+      pokemon: teamAWithMoves,
+      pointByPokemonId: pointMapForSide({
+        rosterData: teamA.rosterData,
+        teamBuild: teamA.teamBuild,
+      }),
+    };
+  }, [teamAId, teamAName, teamA.pointTotal, teamA.rosterData, teamA.teamBuild, teamAWithMoves]);
+
+  const exportSideB = useMemo<ExportSide | null>(() => {
+    if (!teamBId || teamBWithMoves.length === 0) return null;
+    return {
+      label: teamBName,
+      pointTotal: teamB.pointTotal,
+      pokemon: teamBWithMoves,
+      pointByPokemonId: pointMapForSide({
+        rosterData: teamB.rosterData,
+        teamBuild: teamB.teamBuild,
+      }),
+    };
+  }, [teamBId, teamBName, teamB.pointTotal, teamB.rosterData, teamB.teamBuild, teamBWithMoves]);
+
   // Map pokemonId → seasonPokemonId from both teams' rosters
   const pokemonToSeasonPokemonMap = useMemo(() => {
     const map = new Map<number, number>();
@@ -251,7 +280,7 @@ function TeamMatchupContent() {
       {season && (
         <div className="space-y-4">
           {/* Team selectors */}
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap items-end gap-4">
             <div className="w-64">
               <label className="mb-1 block text-sm font-medium text-muted-foreground">Team A</label>
               <Select
@@ -285,6 +314,14 @@ function TeamMatchupContent() {
                   </option>
                 ))}
               </Select>
+            </div>
+            <div className="ml-auto flex items-end">
+              <ExportForAiButton
+                sideA={exportSideA}
+                sideB={exportSideB}
+                context="matchup"
+                generationName={season?.generation?.name}
+              />
             </div>
           </div>
 

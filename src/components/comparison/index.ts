@@ -1,5 +1,7 @@
 export * from './constants';
 export { CopyableField } from './CopyableField';
+export { ExportForAiButton } from './ExportForAiButton';
+export { ExportForAiDialog } from './ExportForAiDialog';
 export { CoverageMovesContent } from './CoverageMovesContent';
 export { MoveSpritesRow } from './MoveSpritesRow';
 export { NoTeamSelected } from './NoTeamSelected';
