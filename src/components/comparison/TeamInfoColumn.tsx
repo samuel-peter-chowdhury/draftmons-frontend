@@ -240,14 +240,22 @@ function TeamInfo({
           <TeamLogo logoUrl={team.logoUrl} name={team.name} className="h-7 w-7" />
           <h3 className="text-sm font-semibold">{team.name}</h3>
         </div>
-        <p className="text-xs text-muted-foreground">{formatUserDisplayName(team.user)}</p>
+        <p className="text-xs text-muted-foreground">
+          {formatUserDisplayName(team.user, 'Unclaimed')}
+        </p>
       </div>
 
       {/* User Details */}
       <div className="rounded-md border border-border p-3">
-        <CopyableField label="Discord" value={team.user?.discordUsername ?? ''} />
-        <CopyableField label="Showdown" value={team.user?.showdownUsername ?? ''} />
-        <CopyableField label="Timezone" value={team.user?.timezone ?? ''} />
+        {team.user ? (
+          <>
+            <CopyableField label="Discord" value={team.user.discordUsername ?? ''} />
+            <CopyableField label="Showdown" value={team.user.showdownUsername ?? ''} />
+            <CopyableField label="Timezone" value={team.user.timezone ?? ''} />
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">No coach assigned</p>
+        )}
       </div>
 
       {/* Kill Leaders */}

@@ -54,7 +54,7 @@ export function CreateTeamModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createTeamMutation.mutate({ ...form, seasonId });
+    await createTeamMutation.mutate({ ...form, seasonId, userId: form.userId || null });
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -94,14 +94,12 @@ export function CreateTeamModal({
             <Label htmlFor="team-user">User</Label>
             <Select
               id="team-user"
-              value={form.userId}
+              value={form.userId ?? 0}
               onChange={(e) => setForm((f) => ({ ...f, userId: Number(e.target.value) }))}
               required
-              disabled={createTeamMutation.loading || leagueUsers.length === 0}
+              disabled={createTeamMutation.loading}
             >
-              <option value={0} disabled>
-                Select a user
-              </option>
+              <option value={0}>Unassigned</option>
               {leagueUsers.map((leagueUser) => (
                 <option key={leagueUser.userId} value={leagueUser.userId}>
                   {formatUserDisplayName(leagueUser.user)}
