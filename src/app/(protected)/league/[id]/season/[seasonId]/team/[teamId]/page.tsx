@@ -79,7 +79,7 @@ export default function TeamDetailPage() {
                 <div className="flex min-w-0 flex-col">
                   <CardTitle>{team.name}</CardTitle>
                   <div className="mt-1 text-sm font-normal text-muted-foreground">
-                    {formatUserDisplayName(team.user)}
+                    {formatUserDisplayName(team.user, 'Unclaimed')}
                   </div>
                 </div>
               </div>

@@ -100,7 +100,7 @@ export default function SeasonTeamRankPage() {
                           </Link>
                         </span>
                       </TableCell>
-                      <TableCell>{formatUserDisplayName(row.team.user)}</TableCell>
+                      <TableCell>{formatUserDisplayName(row.team.user, 'Unclaimed')}</TableCell>
                       <TableCell>
                         {row.matchWins}-{row.matchLosses}
                       </TableCell>

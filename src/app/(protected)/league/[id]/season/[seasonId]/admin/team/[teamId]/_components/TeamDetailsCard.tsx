@@ -32,16 +32,16 @@ export function TeamDetailsCard({
   onDeleted,
 }: TeamDetailsCardProps) {
   const [name, setName] = useState(team.name);
-  const [userId, setUserId] = useState(team.userId);
+  const [userId, setUserId] = useState(team.userId ?? 0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     setName(team.name);
-    setUserId(team.userId);
+    setUserId(team.userId ?? 0);
   }, [team.id, team.name, team.userId]);
 
   const saveMutation = useMutation(
-    (data: { name: string; userId: number }) => LeagueApi.updateTeam(leagueId, teamId, data),
+    (data: { name: string; userId: number | null }) => LeagueApi.updateTeam(leagueId, teamId, data),
     { onSuccess: () => onSaved() },
   );
 
@@ -59,7 +59,7 @@ export function TeamDetailsCard({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveMutation.mutate({ name, userId });
+    await saveMutation.mutate({ name, userId: userId || null });
   };
 
   const selectedOwner = leagueUsers.find((lu) => lu.userId === userId)?.user;
@@ -105,11 +105,9 @@ export function TeamDetailsCard({
               value={userId}
               onChange={(e) => setUserId(Number(e.target.value))}
               required
-              disabled={saveMutation.loading || leagueUsers.length === 0}
+              disabled={saveMutation.loading}
             >
-              <option value={0} disabled>
-                Select a user
-              </option>
+              <option value={0}>Unassigned</option>
               {leagueUsers.map((leagueUser) => (
                 <option key={leagueUser.userId} value={leagueUser.userId}>
                   {formatUserDisplayName(leagueUser.user)}

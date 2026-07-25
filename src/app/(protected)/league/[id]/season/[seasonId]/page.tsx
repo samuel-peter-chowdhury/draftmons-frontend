@@ -177,7 +177,7 @@ export default function SeasonDetailPage() {
                         <div className="flex min-w-0 flex-col">
                           <div className="text-sm font-medium">{team.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {formatUserDisplayName(team.user)}
+                            {formatUserDisplayName(team.user, 'Unclaimed')}
                           </div>
                         </div>
                       </div>

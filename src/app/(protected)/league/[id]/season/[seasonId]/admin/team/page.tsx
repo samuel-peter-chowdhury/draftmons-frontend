@@ -125,7 +125,7 @@ export default function AdminTeamListPage() {
                     <div className="flex min-w-0 flex-col">
                       <CardTitle className="text-base">{team.name}</CardTitle>
                       <div className="text-sm font-normal text-muted-foreground">
-                        {formatUserDisplayName(team.user)}
+                        {formatUserDisplayName(team.user, 'Unclaimed')}
                       </div>
                     </div>
                   </div>
