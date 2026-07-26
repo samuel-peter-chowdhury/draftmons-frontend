@@ -8,7 +8,7 @@ export enum PreviewErrorCode {
   REPLAY_DUPLICATE = 'REPLAY_DUPLICATE',
   COUNT_OUT_OF_RANGE = 'COUNT_OUT_OF_RANGE',
   PLAYERS_INCONSISTENT = 'PLAYERS_INCONSISTENT',
-  USER_NOT_FOUND = 'USER_NOT_FOUND',
+  PLAYER_UNRESOLVED = 'PLAYER_UNRESOLVED',
   MATCH_NOT_FOUND = 'MATCH_NOT_FOUND',
   MATCH_AMBIGUOUS = 'MATCH_AMBIGUOUS',
   MATCH_BLOCKED = 'MATCH_BLOCKED',
@@ -32,6 +32,24 @@ export interface PlayerPreviewDto {
   userDisplayName: string | null;
   teamId: number | null;
   teamName: string | null;
+}
+
+// A moderator's direct team pick for an unresolved player, sent back to
+// /analyze so the pipeline can resolve that player straight to a team
+// (including an unassigned/ownerless one) instead of via showdownUsername
+// matching.
+export interface PlayerOverrideInput {
+  playerIndex: number;
+  teamId: number;
+}
+
+// Candidate shape for PLAYER_UNRESOLVED errors — every remaining season
+// roster team (owned or unassigned).
+export interface TeamCandidate {
+  teamId: number;
+  teamName: string;
+  userId: number | null;
+  userDisplayName: string | null;
 }
 
 export interface StatPreviewDto {
