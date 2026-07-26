@@ -29,7 +29,8 @@ interface MatchPreviewPanelProps {
   preview: MatchPreviewDto;
   seasonPool: SeasonPokemonInput[];
   teams: Team[];
-  onOverridePlayer: (playerIndex: number, userId: number) => void;
+  disabled?: boolean;
+  onOverrideTeam: (playerIndex: number, teamId: number) => void;
   onOverrideMatch: (matchId: number) => void;
   onOverrideGame: (
     gameIndex: number,
@@ -54,11 +55,13 @@ function CandidateCombobox({
   placeholder,
   emptyText,
   items,
+  disabled,
   onSelect,
 }: {
   placeholder: string;
   emptyText: string;
   items: { value: number; label: string }[];
+  disabled?: boolean;
   onSelect: (value: number) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -71,7 +74,7 @@ function CandidateCombobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5">
+        <Button variant="outline" size="sm" className="gap-1.5" disabled={disabled}>
           {placeholder}
         </Button>
       </PopoverTrigger>
@@ -110,45 +113,47 @@ function CandidateCombobox({
 function PlayerSlot({
   player,
   playerIndex,
-  userError,
-  onOverridePlayer,
+  unresolvedError,
+  disabled,
+  onOverrideTeam,
 }: {
   player: PlayerPreviewDto;
   playerIndex: number;
-  userError: PreviewErrorDto | undefined;
-  onOverridePlayer: (playerIndex: number, userId: number) => void;
+  unresolvedError: PreviewErrorDto | undefined;
+  disabled?: boolean;
+  onOverrideTeam: (playerIndex: number, teamId: number) => void;
 }) {
   const displayName = player.userDisplayName ?? player.rawShowdownName;
 
-  const userCandidates = userError?.candidates
+  const teamCandidates = unresolvedError?.candidates
     ? (
-        userError.candidates as {
-          userId: number;
-          name: string;
-          showdownUsername: string | null;
+        unresolvedError.candidates as {
+          teamId: number;
+          teamName: string;
+          userId: number | null;
+          userDisplayName: string | null;
         }[]
       ).map((c) => ({
-        value: c.userId,
-        label: c.name || c.showdownUsername || `User #${c.userId}`,
+        value: c.teamId,
+        label: c.userDisplayName ? `${c.teamName} — ${c.userDisplayName}` : `${c.teamName} — Unclaimed`,
       }))
     : [];
 
   return (
     <div className="flex flex-col gap-1">
       <span className="text-sm font-medium">{displayName}</span>
-      {player.userId === null ? (
+      {player.teamId === null && (
         <div className="flex items-center gap-2">
-          <Badge variant="destructive">User unresolved</Badge>
+          <Badge variant="destructive">Team unresolved</Badge>
           <CandidateCombobox
-            placeholder="Search users…"
-            emptyText="No user found."
-            items={userCandidates}
-            onSelect={(userId) => onOverridePlayer(playerIndex, userId)}
+            placeholder="Select team…"
+            emptyText="No candidate teams."
+            items={teamCandidates}
+            disabled={disabled}
+            onSelect={(teamId) => onOverrideTeam(playerIndex, teamId)}
           />
         </div>
-      ) : player.teamId === null ? (
-        <Badge variant="destructive">Team unresolved</Badge>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -157,7 +162,8 @@ export function MatchPreviewPanel({
   preview,
   seasonPool,
   teams,
-  onOverridePlayer,
+  disabled,
+  onOverrideTeam,
   onOverrideMatch,
   onOverrideGame,
   onOverridePokemon,
@@ -184,11 +190,11 @@ export function MatchPreviewPanel({
     }));
   }, [matchAmbiguousError]);
 
-  // Build a map of player index → USER_NOT_FOUND error
-  const userNotFoundErrors = useMemo(() => {
+  // Build a map of player index → PLAYER_UNRESOLVED error
+  const unresolvedPlayerErrors = useMemo(() => {
     const map: Record<number, PreviewErrorDto> = {};
     preview.errors.forEach((e) => {
-      if (e.code === PreviewErrorCode.USER_NOT_FOUND) {
+      if (e.code === PreviewErrorCode.PLAYER_UNRESOLVED) {
         const match = e.field.match(/players\[(\d+)\]/);
         if (match) {
           map[Number(match[1])] = e;
@@ -212,6 +218,7 @@ export function MatchPreviewPanel({
               placeholder="Select match…"
               emptyText="No candidate matches."
               items={matchCandidates}
+              disabled={disabled}
               onSelect={onOverrideMatch}
             />
           </div>
@@ -225,8 +232,9 @@ export function MatchPreviewPanel({
             key={i}
             player={player}
             playerIndex={i}
-            userError={userNotFoundErrors[i]}
-            onOverridePlayer={onOverridePlayer}
+            unresolvedError={unresolvedPlayerErrors[i]}
+            disabled={disabled}
+            onOverrideTeam={onOverrideTeam}
           />
         ))}
       </div>

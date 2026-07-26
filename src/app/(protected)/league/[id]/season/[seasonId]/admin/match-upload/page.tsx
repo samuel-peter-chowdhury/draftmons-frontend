@@ -99,6 +99,12 @@ export default function MatchUploadPage() {
   const [preview, setPreview] = useState<MatchPreviewDto | null>(null);
   // Working copy of the preview — holds override state layered over the analyzed preview
   const [workingPreview, setWorkingPreview] = useState<MatchPreviewDto | null>(null);
+  // Replay URLs from the initial analyze — reused when re-analyzing with player team overrides.
+  const [replayUrls, setReplayUrls] = useState<string[]>([]);
+  // Accumulated direct team picks (playerIndex → teamId), resubmitted on every re-analyze.
+  // Lifted to the page so it survives the review ⇄ submitting remount cycle (a failed submit
+  // drops back to 'review', which would otherwise unmount ReviewPanel and reset local state).
+  const [playerOverrides, setPlayerOverrides] = useState<Record<number, number>>({});
 
   // Submit-related state
   const [overwriteDialogOpen, setOverwriteDialogOpen] = useState(false);
@@ -114,6 +120,8 @@ export default function MatchUploadPage() {
   const handleAnalyze = useCallback(
     async (urls: string[]) => {
       setPageState('analyzing');
+      setReplayUrls(urls);
+      setPlayerOverrides({});
       try {
         const result = await analyzeMutation.mutate(urls);
         // Deep-clone the preview into editable working state
@@ -157,6 +165,7 @@ export default function MatchUploadPage() {
         <ReviewPanel
           workingPreview={workingPreview}
           setWorkingPreview={setWorkingPreview}
+          setPreview={setPreview}
           preview={preview!}
           pool={pool}
           pageState={pageState}
@@ -170,6 +179,9 @@ export default function MatchUploadPage() {
           setSubmittedResult={setSubmittedResult}
           leagueId={leagueId}
           seasonId={seasonId}
+          replayUrls={replayUrls}
+          playerOverrides={playerOverrides}
+          setPlayerOverrides={setPlayerOverrides}
         />
       )}
 
@@ -193,6 +205,8 @@ export default function MatchUploadPage() {
             setSubmittedResult(null);
             setExistingGames([]);
             setSubmitError(null);
+            setReplayUrls([]);
+            setPlayerOverrides({});
             setPageState('input');
           }}
         />
@@ -206,6 +220,7 @@ export default function MatchUploadPage() {
 function ReviewPanel({
   workingPreview,
   setWorkingPreview,
+  setPreview,
   pool,
   pageState,
   setPageState,
@@ -218,9 +233,13 @@ function ReviewPanel({
   setSubmittedResult,
   leagueId,
   seasonId,
+  replayUrls,
+  playerOverrides,
+  setPlayerOverrides,
 }: {
   workingPreview: MatchPreviewDto;
   setWorkingPreview: React.Dispatch<React.SetStateAction<MatchPreviewDto | null>>;
+  setPreview: (p: MatchPreviewDto) => void;
   preview: MatchPreviewDto;
   pool: SeasonPokemonInput[];
   pageState: PageState;
@@ -234,25 +253,34 @@ function ReviewPanel({
   setSubmittedResult: (r: SubmitResultDto) => void;
   leagueId: number;
   seasonId: number;
+  replayUrls: string[];
+  playerOverrides: Record<number, number>;
+  setPlayerOverrides: React.Dispatch<React.SetStateAction<Record<number, number>>>;
 }) {
   // ─── Override handlers ──────────────────────────────────────────────────
-  function onOverridePlayer(playerIndex: number, userId: number) {
-    setWorkingPreview((prev) => {
-      if (!prev) return prev;
-      const updated = clonePreview(prev);
-      const player = updated.players[playerIndex];
-      if (!player) return prev;
-      player.userId = userId;
+  // Direct team pick for an unresolved player. Unlike the other overrides below
+  // (which patch workingPreview locally), this re-calls /analyze on the server:
+  // picking a team changes which match should be looked up and which draft pool
+  // Pokémon/stats resolve against, so those stages must be recomputed server-side
+  // rather than duplicated here. Re-runs with ALL accumulated overrides so far.
+  const reanalyzeMutation = useMutation((overrides: Record<number, number>) => {
+    const payload = Object.entries(overrides).map(([playerIndex, teamId]) => ({
+      playerIndex: Number(playerIndex),
+      teamId,
+    }));
+    return MatchUploadApi.analyze(leagueId, { seasonId, replayUrls, playerOverrides: payload });
+  });
 
-      // Clear the USER_NOT_FOUND error for this player index from the errors list
-      updated.errors = updated.errors.filter((e) => {
-        if (e.code !== PreviewErrorCode.USER_NOT_FOUND) return true;
-        const match = e.field.match(/players\[(\d+)\]/);
-        return match ? Number(match[1]) !== playerIndex : true;
-      });
-
-      return updated;
-    });
+  async function onOverrideTeam(playerIndex: number, teamId: number) {
+    const nextOverrides = { ...playerOverrides, [playerIndex]: teamId };
+    try {
+      const result = await reanalyzeMutation.mutate(nextOverrides);
+      setPlayerOverrides(nextOverrides);
+      setPreview(result);
+      setWorkingPreview(clonePreview(result));
+    } catch {
+      // Error surfaced via reanalyzeMutation.error; don't commit the override.
+    }
   }
 
   function onOverrideMatch(matchId: number) {
@@ -344,13 +372,13 @@ function ReviewPanel({
   const unresolvedErrors = useMemo((): PreviewErrorDto[] => {
     const errors: PreviewErrorDto[] = [];
 
-    // 1. Players with null userId
+    // 1. Players with an unresolved team
     workingPreview.players.forEach((p, i) => {
-      if (p.userId === null) {
+      if (p.teamId === null) {
         errors.push({
           field: `players[${i}].user`,
-          code: PreviewErrorCode.USER_NOT_FOUND,
-          message: `Player "${p.rawShowdownName}" could not be resolved to a user.`,
+          code: PreviewErrorCode.PLAYER_UNRESOLVED,
+          message: `Player "${p.rawShowdownName}" could not be resolved to a team.`,
         });
       }
     });
@@ -485,11 +513,14 @@ function ReviewPanel({
     <div className="flex flex-col gap-4">
       <UnresolvedBanner errors={unresolvedErrors} />
 
+      {reanalyzeMutation.error && <ErrorAlert message={reanalyzeMutation.error} />}
+
       <MatchPreviewPanel
         preview={workingPreview}
         seasonPool={pool}
         teams={teams}
-        onOverridePlayer={onOverridePlayer}
+        disabled={reanalyzeMutation.loading}
+        onOverrideTeam={onOverrideTeam}
         onOverrideMatch={onOverrideMatch}
         onOverrideGame={onOverrideGame}
         onOverridePokemon={onOverridePokemon}

@@ -1,6 +1,11 @@
 import { Api, buildUrl } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { MatchPreviewDto, SubmitInputDto, SubmitResultDto } from '@/types';
+import type {
+  MatchPreviewDto,
+  PlayerOverrideInput,
+  SubmitInputDto,
+  SubmitResultDto,
+} from '@/types';
 
 /**
  * Match Upload API — wraps /api/league/:leagueId/match-upload/{analyze|submit}
@@ -14,7 +19,10 @@ export const MatchUploadApi = {
    * POST /api/league/:leagueId/match-upload/analyze
    * Returns MatchPreviewDto (200) with field-level errors accumulated in preview.errors[]
    */
-  analyze: (leagueId: number, data: { seasonId: number; replayUrls: string[] }) => {
+  analyze: (
+    leagueId: number,
+    data: { seasonId: number; replayUrls: string[]; playerOverrides?: PlayerOverrideInput[] },
+  ) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'match-upload', 'analyze');
     return Api.post<MatchPreviewDto>(url, data);
   },
