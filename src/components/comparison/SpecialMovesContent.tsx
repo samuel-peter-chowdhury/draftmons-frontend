@@ -42,8 +42,6 @@ export const SpecialMovesContent = memo(function SpecialMovesContent({
       buildUrlWithQuery(BASE_ENDPOINTS.SPECIAL_MOVE_CATEGORY_BASE, [], {
         page: 1,
         pageSize: 100,
-        sortBy: 'name',
-        sortOrder: 'ASC',
       }),
     [],
   );
