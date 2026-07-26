@@ -14,6 +14,7 @@ import type { SeasonInput } from '@/types';
 
 export default function SeasonPokemonSearchPage() {
   const params = useParams<{ id: string; seasonId: string }>();
+  const leagueId = Number(params.id);
   const seasonId = Number(params.seasonId);
 
   const {
@@ -42,7 +43,7 @@ export default function SeasonPokemonSearchPage() {
     setMoveSearch,
   } = usePokemonSearch({
     endpoint: BASE_ENDPOINTS.SEASON_POKEMON_BASE,
-    extraParams: { full: true },
+    extraParams: { seasonId, full: true },
     initialFilters: { excludeDrafted: true },
     initialSortBy: 'pointValue',
     initialSortOrder: 'DESC',
@@ -110,6 +111,7 @@ export default function SeasonPokemonSearchPage() {
         onSort={handleSort}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
+        leagueId={leagueId}
       />
     </div>
   );

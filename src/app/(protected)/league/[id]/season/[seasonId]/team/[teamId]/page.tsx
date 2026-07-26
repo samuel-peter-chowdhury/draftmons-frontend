@@ -15,6 +15,7 @@ export default function TeamDetailPage() {
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
 
   const params = useParams<{ id: string; seasonId: string; teamId: string }>();
+  const leagueId = Number(params.id);
   const teamId = Number(params.teamId);
 
   // Fetch team data
@@ -101,6 +102,7 @@ export default function TeamDetailPage() {
             onSort={handleSort}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
+            leagueId={leagueId}
           />
         )
       }
