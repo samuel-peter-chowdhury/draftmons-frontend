@@ -8,8 +8,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components';
+import { useApiSWR } from '@/hooks';
+import { buildUrlWithQuery } from '@/lib/api';
+import { BASE_ENDPOINTS } from '@/lib/constants';
 import { capitalizeFirst } from '@/lib/utils';
-import type { PokemonInput } from '@/types';
+import type { PaginatedResponse, PokemonInput, SpecialMoveCategoryInput } from '@/types';
 import type { SpecialMoveGroup, SpecialMoveRow } from './constants';
 import { MoveSpritesRow } from './MoveSpritesRow';
 
@@ -34,8 +37,30 @@ export const SpecialMovesContent = memo(function SpecialMovesContent({
   error: string | null;
   onSpriteClick: (pokemonId: number) => void;
 }) {
+  const categoriesUrl = useMemo(
+    () =>
+      buildUrlWithQuery(BASE_ENDPOINTS.SPECIAL_MOVE_CATEGORY_BASE, [], {
+        page: 1,
+        pageSize: 100,
+        sortBy: 'name',
+        sortOrder: 'ASC',
+      }),
+    [],
+  );
+  const { data: categoriesData, loading: categoriesLoading, error: categoriesError } =
+    useApiSWR<PaginatedResponse<SpecialMoveCategoryInput>>(categoriesUrl);
+  const allCategories = categoriesData?.data ?? [];
+
   const groups = useMemo<SpecialMoveGroup[]>(() => {
     const categoryMap = new Map<string, Map<number, SpecialMoveRow>>();
+
+    // Seed every known special move category so ones with no matching moves
+    // from either team still render (with a dash row) instead of vanishing.
+    for (const category of allCategories) {
+      if (!categoryMap.has(category.name)) {
+        categoryMap.set(category.name, new Map());
+      }
+    }
 
     const processTeam = (pokemon: PokemonInput[], team: 'a' | 'b') => {
       for (const pkmn of pokemon) {
@@ -71,9 +96,9 @@ export const SpecialMovesContent = memo(function SpecialMovesContent({
         ),
       }))
       .sort((a, b) => a.categoryName.localeCompare(b.categoryName));
-  }, [teamAPokemon, teamBPokemon]);
+  }, [teamAPokemon, teamBPokemon, allCategories]);
 
-  if (loading) {
+  if (loading || categoriesLoading) {
     return (
       <div className="flex flex-1 items-center justify-center py-10">
         <Spinner size={24} />
@@ -81,8 +106,8 @@ export const SpecialMovesContent = memo(function SpecialMovesContent({
     );
   }
 
-  if (error) {
-    return <ErrorAlert message={error} />;
+  if (error || categoriesError) {
+    return <ErrorAlert message={error || categoriesError || 'Failed to load data'} />;
   }
 
   if (groups.length === 0) {
@@ -123,6 +148,17 @@ export const SpecialMovesContent = memo(function SpecialMovesContent({
 
             {/* Move rows */}
             <div className="space-y-0">
+              {group.rows.length === 0 && (
+                <MoveSpritesRow
+                  teamAPokemon={[]}
+                  teamBPokemon={[]}
+                  teamASelected={teamASelected}
+                  teamBSelected={teamBSelected}
+                  onSpriteClick={onSpriteClick}
+                  badge={<span className="text-xs text-muted-foreground">&mdash;</span>}
+                />
+              )}
+
               {group.rows.map(({ move, teamAPokemon: rowTeamA, teamBPokemon: rowTeamB }) => (
                 <MoveSpritesRow
                   key={move.id}
