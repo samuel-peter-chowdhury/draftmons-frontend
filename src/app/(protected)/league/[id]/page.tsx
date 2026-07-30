@@ -145,7 +145,7 @@ export default function LeagueDetailPage() {
                   {!data.leagueUsers || data.leagueUsers.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No users in this league yet.</p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                       {data.leagueUsers.map((leagueUser) => {
                         const displayName = formatUserDisplayName(leagueUser.user);
 
