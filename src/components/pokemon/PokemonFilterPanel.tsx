@@ -121,7 +121,7 @@ export function PokemonFilterPanel({
     };
 
   return (
-    <Card className="mb-6">
+    <Card className="relative z-20 mb-6">
       <CardContent className="p-0">
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="filters" className="border-b-0">
