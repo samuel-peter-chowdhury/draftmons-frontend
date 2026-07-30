@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import {
   Badge,
   Dialog,
@@ -8,7 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
   ErrorAlert,
+  Input,
   Spinner,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -16,36 +24,67 @@ import {
 } from '@/components';
 import { PokemonApi, LeagueApi } from '@/lib/api';
 import { getStatColor, calculateSpeedTiers } from '@/lib/pokemon';
-import type {
-  PokemonInput,
-  MoveInput,
-  PokemonTypeInput,
-  SpecialMoveCategoryInput,
-  SeasonPokemonInput,
-} from '@/types';
+import type { PokemonInput, MoveInput, SeasonPokemonInput } from '@/types';
 
 function capitalizeFirst(str: string): string {
   const lower = str.toLowerCase();
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
-import { MoveCategory } from '@/types';
+type MoveSortKey =
+  | 'name'
+  | 'pokemonType'
+  | 'category'
+  | 'power'
+  | 'accuracy'
+  | 'pp'
+  | 'specialMoveCategories';
 
-const CATEGORY_ORDER: MoveCategory[] = [MoveCategory.PHYSICAL, MoveCategory.SPECIAL, MoveCategory.STATUS];
+const MOVE_COLUMN_COUNT = 7;
 
-interface MovesByCategory {
-  category: MoveCategory;
-  moves: MoveInput[];
+function getSpecialCategoryNames(move: MoveInput): string {
+  return (move.specialMoveCategories ?? []).map((smc) => smc.name).join(', ');
 }
 
-interface MovesByType {
-  pokemonType: PokemonTypeInput;
-  categories: MovesByCategory[];
+function getMoveSortValue(move: MoveInput, key: MoveSortKey): string | number {
+  switch (key) {
+    case 'pokemonType':
+      return move.pokemonType?.name ?? '';
+    case 'specialMoveCategories':
+      return getSpecialCategoryNames(move);
+    case 'name':
+    case 'category':
+      return move[key] ?? '';
+    default:
+      return move[key] ?? 0;
+  }
 }
 
-interface MovesBySpecialCategory {
-  specialMoveCategory: SpecialMoveCategoryInput;
-  categories: MovesByCategory[];
+function MoveSortableHeader({
+  column,
+  sortBy,
+  sortOrder,
+  onSort,
+  children,
+}: {
+  column: MoveSortKey;
+  sortBy: MoveSortKey;
+  sortOrder: 'ASC' | 'DESC';
+  onSort: (column: MoveSortKey) => void;
+  children: React.ReactNode;
+}) {
+  const isActive = sortBy === column;
+  return (
+    <button
+      onClick={() => onSort(column)}
+      className="inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground"
+    >
+      {children}
+      {isActive && sortOrder === 'ASC' && <ChevronUp className="h-4 w-4" />}
+      {isActive && sortOrder === 'DESC' && <ChevronDown className="h-4 w-4" />}
+      {!isActive && <div className="h-4 w-4" />}
+    </button>
+  );
 }
 
 interface PokemonModalProps {
@@ -78,8 +117,54 @@ export function PokemonModal({
   const [seasonPokemon, setSeasonPokemon] = useState<SeasonPokemonInput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [moveFilter, setMoveFilter] = useState('');
+  const [moveSortBy, setMoveSortBy] = useState<MoveSortKey>('name');
+  const [moveSortOrder, setMoveSortOrder] = useState<'ASC' | 'DESC'>('ASC');
+  const [expandedMoveIds, setExpandedMoveIds] = useState<Set<number>>(new Set());
 
   const moves = pokemon?.moves ?? [];
+
+  // Filter by name, then sort — all client-side, moves are fully loaded in memory
+  const visibleMoves = useMemo(() => {
+    const filter = moveFilter.trim().toLowerCase();
+    const filtered = filter
+      ? moves.filter((move) => (move.name ?? '').toLowerCase().includes(filter))
+      : moves;
+
+    return [...filtered].sort((a, b) => {
+      const aValue = getMoveSortValue(a, moveSortBy);
+      const bValue = getMoveSortValue(b, moveSortBy);
+      const comparison =
+        typeof aValue === 'number' && typeof bValue === 'number'
+          ? aValue - bValue
+          : String(aValue).localeCompare(String(bValue));
+      return moveSortOrder === 'ASC' ? comparison : -comparison;
+    });
+  }, [moves, moveFilter, moveSortBy, moveSortOrder]);
+
+  const handleMoveSort = useCallback(
+    (column: MoveSortKey) => {
+      if (moveSortBy === column) {
+        setMoveSortOrder((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'));
+      } else {
+        setMoveSortBy(column);
+        setMoveSortOrder('ASC');
+      }
+    },
+    [moveSortBy],
+  );
+
+  const toggleMoveExpanded = useCallback((moveId: number) => {
+    setExpandedMoveIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(moveId)) {
+        next.delete(moveId);
+      } else {
+        next.add(moveId);
+      }
+      return next;
+    });
+  }, []);
 
   // Fetch pokemon data (or season pokemon data when in season mode)
   useEffect(() => {
@@ -90,6 +175,10 @@ export function PokemonModal({
     setError(null);
     setPokemon(null);
     setSeasonPokemon(null);
+    setMoveFilter('');
+    setMoveSortBy('name');
+    setMoveSortOrder('ASC');
+    setExpandedMoveIds(new Set());
 
     const fetches =
       seasonPokemonId && leagueId
@@ -134,7 +223,7 @@ export function PokemonModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl capitalize">
             {loading ? 'Loading...' : pokemon?.name || 'Pokemon'}
@@ -150,7 +239,9 @@ export function PokemonModal({
         {error && <ErrorAlert message={error} />}
 
         {pokemon && !loading && (
-          <div className="space-y-6">
+          // min-w-0 keeps this grid item from stretching to the moves table's natural
+          // width, so the table's own overflow-auto wrapper scrolls instead of the modal
+          <div className="min-w-0 space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               {/* Left column: Sprite and Types */}
               <div className="flex flex-col items-center gap-4">
@@ -341,199 +432,102 @@ export function PokemonModal({
             <div>
               <h3 className="mb-3 text-sm font-medium text-muted-foreground">Moves</h3>
 
-              {moves.length > 0 && (() => {
-                // Group moves by special move category
-                const specialGrouped: MovesBySpecialCategory[] = [];
-                const specialMap = new Map<number, MovesBySpecialCategory>();
+              {moves.length > 0 && (
+                <div className="space-y-3">
+                  <Input
+                    value={moveFilter}
+                    onChange={(e) => setMoveFilter(e.target.value)}
+                    placeholder="Filter moves by name..."
+                    className="max-w-xs"
+                  />
 
-                for (const move of moves) {
-                  if (!move.specialMoveCategories) continue;
-                  for (const smc of move.specialMoveCategories) {
-                    let smcGroup = specialMap.get(smc.id);
-                    if (!smcGroup) {
-                      smcGroup = { specialMoveCategory: smc, categories: [] };
-                      specialMap.set(smc.id, smcGroup);
-                      specialGrouped.push(smcGroup);
-                    }
-                    const catGroup = smcGroup.categories.find((c) => c.category === move.category);
-                    if (catGroup) {
-                      catGroup.moves.push(move);
-                    } else {
-                      smcGroup.categories.push({ category: move.category, moves: [move] });
-                    }
-                  }
-                }
-
-                specialGrouped.sort((a, b) =>
-                  a.specialMoveCategory.name.localeCompare(b.specialMoveCategory.name),
-                );
-                for (const smcGroup of specialGrouped) {
-                  smcGroup.categories.sort(
-                    (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
-                  );
-                  for (const cat of smcGroup.categories) {
-                    cat.moves.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
-                  }
-                }
-
-                // Group moves by pokemon type
-                const grouped: MovesByType[] = [];
-                const typeMap = new Map<number, MovesByType>();
-
-                for (const move of moves) {
-                  if (!move.pokemonType) continue;
-                  const typeId = move.pokemonType.id;
-                  let typeGroup = typeMap.get(typeId);
-                  if (!typeGroup) {
-                    typeGroup = { pokemonType: move.pokemonType, categories: [] };
-                    typeMap.set(typeId, typeGroup);
-                    grouped.push(typeGroup);
-                  }
-                  const catGroup = typeGroup.categories.find((c) => c.category === move.category);
-                  if (catGroup) {
-                    catGroup.moves.push(move);
-                  } else {
-                    typeGroup.categories.push({ category: move.category, moves: [move] });
-                  }
-                }
-
-                // Sort type groups by name, categories by defined order, and moves by name
-                grouped.sort((a, b) => a.pokemonType.name.localeCompare(b.pokemonType.name));
-                for (const typeGroup of grouped) {
-                  typeGroup.categories.sort(
-                    (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
-                  );
-                  for (const cat of typeGroup.categories) {
-                    cat.moves.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
-                  }
-                }
-
-                return (
-                  <div className="space-y-6">
-                    <TooltipProvider delayDuration={100}>
-                      {/* Moves by Special Move Category */}
-                      {specialGrouped.length > 0 && (
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-                          {specialGrouped.map(({ specialMoveCategory, categories: smcCategories }) => {
-                            const totalMoves = smcCategories.reduce((sum, c) => sum + c.moves.length, 0);
-                            return (
-                            <div key={specialMoveCategory.id} className={totalMoves > 10 ? 'col-span-2' : ''}>
-                              <h4 className="mb-2 text-xs font-semibold capitalize text-foreground">
-                                {specialMoveCategory.name}
-                              </h4>
-                              <div className="space-y-2 pl-2">
-                                {smcCategories.map(({ category, moves: catMoves }) => (
-                                  <div key={category}>
-                                    <p className="mb-1 text-[11px] font-medium text-muted-foreground">
-                                      {capitalizeFirst(category)}
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                      {catMoves.map((move) => {
-                                        const typeColor = move.pokemonType?.color;
-                                        return (
-                                          <Tooltip key={move.id}>
-                                            <TooltipTrigger asChild>
-                                              <div>
-                                                <Badge
-                                                  className="cursor-help capitalize"
-                                                  style={{
-                                                    backgroundColor: typeColor ?? undefined,
-                                                    color: '#fff',
-                                                    border: 'none',
-                                                  }}
-                                                >
-                                                  {move.name}
-                                                </Badge>
-                                              </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent className="max-w-xs">
-                                              <div className="space-y-1 text-xs">
-                                                <p className="font-medium capitalize">{move.pokemonType?.name} &middot; {capitalizeFirst(move.category)}</p>
-                                                {move.power > 0 && <p>Power: {move.power}</p>}
-                                                {move.accuracy > 0 && <p>Accuracy: {move.accuracy}</p>}
-                                                <p>PP: {move.pp}</p>
-                                                {move.description && (
-                                                  <p className="first-letter:capitalize">{move.description}</p>
-                                                )}
-                                              </div>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {specialGrouped.length > 0 && (
-                        <hr className="border-border" />
-                      )}
-
-                      {/* Moves by Type */}
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-                        {grouped.map(({ pokemonType, categories }) => {
-                          const totalMoves = categories.reduce((sum, c) => sum + c.moves.length, 0);
+                  <Table className="[&_td]:p-2 [&_th]:h-8 [&_th]:px-2 [&_th]:py-1">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>
+                          <MoveSortableHeader column="name" sortBy={moveSortBy} sortOrder={moveSortOrder} onSort={handleMoveSort}>Name</MoveSortableHeader>
+                        </TableHead>
+                        <TableHead>
+                          <MoveSortableHeader column="pokemonType" sortBy={moveSortBy} sortOrder={moveSortOrder} onSort={handleMoveSort}>Type</MoveSortableHeader>
+                        </TableHead>
+                        <TableHead>
+                          <MoveSortableHeader column="category" sortBy={moveSortBy} sortOrder={moveSortOrder} onSort={handleMoveSort}>Category</MoveSortableHeader>
+                        </TableHead>
+                        <TableHead>
+                          <MoveSortableHeader column="power" sortBy={moveSortBy} sortOrder={moveSortOrder} onSort={handleMoveSort}>Power</MoveSortableHeader>
+                        </TableHead>
+                        <TableHead>
+                          <MoveSortableHeader column="accuracy" sortBy={moveSortBy} sortOrder={moveSortOrder} onSort={handleMoveSort}>Accuracy</MoveSortableHeader>
+                        </TableHead>
+                        <TableHead>
+                          <MoveSortableHeader column="pp" sortBy={moveSortBy} sortOrder={moveSortOrder} onSort={handleMoveSort}>PP</MoveSortableHeader>
+                        </TableHead>
+                        <TableHead>
+                          <MoveSortableHeader column="specialMoveCategories" sortBy={moveSortBy} sortOrder={moveSortOrder} onSort={handleMoveSort}>Special Category</MoveSortableHeader>
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {visibleMoves.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={MOVE_COLUMN_COUNT} className="text-center text-muted-foreground">
+                            No moves match your filter.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        visibleMoves.map((move) => {
+                          const expandable = Boolean(move.description);
+                          const expanded = expandedMoveIds.has(move.id);
                           return (
-                          <div key={pokemonType.id} className={totalMoves > 10 ? 'col-span-2' : ''}>
-                            <h4
-                              className="mb-2 text-xs font-semibold capitalize"
-                              style={{ color: pokemonType.color }}
-                            >
-                              {pokemonType.name}
-                            </h4>
-                            <div className="space-y-2 pl-2">
-                              {categories.map(({ category, moves: catMoves }) => (
-                                <div key={category}>
-                                  <p className="mb-1 text-[11px] font-medium text-muted-foreground">
-                                    {capitalizeFirst(category)}
-                                  </p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {catMoves.map((move) => (
-                                      <Tooltip key={move.id}>
-                                        <TooltipTrigger asChild>
-                                          <div>
-                                            <Badge
-                                              className="cursor-help capitalize"
-                                              style={{
-                                                backgroundColor: pokemonType.color,
-                                                color: '#fff',
-                                                border: 'none',
-                                              }}
-                                            >
-                                              {move.name}
-                                            </Badge>
-                                          </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="max-w-xs">
-                                          <div className="space-y-1 text-xs">
-                                            <p className="font-medium capitalize">{pokemonType.name} &middot; {capitalizeFirst(move.category)}</p>
-                                            {move.power > 0 && <p>Power: {move.power}</p>}
-                                            {move.accuracy > 0 && <p>Accuracy: {move.accuracy}</p>}
-                                            <p>PP: {move.pp}</p>
-                                            {move.description && (
-                                              <p className="first-letter:capitalize">{move.description}</p>
-                                            )}
-                                          </div>
-                                        </TooltipContent>
-                                      </Tooltip>
+                            <React.Fragment key={move.id}>
+                              <TableRow
+                                className={expandable ? 'cursor-pointer' : undefined}
+                                onClick={expandable ? () => toggleMoveExpanded(move.id) : undefined}
+                              >
+                                <TableCell className="font-medium capitalize">{move.name}</TableCell>
+                                <TableCell>
+                                  <Badge
+                                    className="capitalize"
+                                    style={{
+                                      backgroundColor: move.pokemonType?.color ?? undefined,
+                                      color: '#fff',
+                                      border: 'none',
+                                    }}
+                                  >
+                                    {move.pokemonType?.name}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>{capitalizeFirst(move.category)}</TableCell>
+                                <TableCell>{move.power > 0 ? move.power : '—'}</TableCell>
+                                <TableCell>{move.accuracy > 0 ? move.accuracy : '—'}</TableCell>
+                                <TableCell>{move.pp}</TableCell>
+                                <TableCell>
+                                  <div className="flex flex-wrap gap-1">
+                                    {(move.specialMoveCategories ?? []).map((smc) => (
+                                      <Badge key={smc.id} variant="secondary" className="capitalize">
+                                        {smc.name}
+                                      </Badge>
                                     ))}
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                                </TableCell>
+                              </TableRow>
+                              {expandable && expanded && (
+                                <TableRow>
+                                  <TableCell colSpan={MOVE_COLUMN_COUNT} className="bg-muted/30">
+                                    <p className="text-xs text-muted-foreground first-letter:capitalize">
+                                      {move.description}
+                                    </p>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </React.Fragment>
                           );
-                        })}
-                      </div>
-                    </TooltipProvider>
-                  </div>
-                );
-              })()}
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
 
               {moves.length === 0 && !loading && (
                 <p className="text-sm text-muted-foreground">No moves found for this Pokemon.</p>
