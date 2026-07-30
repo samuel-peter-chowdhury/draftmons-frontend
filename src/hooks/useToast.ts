@@ -1,9 +1,17 @@
 export type ToastVariant = 'success' | 'error';
 
+export interface ToastAction {
+  label: string;
+  /** Radix `Toast.Action` requires a screen-reader description of the action. */
+  altText: string;
+  onClick: () => void;
+}
+
 export interface ToastData {
   id: string;
   message: string;
   variant: ToastVariant;
+  action?: ToastAction;
 }
 
 // Singleton external store — no React context needed
@@ -14,15 +22,20 @@ function notifyListeners() {
   listeners.forEach((listener) => listener());
 }
 
-export function addToast(message: string, variant: ToastVariant = 'success'): void {
+export function addToast(
+  message: string,
+  variant: ToastVariant = 'success',
+  action?: ToastAction,
+  durationMs = 4000,
+): void {
   const id = Math.random().toString(36).slice(2, 9);
-  toasts = [...toasts, { id, message, variant }];
+  toasts = [...toasts, { id, message, variant, action }];
   notifyListeners();
 
-  // Auto-dismiss after 4 seconds
+  // Auto-dismiss (4s by default; pass a longer duration for actionable toasts)
   setTimeout(() => {
     dismissToast(id);
-  }, 4000);
+  }, durationMs);
 }
 
 export function dismissToast(id: string): void {

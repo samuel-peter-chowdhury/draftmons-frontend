@@ -45,6 +45,7 @@ function TeamBuildDetailContent() {
     loading,
     error,
     refetch,
+    setData: setBuild,
   } = useApiSWR<TeamBuildInput>(
     Number.isNaN(teamBuildId)
       ? null
@@ -181,7 +182,7 @@ function TeamBuildDetailContent() {
         </TabsList>
 
         <TabsContent value="draft-prep">
-          <DraftPrepTab build={build} onChanged={refetch} />
+          <DraftPrepTab build={build} onChanged={refetch} setBuild={setBuild} />
         </TabsContent>
 
         <TabsContent value="match-prep">
