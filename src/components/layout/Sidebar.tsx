@@ -4,7 +4,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useUiStore } from '@/stores';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ChevronRight, Layers, ListOrdered, Shield, Swords, Wrench } from 'lucide-react';
+import {
+  ChevronRight,
+  Hammer,
+  Layers,
+  ListOrdered,
+  Shield,
+  Sparkles,
+  Swords,
+  Trophy,
+  Users,
+  Wrench,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsModerator } from '@/stores/useLeagueStore';
 import { useAuthStore } from '@/stores';
@@ -134,136 +145,118 @@ export default function Sidebar() {
         aria-label="Main navigation"
       >
         <nav className="flex h-full flex-col gap-2 p-2" role="navigation">
-          {/* Team Matchup */}
-          <div className="mt-2">
-            <NavGroup
-              href={seasonPrefix ? `${seasonPrefix}/team-matchup` : '#'}
-              icon={Swords}
-              disabled={!seasonPrefix}
-            >
-              Team Matchup
-            </NavGroup>
-          </div>
+          {/*
+            Season-scoped tools only exist inside a season context. Outside one we
+            render the top-level browse destinations instead, so no nav item is ever
+            shown in a disabled state or pointing at a dead '#' href. "Team Builds"
+            is never season-scoped and appears in both branches.
+          */}
+          {seasonPrefix ? (
+            <>
+              {/* Team Matchup */}
+              <div className="mt-2">
+                <NavGroup href={`${seasonPrefix}/team-matchup`} icon={Swords}>
+                  Team Matchup
+                </NavGroup>
+              </div>
 
-          {/* Tier List */}
-          <div>
-            <NavGroup
-              href={seasonPrefix ? `${seasonPrefix}/tiers` : '#'}
-              icon={Layers}
-              disabled={!seasonPrefix}
-            >
-              Tier List
-            </NavGroup>
-          </div>
+              {/* Tier List */}
+              <div>
+                <NavGroup href={`${seasonPrefix}/tiers`} icon={Layers}>
+                  Tier List
+                </NavGroup>
+              </div>
 
-          {/* Rank */}
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full"
-          >
-            <AccordionItem value="rank">
-              <AccordionTrigger className="px-3">
-                <span className="flex items-center gap-2">
-                  <ListOrdered className="h-4 w-4" />
-                  Rank
-                </span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-1">
-                  <NavLink href={seasonPrefix ? `${seasonPrefix}/rank/team` : '#'} disabled={!seasonPrefix}>
-                    Team
-                  </NavLink>
-                  <NavLink
-                    href={seasonPrefix ? `${seasonPrefix}/rank/pokemon` : '#'}
-                    disabled={!seasonPrefix}
-                  >
-                    Pokemon
-                  </NavLink>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              {/* Team Builds */}
+              <div>
+                <NavGroup href="/team-build" icon={Hammer}>
+                  Team Builds
+                </NavGroup>
+              </div>
 
-          {/* Tools */}
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full"
-          >
-            <AccordionItem value="tools">
-              <AccordionTrigger className="px-3">
-                <span className="flex items-center gap-2">
-                  <Wrench className="h-4 w-4" />
-                  Tools
-                </span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-1">
-                  <NavLink
-                    href={seasonPrefix ? `${seasonPrefix}/tools/schedule` : '#'}
-                    disabled={!seasonPrefix}
-                  >
-                    Schedule
-                  </NavLink>
-                  <NavLink href={seasonPrefix ? `${seasonPrefix}/tools/rules` : '#'} disabled={!seasonPrefix}>
-                    Rules
-                  </NavLink>
-                  <NavLink href={seasonPrefix ? `${seasonPrefix}/tools/search` : '#'} disabled={!seasonPrefix}>
-                    Pokemon Search
-                  </NavLink>
-                  <NavLink href={seasonPrefix ? `${seasonPrefix}/tools/roster` : '#'} disabled={!seasonPrefix}>
-                    Roster
-                  </NavLink>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              {/* Rank */}
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="rank">
+                  <AccordionTrigger className="px-3">
+                    <span className="flex items-center gap-2">
+                      <ListOrdered className="h-4 w-4" />
+                      Rank
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="flex flex-col gap-1">
+                      <NavLink href={`${seasonPrefix}/rank/team`}>Team</NavLink>
+                      <NavLink href={`${seasonPrefix}/rank/pokemon`}>Pokemon</NavLink>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-          {/* Admin (moderators only) */}
-          {isModerator && (
-            <Accordion
-              type="single"
-              collapsible
-              className="w-full"
-            >
-              <AccordionItem value="admin">
-                <AccordionTrigger className="px-3">
-                  <span className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Admin
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="flex flex-col gap-1">
-                    <NavLink
-                      href={seasonPrefix ? `${seasonPrefix}/admin/team` : '#'}
-                      disabled={!seasonPrefix}
-                    >
-                      Teams
-                    </NavLink>
-                    <NavLink
-                      href={seasonPrefix ? `${seasonPrefix}/admin/tier-list` : '#'}
-                      disabled={!seasonPrefix}
-                    >
-                      Tier List
-                    </NavLink>
-                    <NavLink
-                      href={seasonPrefix ? `${seasonPrefix}/admin/schedule` : '#'}
-                      disabled={!seasonPrefix}
-                    >
-                      Schedule
-                    </NavLink>
-                    <NavLink
-                      href={seasonPrefix ? `${seasonPrefix}/admin/match-upload` : '#'}
-                      disabled={!seasonPrefix}
-                    >
-                      Match Upload
-                    </NavLink>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+              {/* Tools */}
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="tools">
+                  <AccordionTrigger className="px-3">
+                    <span className="flex items-center gap-2">
+                      <Wrench className="h-4 w-4" />
+                      Tools
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="flex flex-col gap-1">
+                      <NavLink href={`${seasonPrefix}/tools/schedule`}>Schedule</NavLink>
+                      <NavLink href={`${seasonPrefix}/tools/rules`}>Rules</NavLink>
+                      <NavLink href={`${seasonPrefix}/tools/search`}>Pokemon Search</NavLink>
+                      <NavLink href={`${seasonPrefix}/tools/roster`}>Roster</NavLink>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Admin (moderators only) */}
+              {isModerator && (
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="admin">
+                    <AccordionTrigger className="px-3">
+                      <span className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Admin
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-1">
+                        <NavLink href={`${seasonPrefix}/admin/team`}>Teams</NavLink>
+                        <NavLink href={`${seasonPrefix}/admin/tier-list`}>Tier List</NavLink>
+                        <NavLink href={`${seasonPrefix}/admin/schedule`}>Schedule</NavLink>
+                        <NavLink href={`${seasonPrefix}/admin/match-upload`}>Match Upload</NavLink>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="mt-2">
+                <NavGroup href="/team-build" icon={Hammer}>
+                  Team Builds
+                </NavGroup>
+              </div>
+              <div>
+                <NavGroup href="/user" icon={Users}>
+                  Users
+                </NavGroup>
+              </div>
+              <div>
+                <NavGroup href="/league" icon={Trophy}>
+                  Leagues
+                </NavGroup>
+              </div>
+              <div>
+                <NavGroup href="/pokemon" icon={Sparkles}>
+                  Pokemon
+                </NavGroup>
+              </div>
+            </>
           )}
 
           <div className="mt-auto px-3 pb-3 text-xs text-muted-foreground">v0.1.0</div>

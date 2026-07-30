@@ -6,6 +6,7 @@ import {
   ToastProvider,
   ToastViewport,
   Toast,
+  ToastAction,
   ToastTitle,
   ToastClose,
 } from '@/components/ui/toast';
@@ -26,6 +27,17 @@ export function Toaster() {
           }}
         >
           <ToastTitle>{toast.message}</ToastTitle>
+          {toast.action && (
+            <ToastAction
+              altText={toast.action.altText}
+              onClick={() => {
+                toast.action!.onClick();
+                dismissToast(toast.id);
+              }}
+            >
+              {toast.action.label}
+            </ToastAction>
+          )}
           <ToastClose />
         </Toast>
       ))}

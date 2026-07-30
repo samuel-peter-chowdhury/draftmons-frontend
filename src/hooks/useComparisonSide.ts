@@ -9,7 +9,6 @@ import type {
   TeamInput,
   TeamBuildInput,
   GameStatInput,
-  PokemonInput,
 } from '@/types';
 import {
   ROSTER_PAGE_SIZE,
@@ -17,24 +16,11 @@ import {
   extractPaginatedData,
 } from '@/components/comparison/constants';
 import type { SpeedTierPokemon, TypeEffPokemon } from '@/components/comparison/constants';
+import { toTypeEffPokemon } from '@/components/comparison/derive';
 
 export type ComparisonSource =
   | { type: 'team'; leagueId: number; teamId: number }
   | { type: 'teamBuild'; teamBuildId: number };
-
-function toTypeEffPokemon(pokemon: PokemonInput[]): TypeEffPokemon[] {
-  return pokemon.map((pkmn) => {
-    const effectivenessMap = new Map<string, number>();
-    if (pkmn.typeEffectiveness) {
-      for (const te of pkmn.typeEffectiveness) {
-        if (te.pokemonType?.name) {
-          effectivenessMap.set(te.pokemonType.name.toLowerCase(), te.value);
-        }
-      }
-    }
-    return { pokemon: pkmn, effectivenessMap };
-  });
-}
 
 /**
  * Loads and normalizes one side of a comparison view — either a drafted `Team`
