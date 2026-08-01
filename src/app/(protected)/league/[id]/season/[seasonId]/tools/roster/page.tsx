@@ -9,7 +9,7 @@ import { useApiSWR, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { useLeagueStore } from '@/stores';
-import type { PaginatedResponse, SeasonPokemonInput } from '@/types';
+import type { PaginatedResponse, SeasonPokemonInput, TeamInput } from '@/types';
 
 import { TeamRosterCard } from './_components';
 
@@ -30,40 +30,45 @@ export default function SeasonRosterPage() {
   const seasonLoading = useLeagueStore((s) => s.seasonLoading);
   const seasonError = useLeagueStore((s) => s.seasonError);
 
-  const rosterUrl = buildUrlWithQuery(BASE_ENDPOINTS.SEASON_POKEMON_BASE, [], {
+  // Fetch teams (with their roster nested) directly instead of pulling every
+  // season-pokemon row and grouping client-side — the season-pokemon pool spans
+  // the whole eligible dex and can exceed any reasonable pageSize, silently
+  // dropping low point-value picks from the response. Team rosters are small
+  // and bounded by team count, so a single full=true team fetch can't truncate.
+  const teamsUrl = buildUrlWithQuery(BASE_ENDPOINTS.TEAM_BASE, [], {
     seasonId,
     full: true,
-    activeRelationsOnly: true,
-    pageSize: 500,
-    sortBy: 'pointValue',
-    sortOrder: 'DESC',
+    pageSize: 100,
+    sortBy: 'name',
+    sortOrder: 'ASC',
   });
   const {
-    data: rosterData,
-    loading: rosterLoading,
-    error: rosterError,
-  } = useApiSWR<PaginatedResponse<SeasonPokemonInput>>(rosterUrl);
-
-  // Group active roster rows by teamId — a row may belong to more than one
-  // team when allowMultiTeamPokemon is enabled for the season.
-  const rosterByTeamId = useMemo(() => {
-    const map = new Map<number, SeasonPokemonInput[]>();
-    for (const row of rosterData?.data ?? []) {
-      for (const spt of row.seasonPokemonTeams ?? []) {
-        if (!map.has(spt.teamId)) map.set(spt.teamId, []);
-        map.get(spt.teamId)!.push(row);
-      }
-    }
-    return map;
-  }, [rosterData]);
+    data: teamsData,
+    loading: teamsLoading,
+    error: teamsError,
+  } = useApiSWR<PaginatedResponse<TeamInput>>(teamsUrl);
 
   const teams = useMemo(
-    () => [...(season?.teams ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
-    [season],
+    () => [...(teamsData?.data ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
+    [teamsData],
   );
 
-  const loading = seasonLoading || rosterLoading;
-  const error = seasonError || rosterError;
+  // Team's full relations don't support activeRelationsOnly, so drop inactive
+  // seasonPokemonTeams (e.g. traded-away pokemon) here — a handful of rows per
+  // team, cheap to filter client-side.
+  const rosterByTeamId = useMemo(() => {
+    const map = new Map<number, SeasonPokemonInput[]>();
+    for (const team of teams) {
+      const rows = (team.seasonPokemonTeams ?? [])
+        .filter((spt) => spt.isActive && spt.seasonPokemon)
+        .map((spt) => spt.seasonPokemon!);
+      map.set(team.id, rows);
+    }
+    return map;
+  }, [teams]);
+
+  const loading = seasonLoading || teamsLoading;
+  const error = seasonError || teamsError;
 
   return (
     <div className="mx-auto max-w-7xl p-4">
