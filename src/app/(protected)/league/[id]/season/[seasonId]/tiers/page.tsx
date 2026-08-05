@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowRightLeft, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowRightLeft, ChevronUp, ChevronDown, Maximize2, Minimize2 } from 'lucide-react';
 import { Button, Card, CardContent, ErrorAlert, Spinner } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
@@ -54,6 +54,11 @@ export default function TierListPage() {
   const [view, setView] = useState<ViewMode>('classic');
   const [classicSortMap, setClassicSortMap] = useState<Record<string, TierSort>>({});
   const [typeSortMap, setTypeSortMap] = useState<Record<string, TierSort>>({});
+  // Held in state via a callback ref (not a plain ref) so the Pokemon modal's
+  // portal container is guaranteed populated by the time the modal can open.
+  const [fullscreenContainer, setFullscreenContainer] = useState<HTMLDivElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenSupported, setFullscreenSupported] = useState(false);
   const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
   const sortMap = view === 'classic' ? classicSortMap : typeSortMap;
@@ -165,15 +170,36 @@ export default function TierListPage() {
     setView((prev) => (prev === 'classic' ? 'type' : 'classic'));
   }, []);
 
+  // Feature-detect after mount so SSR never touches `document`.
+  useEffect(() => {
+    setFullscreenSupported(typeof document.documentElement.requestFullscreen === 'function');
+  }, []);
+
+  // Listen on `document` rather than tracking state in the click handler, so the
+  // icon also flips back when the user leaves fullscreen via the Esc key.
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === fullscreenContainer);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [fullscreenContainer]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else if (fullscreenContainer) {
+      // Rejects when the browser refuses the request (e.g. no user gesture);
+      // the `fullscreenchange` listener owns the success path.
+      fullscreenContainer.requestFullscreen().catch(() => setIsFullscreen(false));
+    }
+  }, [fullscreenContainer]);
+
   return (
-    <div className="mx-auto max-w-7xl p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Tier List</h1>
-        <Button variant="ghost" size="sm" onClick={toggleView} className="gap-1.5">
-          <ArrowRightLeft className="h-4 w-4" />
-          {view === 'classic' ? 'Type' : 'Classic'}
-        </Button>
-      </div>
+    <div className="p-4">
+      {/* The table is self-evident, so the title only labels the states that
+          render in place of it (loading / error / empty). */}
+      {tiers.length === 0 && <h1 className="mb-4 text-2xl font-semibold">Tier List</h1>}
 
       {error && <ErrorAlert message={error} />}
 
@@ -190,104 +216,148 @@ export default function TierListPage() {
       )}
 
       {tiers.length > 0 && (
-        <Card>
-          <CardContent className="p-0">
-            <div className="max-h-[calc(100vh-220px)] overflow-auto">
-              <div className="flex">
-                {tiers.map((tier, idx) => {
-                  const groupKey = String(tier.key);
-                  const sort = sortMap[groupKey] ?? defaultSort;
-                  const sorted = getSortedPokemon(groupKey, tier.pokemon);
+        // The fullscreened element. Only this subtree stays visible while
+        // fullscreen is active, so the toggle button and the Pokemon modal's
+        // portal both have to live inside it.
+        <div
+          ref={setFullscreenContainer}
+          className={`relative${isFullscreen ? ' bg-background' : ''}`}
+        >
+          {/* Floating controls. These live on the table rather than in a page
+              header row so they cost no vertical space and stay reachable while
+              fullscreen. */}
+          {fullscreenSupported && (
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={toggleFullscreen}
+              aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              className="absolute right-2 top-2 z-20 h-7 w-7 bg-card/80 text-muted-foreground backdrop-blur-md transition-colors hover:text-foreground"
+            >
+              {isFullscreen ? (
+                <Minimize2 className="h-3.5 w-3.5" />
+              ) : (
+                <Maximize2 className="h-3.5 w-3.5" />
+              )}
+            </Button>
+          )}
 
-                  return (
-                    <div
-                      key={tier.key}
-                      className={`w-44 shrink-0${idx < tiers.length - 1 ? ' border-r border-border' : ''}`}
-                    >
-                      {/* Sticky header block */}
-                      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-md">
-                        {/* Group header */}
-                        <div
-                          className="border-b border-border bg-secondary/30 px-3 py-1.5 text-center text-sm font-bold capitalize"
-                          style={tier.color ? { color: tier.color } : undefined}
-                        >
-                          {tier.label}
-                        </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleView}
+            className="absolute bottom-2 right-2 z-20 h-7 gap-1.5 bg-card/80 px-2 text-xs text-muted-foreground backdrop-blur-md transition-colors hover:text-foreground"
+          >
+            <ArrowRightLeft className="h-3.5 w-3.5" />
+            {view === 'classic' ? 'Type' : 'Classic'}
+          </Button>
 
-                        {/* Column headers */}
-                        <div className="grid grid-cols-[36px_1fr_48px] items-center border-b border-border px-2 py-1">
-                          <span />
-                          <button
-                            className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                            onClick={() => handleSort(groupKey, 'name')}
+          <Card className={isFullscreen ? 'rounded-none border-0' : undefined}>
+            <CardContent className="p-0">
+              {/* Normal mode subtracts only the chrome that's actually there:
+                  64px global header + 32px page p-4 + the Card's 2px border.
+                  Fullscreen has no chrome at all, so it takes the full screen. */}
+              <div
+                className={`overflow-auto ${isFullscreen ? 'h-screen' : 'max-h-[calc(100vh-100px)]'}`}
+              >
+                <div className="flex">
+                  {tiers.map((tier, idx) => {
+                    const groupKey = String(tier.key);
+                    const sort = sortMap[groupKey] ?? defaultSort;
+                    const sorted = getSortedPokemon(groupKey, tier.pokemon);
+
+                    return (
+                      <div
+                        key={tier.key}
+                        className={`w-44 shrink-0${idx < tiers.length - 1 ? ' border-r border-border' : ''}`}
+                      >
+                        {/* Sticky header block */}
+                        <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-md">
+                          {/* Group header */}
+                          <div
+                            className="border-b border-border bg-secondary/30 px-3 py-1.5 text-center text-sm font-bold capitalize"
+                            style={tier.color ? { color: tier.color } : undefined}
                           >
-                            Name
-                            <SortIndicator field="name" sort={sort} />
-                          </button>
-                          <button
-                            className="inline-flex items-center justify-end gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                            onClick={() => handleSort(groupKey, valueColumn)}
-                          >
-                            {valueLabel}
-                            <SortIndicator field={valueColumn} sort={sort} />
-                          </button>
-                        </div>
-                      </div>
+                            {tier.label}
+                          </div>
 
-                      {/* Pokemon rows */}
-                      <div>
-                        {sorted.map((sp) => {
-                          const pkmn = sp.pokemon!;
-                          const value = view === 'classic' ? pkmn.speed : (sp.pointValue ?? 0);
-                          const isDrafted =
-                            (sp.seasonPokemonTeams?.length ?? 0) > 0;
-                          return (
-                            <div
-                              key={sp.id}
-                              className={`grid grid-cols-[36px_1fr_48px] items-center px-2 py-0.5 transition-colors hover:bg-secondary/50${isDrafted ? ' opacity-50' : ''}`}
+                          {/* Column headers */}
+                          <div className="grid grid-cols-[36px_1fr_48px] items-center border-b border-border px-2 py-1">
+                            <span />
+                            <button
+                              className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                              onClick={() => handleSort(groupKey, 'name')}
                             >
-                              <PokemonSprite
-                                pokemonId={pkmn.id}
-                                spriteUrl={pkmn.spritePngUrl}
-                                name={pkmn.name}
-                                className={`h-8 w-8 object-contain${isDrafted ? ' grayscale' : ''}`}
-                                onClick={(id) => handleSpriteClick(id, sp.id)}
-                              />
-                              <span
-                                className={`truncate pr-1 text-xs capitalize${isDrafted ? ' line-through text-muted-foreground' : ''}`}
-                              >
-                                {pkmn.name}
-                              </span>
-                              <span
-                                className={`text-right text-xs font-semibold${isDrafted ? ' opacity-70' : ''}`}
-                                style={
-                                  view === 'classic'
-                                    ? { color: getStatColor(pkmn.speed) }
-                                    : undefined
-                                }
-                              >
-                                {value}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                              Name
+                              <SortIndicator field="name" sort={sort} />
+                            </button>
+                            <button
+                              className="inline-flex items-center justify-end gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                              onClick={() => handleSort(groupKey, valueColumn)}
+                            >
+                              {valueLabel}
+                              <SortIndicator field={valueColumn} sort={sort} />
+                            </button>
+                          </div>
+                        </div>
 
-      <PokemonModal
-        pokemonId={modalPokemonId}
-        open={modalOpen}
-        onOpenChange={onOpenChange}
-        seasonPokemonId={modalSeasonPokemonId}
-        leagueId={leagueId}
-      />
+                        {/* Pokemon rows */}
+                        <div>
+                          {sorted.map((sp) => {
+                            const pkmn = sp.pokemon!;
+                            const value = view === 'classic' ? pkmn.speed : (sp.pointValue ?? 0);
+                            const isDrafted = (sp.seasonPokemonTeams?.length ?? 0) > 0;
+                            return (
+                              <div
+                                key={sp.id}
+                                className={`grid grid-cols-[36px_1fr_48px] items-center px-2 py-0.5 transition-colors hover:bg-secondary/50${isDrafted ? ' opacity-50' : ''}`}
+                              >
+                                <PokemonSprite
+                                  pokemonId={pkmn.id}
+                                  spriteUrl={pkmn.spritePngUrl}
+                                  name={pkmn.name}
+                                  className={`h-8 w-8 object-contain${isDrafted ? ' grayscale' : ''}`}
+                                  onClick={(id) => handleSpriteClick(id, sp.id)}
+                                />
+                                <span
+                                  className={`truncate pr-1 text-xs capitalize${isDrafted ? ' line-through text-muted-foreground' : ''}`}
+                                >
+                                  {pkmn.name}
+                                </span>
+                                <span
+                                  className={`text-right text-xs font-semibold${isDrafted ? ' opacity-70' : ''}`}
+                                  style={
+                                    view === 'classic'
+                                      ? { color: getStatColor(pkmn.speed) }
+                                      : undefined
+                                  }
+                                >
+                                  {value}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Portaled into the fullscreen container unconditionally — DialogContent
+              is position: fixed, so this has no visual effect outside fullscreen. */}
+          <PokemonModal
+            pokemonId={modalPokemonId}
+            open={modalOpen}
+            onOpenChange={onOpenChange}
+            seasonPokemonId={modalSeasonPokemonId}
+            leagueId={leagueId}
+            container={fullscreenContainer}
+          />
+        </div>
+      )}
     </div>
   );
 }

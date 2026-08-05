@@ -93,6 +93,11 @@ interface PokemonModalProps {
   onOpenChange: (open: boolean) => void;
   seasonPokemonId?: number | null;
   leagueId?: number;
+  /**
+   * Portal target for the dialog. Defaults to `document.body` when omitted —
+   * only needed when the trigger lives inside an element in native fullscreen.
+   */
+  container?: HTMLElement | null;
 }
 
 const STAT_LABELS: { key: keyof PokemonInput; label: string }[] = [
@@ -112,6 +117,7 @@ export function PokemonModal({
   onOpenChange,
   seasonPokemonId,
   leagueId,
+  container,
 }: PokemonModalProps) {
   const [pokemon, setPokemon] = useState<PokemonInput | null>(null);
   const [seasonPokemon, setSeasonPokemon] = useState<SeasonPokemonInput | null>(null);
@@ -223,7 +229,7 @@ export function PokemonModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">
+      <DialogContent container={container} className="max-h-[85vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl capitalize">
             {loading ? 'Loading...' : pokemon?.name || 'Pokemon'}

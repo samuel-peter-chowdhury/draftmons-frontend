@@ -27,9 +27,17 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, 'aria-describedby': ariaDescribedBy, ...props }, ref) => (
-  <DialogPortal>
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    /**
+     * Portal target for the overlay + content. Defaults to `document.body`
+     * (Radix's own default) when omitted. Pass an element when the dialog must
+     * render inside a specific subtree — e.g. an element in native browser
+     * fullscreen, where anything portaled to `document.body` is not displayed.
+     */
+    container?: HTMLElement | null;
+  }
+>(({ className, children, container, 'aria-describedby': ariaDescribedBy, ...props }, ref) => (
+  <DialogPortal container={container}>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
