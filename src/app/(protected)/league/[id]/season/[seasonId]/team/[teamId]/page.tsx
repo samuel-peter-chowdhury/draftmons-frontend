@@ -29,7 +29,16 @@ export default function TeamDetailPage() {
 
   // Fetch season pokemon data
   const seasonPokemonUrl = useMemo(    
-    () => buildUrlWithQuery(BASE_ENDPOINTS.SEASON_POKEMON_BASE, [], { page, pageSize, sortBy, sortOrder, teamId, full: true }),
+    () =>
+      buildUrlWithQuery(BASE_ENDPOINTS.SEASON_POKEMON_BASE, [], {
+        page,
+        pageSize,
+        sortBy,
+        sortOrder,
+        teamId,
+        full: true,
+        activeRelationsOnly: true,
+      }),
     [page, pageSize, sortBy, sortOrder, teamId],
   );
   const { data, loading, error } =

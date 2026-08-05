@@ -42,6 +42,7 @@ export function useComparisonSide(source: ComparisonSource | null) {
   const rosterUrl = teamId
     ? buildUrlWithQuery(BASE_ENDPOINTS.SEASON_POKEMON_TEAM_BASE, [], {
         teamId,
+        isActive: true,
         full: true,
         pageSize: ROSTER_PAGE_SIZE,
       })
