@@ -561,7 +561,9 @@ function NameTypeahead({
         // unaddable results.
         generationIds: [build.generationId],
         nameLike: debouncedName.trim(),
-        ...(isSeasonLinked ? { seasonId: build.seasonId, full: true } : {}),
+        ...(isSeasonLinked
+          ? { seasonId: build.seasonId, full: true, activeRelationsOnly: true }
+          : {}),
       },
     );
   }, [debouncedName, isSeasonLinked, build.generationId, build.seasonId]);
