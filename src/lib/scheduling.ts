@@ -41,8 +41,14 @@ interface RoundData {
   byeTeamId: number | null;
 }
 
+/**
+ * Maximum weeks achievable without repeating a matchup. buildRoundsViaCircleMethod
+ * pads odd team counts with a phantom bye slot, so an odd count yields teamCount
+ * rounds (n_padded - 1) rather than teamCount - 1.
+ */
 export function getMaxFeasibleWeeks(teamCount: number): number {
-  return Math.max(0, teamCount - 1);
+  if (teamCount < 2) return 0;
+  return teamCount % 2 === 0 ? teamCount - 1 : teamCount;
 }
 
 /**
@@ -208,6 +214,9 @@ function selectBalancedRounds(
   while (improved && iterations < MAX_LOCAL_SEARCH_ITERATIONS) {
     improved = false;
     for (const includedIdx of [...selected]) {
+      // The snapshot can go stale mid-pass: a swap earlier in this pass may have
+      // already removed includedIdx from `selected`.
+      if (!selected.has(includedIdx)) continue;
       for (const excludedIdx of allIndices) {
         if (selected.has(excludedIdx)) continue;
         iterations++;
@@ -228,6 +237,9 @@ function selectBalancedRounds(
           selected = candidate;
           score = candidateScore;
           improved = true;
+          // includedIdx has left `selected` — swapping it out again this pass
+          // would be a no-op delete followed by a real add, growing the set.
+          break;
         }
       }
       if (iterations >= MAX_LOCAL_SEARCH_ITERATIONS) break;
