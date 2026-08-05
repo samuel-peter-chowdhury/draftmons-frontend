@@ -70,15 +70,16 @@ function useMyLeagueCardData(leagueId: number, userId: number): MyLeagueCardStat
               .map((match) => ({ match, weekNumber: week.weekNumber })),
           );
 
-          if (myMatches.length > 0) {
-            const latest = myMatches.reduce((a, b) => (b.weekNumber > a.weekNumber ? b : a));
-            const isUnplayed = !latest.match.winningTeamId && !latest.match.losingTeamId;
-            if (isUnplayed) {
-              const opponent = (latest.match.teams ?? []).find((t) => t.id !== myTeam.id);
-              if (opponent) {
-                opponentTeamName = opponent.name;
-                opponentTeamId = opponent.id;
-              }
+          const unplayedMatches = myMatches.filter(
+            ({ match }) => !match.winningTeamId && !match.losingTeamId,
+          );
+
+          if (unplayedMatches.length > 0) {
+            const next = unplayedMatches.reduce((a, b) => (b.weekNumber < a.weekNumber ? b : a));
+            const opponent = (next.match.teams ?? []).find((t) => t.id !== myTeam.id);
+            if (opponent) {
+              opponentTeamName = opponent.name;
+              opponentTeamId = opponent.id;
             }
           }
         }
