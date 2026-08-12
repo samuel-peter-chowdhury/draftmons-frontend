@@ -220,6 +220,9 @@ export default function Sidebar() {
                   </NavLink>
                   <NavLink href={seasonPrefix ? `${seasonPrefix}/tools/rules` : '#'} disabled={!seasonPrefix}>
                     Rules
+                  </NavLink>  
+                  <NavLink href={seasonPrefix ? `${seasonPrefix}/tools/team-builder` : '#'} disabled={!seasonPrefix}>
+                    Team Builder
                   </NavLink>
                 </div>
               </AccordionContent>

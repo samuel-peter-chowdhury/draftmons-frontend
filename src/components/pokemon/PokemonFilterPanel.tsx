@@ -8,6 +8,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+// import { NewCard } from '../util/NewCard';
+import { SectionAccordionTrigger } from '../util/SectionAccordionTrigger';
 import { FilterDropdown } from '@/components/pokemon/FilterDropdown';
 import type {
   AbilityInput,
@@ -15,6 +17,9 @@ import type {
   PokemonTypeInput,
   SpecialMoveCategoryInput,
 } from '@/types';
+
+import { Atom, Swords, ChartColumn } from 'lucide-react';
+
 
 export interface PokemonFilters {
   nameLike: string;
@@ -107,8 +112,7 @@ export function PokemonFilterPanel({
       <CardContent className="p-0">
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="filters" className="border-b-0">
-            <AccordionTrigger className="flex gap-5 px-6 py-4 hover:no-underline">
-              <div className="flex w-full items-center">
+              <div className="flex gap-5 px-6 pt-5 w-full items-center">
                 <div
                   className="flex-1"
                   onClick={(e) => e.stopPropagation()}
@@ -127,300 +131,342 @@ export function PokemonFilterPanel({
                   />
                 </div>
               </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-6 pb-4">
-              <div className="flex flex-wrap gap-4">
-                {/* HP */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">HP</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minHp}
-                      onChange={(e) => onFilterChange({ minHp: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxHp}
-                      onChange={(e) => onFilterChange({ maxHp: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
 
-                {/* Attack */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Attack</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minAttack}
-                      onChange={(e) => onFilterChange({ minAttack: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxAttack}
-                      onChange={(e) => onFilterChange({ maxAttack: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
 
-                {/* Defense */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Defense</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minDefense}
-                      onChange={(e) => onFilterChange({ minDefense: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxDefense}
-                      onChange={(e) => onFilterChange({ maxDefense: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
 
-                {/* Special Attack */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Special Attack</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minSpecialAttack}
-                      onChange={(e) => onFilterChange({ minSpecialAttack: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxSpecialAttack}
-                      onChange={(e) => onFilterChange({ maxSpecialAttack: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
+            <SectionAccordionTrigger className="px-6 text-base font-semibold text-foreground">
+                Advanced Filters
+            </SectionAccordionTrigger>
 
-                {/* Special Defense */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Special Defense</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minSpecialDefense}
-                      onChange={(e) => onFilterChange({ minSpecialDefense: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxSpecialDefense}
-                      onChange={(e) => onFilterChange({ maxSpecialDefense: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
 
-                {/* Speed */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Speed</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minSpeed}
-                      onChange={(e) => onFilterChange({ minSpeed: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxSpeed}
-                      onChange={(e) => onFilterChange({ maxSpeed: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
+            <AccordionContent className="px-6 pb-4 overflow-hidden data-[state=open]:overflow-visible">
+              {/* <div className="text-base font-semibold text-foreground flex items-center gap-2">
+                <span className="h-5 w-3 rounded bg-primary" />
+                Advanced Filters
+              </div> */}
+              <div className="space-y-1">
+                {/* Stats filters */}
+                <section className="space-y-2">
+                  <Accordion type="multiple" defaultValue={['stats']} className="w-full">
+                    {/* Attribute and Moves Filters */}
+                    <AccordionItem value="stats">
+                      <SectionAccordionTrigger logo={<ChartColumn />}>
+                        Stats
+                      </SectionAccordionTrigger>
+                      <AccordionContent className="overflow-hidden data-[state=open]:overflow-visible">
+                        <div className="grid gap-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-6 xl:grid-cols-9">
+                          {/* HP */}
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">HP</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Min"
+                                value={filters.minHp}
+                                onChange={(e) => onFilterChange({ minHp: e.target.value })}
+                                className="text-sm"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Max"
+                                value={filters.maxHp}
+                                onChange={(e) => onFilterChange({ maxHp: e.target.value })}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
 
-                {/* Base Stat Total */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Base Stat Total</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minBaseStatTotal}
-                      onChange={(e) => onFilterChange({ minBaseStatTotal: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxBaseStatTotal}
-                      onChange={(e) => onFilterChange({ maxBaseStatTotal: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
+                          {/* Attack */}
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">Attack</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Min"
+                                value={filters.minAttack}
+                                onChange={(e) => onFilterChange({ minAttack: e.target.value })}
+                                className="text-sm"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Max"
+                                value={filters.maxAttack}
+                                onChange={(e) => onFilterChange({ maxAttack: e.target.value })}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
 
-                {/* Physical Bulk */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Physical Bulk</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minPhysicalBulk}
-                      onChange={(e) => onFilterChange({ minPhysicalBulk: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxPhysicalBulk}
-                      onChange={(e) => onFilterChange({ maxPhysicalBulk: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
+                          {/* Defense */}
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">Defense</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Min"
+                                value={filters.minDefense}
+                                onChange={(e) => onFilterChange({ minDefense: e.target.value })}
+                                className="text-sm"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Max"
+                                value={filters.maxDefense}
+                                onChange={(e) => onFilterChange({ maxDefense: e.target.value })}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
 
-                {/* Special Bulk */}
-                <div className="w-40 space-y-2">
-                  <Label className="text-sm font-medium">Special Bulk</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.minSpecialBulk}
-                      onChange={(e) => onFilterChange({ minSpecialBulk: e.target.value })}
-                      className="text-sm"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.maxSpecialBulk}
-                      onChange={(e) => onFilterChange({ maxSpecialBulk: e.target.value })}
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
+                          {/* Special Attack */}
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">Special Attack</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Min"
+                                value={filters.minSpecialAttack}
+                                onChange={(e) => onFilterChange({ minSpecialAttack: e.target.value })}
+                                className="text-sm"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Max"
+                                value={filters.maxSpecialAttack}
+                                onChange={(e) => onFilterChange({ maxSpecialAttack: e.target.value })}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
 
-                {/* Types Filter */}
-                <FilterDropdown
-                  label="Types"
-                  items={types}
-                  selectedItems={filters.selectedTypes}
-                  onAdd={handleAddTo<PokemonTypeInput>('selectedTypes')}
-                  onRemove={handleRemoveFrom<PokemonTypeInput>('selectedTypes')}
-                  getKey={getTypeKey}
-                  getLabel={getTypeName}
-                  getBadgeStyle={getTypeBadgeStyle}
-                />
+                          {/* Special Defense */}
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">Special Defense</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Min"
+                                value={filters.minSpecialDefense}
+                                onChange={(e) => onFilterChange({ minSpecialDefense: e.target.value })}
+                                className="text-sm"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Max"
+                                value={filters.maxSpecialDefense}
+                                onChange={(e) => onFilterChange({ maxSpecialDefense: e.target.value })}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
 
-                {/* Abilities Filter */}
-                <FilterDropdown
-                  label="Abilities"
-                  items={abilitySearchResults}
-                  selectedItems={filters.selectedAbilities}
-                  onAdd={handleAddTo<AbilityInput>('selectedAbilities')}
-                  onRemove={handleRemoveFrom<AbilityInput>('selectedAbilities')}
-                  getKey={getAbilityKey}
-                  getLabel={getAbilityName}
-                  maxResults={10}
-                  isAsync
-                  onSearchChange={onAbilitySearchChange}
-                  loading={abilitySearchLoading}
-                />
+                          {/* Speed */}
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">Speed</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Min"
+                                value={filters.minSpeed}
+                                onChange={(e) => onFilterChange({ minSpeed: e.target.value })}
+                                className="text-sm"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Max"
+                                value={filters.maxSpeed}
+                                onChange={(e) => onFilterChange({ maxSpeed: e.target.value })}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
 
-                {/* Moves Filter */}
-                <FilterDropdown
-                  label="Moves"
-                  items={moveSearchResults}
-                  selectedItems={filters.selectedMoves}
-                  onAdd={handleAddTo<MoveInput>('selectedMoves')}
-                  onRemove={handleRemoveFrom<MoveInput>('selectedMoves')}
-                  getKey={getMoveKey}
-                  getLabel={getMoveName}
-                  maxResults={10}
-                  isAsync
-                  onSearchChange={onMoveSearchChange}
-                  loading={moveSearchLoading}
-                />
+                          {/* Base Stat Total */}
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">Base Stat Total</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Min"
+                                value={filters.minBaseStatTotal}
+                                onChange={(e) => onFilterChange({ minBaseStatTotal: e.target.value })}
+                                className="text-sm"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Max"
+                                value={filters.maxBaseStatTotal}
+                                onChange={(e) => onFilterChange({ maxBaseStatTotal: e.target.value })}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
 
-                {/* Special Move Categories Filter */}
-                <FilterDropdown
-                  label="Special Move Categories"
-                  items={specialMoveCategories}
-                  selectedItems={filters.selectedSpecialMoveCategories}
-                  onAdd={handleAddTo<SpecialMoveCategoryInput>('selectedSpecialMoveCategories')}
-                  onRemove={
-                    handleRemoveFrom<SpecialMoveCategoryInput>('selectedSpecialMoveCategories')
-                  }
-                  getKey={getSmcKey}
-                  getLabel={getSmcName}
-                />
+                          {/* Physical Bulk */}
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">Physical Bulk</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Min"
+                                value={filters.minPhysicalBulk}
+                                onChange={(e) => onFilterChange({ minPhysicalBulk: e.target.value })}
+                                className="text-sm"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Max"
+                                value={filters.maxPhysicalBulk}
+                                onChange={(e) => onFilterChange({ maxPhysicalBulk: e.target.value })}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
 
-                {/* Weak Types Filter */}
-                <FilterDropdown
-                  label="Weak Types"
-                  items={types}
-                  selectedItems={filters.selectedWeakTypes}
-                  onAdd={handleAddTo<PokemonTypeInput>('selectedWeakTypes')}
-                  onRemove={handleRemoveFrom<PokemonTypeInput>('selectedWeakTypes')}
-                  getKey={getTypeKey}
-                  getLabel={getTypeName}
-                  getBadgeStyle={getTypeBadgeStyle}
-                />
+                          {/* Special Bulk */}
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium">Special Bulk</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Min"
+                                value={filters.minSpecialBulk}
+                                onChange={(e) => onFilterChange({ minSpecialBulk: e.target.value })}
+                                className="text-sm"
+                              />
+                              <Input
+                                type="number"
+                                placeholder="Max"
+                                value={filters.maxSpecialBulk}
+                                onChange={(e) => onFilterChange({ maxSpecialBulk: e.target.value })}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+        
+                </section>
 
-                {/* Not Weak Types Filter */}
-                <FilterDropdown
-                  label="Not Weak Types"
-                  items={types}
-                  selectedItems={filters.selectedNotWeakTypes}
-                  onAdd={handleAddTo<PokemonTypeInput>('selectedNotWeakTypes')}
-                  onRemove={handleRemoveFrom<PokemonTypeInput>('selectedNotWeakTypes')}
-                  getKey={getTypeKey}
-                  getLabel={getTypeName}
-                  getBadgeStyle={getTypeBadgeStyle}
-                />
+                {/* Match filters */}
+                <section className="space-y-2 mt-0">
+                  <Accordion type="multiple" defaultValue={['attribute-and-moves', 'typing-interactions']} className="w-full">
+                    {/* Attribute and Moves Filters */}
+                    <AccordionItem value="attribute-and-moves">
+                      <SectionAccordionTrigger logo={<Atom/>}>
+                        Attributes & Moves
+                      </SectionAccordionTrigger>
+                      <AccordionContent className="overflow-hidden data-[state=open]:overflow-visible">
+                        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-1">
+                          <FilterDropdown
+                            label="Types"
+                            items={types}
+                            selectedItems={filters.selectedTypes}
+                            onAdd={handleAddTo<PokemonTypeInput>('selectedTypes')}
+                            onRemove={handleRemoveFrom<PokemonTypeInput>('selectedTypes')}
+                            getKey={getTypeKey}
+                            getLabel={getTypeName}
+                            getBadgeStyle={getTypeBadgeStyle}
+                          />
 
-                {/* Resisted Types Filter */}
-                <FilterDropdown
-                  label="Resisted Types"
-                  items={types}
-                  selectedItems={filters.selectedResistedTypes}
-                  onAdd={handleAddTo<PokemonTypeInput>('selectedResistedTypes')}
-                  onRemove={handleRemoveFrom<PokemonTypeInput>('selectedResistedTypes')}
-                  getKey={getTypeKey}
-                  getLabel={getTypeName}
-                  getBadgeStyle={getTypeBadgeStyle}
-                />
+                          <FilterDropdown
+                            label="Abilities"
+                            items={abilitySearchResults}
+                            selectedItems={filters.selectedAbilities}
+                            onAdd={handleAddTo<AbilityInput>('selectedAbilities')}
+                            onRemove={handleRemoveFrom<AbilityInput>('selectedAbilities')}
+                            getKey={getAbilityKey}
+                            getLabel={getAbilityName}
+                            maxResults={10}
+                            isAsync
+                            onSearchChange={onAbilitySearchChange}
+                            loading={abilitySearchLoading}
+                          />
 
-                {/* Immune Types Filter */}
-                <FilterDropdown
-                  label="Immune Types"
-                  items={types}
-                  selectedItems={filters.selectedImmuneTypes}
-                  onAdd={handleAddTo<PokemonTypeInput>('selectedImmuneTypes')}
-                  onRemove={handleRemoveFrom<PokemonTypeInput>('selectedImmuneTypes')}
-                  getKey={getTypeKey}
-                  getLabel={getTypeName}
-                  getBadgeStyle={getTypeBadgeStyle}
-                />
+                          <FilterDropdown
+                            label="Moves"
+                            items={moveSearchResults}
+                            selectedItems={filters.selectedMoves}
+                            onAdd={handleAddTo<MoveInput>('selectedMoves')}
+                            onRemove={handleRemoveFrom<MoveInput>('selectedMoves')}
+                            getKey={getMoveKey}
+                            getLabel={getMoveName}
+                            maxResults={10}
+                            isAsync
+                            onSearchChange={onMoveSearchChange}
+                            loading={moveSearchLoading}
+                          />
+
+                          <FilterDropdown
+                            label="Special Move Categories"
+                            items={specialMoveCategories}
+                            selectedItems={filters.selectedSpecialMoveCategories}
+                            onAdd={handleAddTo<SpecialMoveCategoryInput>('selectedSpecialMoveCategories')}
+                            onRemove={handleRemoveFrom<SpecialMoveCategoryInput>('selectedSpecialMoveCategories')}
+                            getKey={getSmcKey}
+                            getLabel={getSmcName}
+                          />
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Typing Interaction Filters */}
+                    <AccordionItem value="typing-interactions">
+                      <SectionAccordionTrigger logo={<Swords/>}>
+                        Typing Interactions
+                      </SectionAccordionTrigger>
+                      <AccordionContent className="overflow-hidden data-[state=open]:overflow-visible">
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                          <FilterDropdown
+                            label="Weak Types"
+                            items={types}
+                            selectedItems={filters.selectedWeakTypes}
+                            onAdd={handleAddTo<PokemonTypeInput>('selectedWeakTypes')}
+                            onRemove={handleRemoveFrom<PokemonTypeInput>('selectedWeakTypes')}
+                            getKey={getTypeKey}
+                            getLabel={getTypeName}
+                            getBadgeStyle={getTypeBadgeStyle}
+                          />
+
+                          <FilterDropdown
+                            label="Not Weak Types"
+                            items={types}
+                            selectedItems={filters.selectedNotWeakTypes}
+                            onAdd={handleAddTo<PokemonTypeInput>('selectedNotWeakTypes')}
+                            onRemove={handleRemoveFrom<PokemonTypeInput>('selectedNotWeakTypes')}
+                            getKey={getTypeKey}
+                            getLabel={getTypeName}
+                            getBadgeStyle={getTypeBadgeStyle}
+                          />
+
+                          <FilterDropdown
+                            label="Resisted Types"
+                            items={types}
+                            selectedItems={filters.selectedResistedTypes}
+                            onAdd={handleAddTo<PokemonTypeInput>('selectedResistedTypes')}
+                            onRemove={handleRemoveFrom<PokemonTypeInput>('selectedResistedTypes')}
+                            getKey={getTypeKey}
+                            getLabel={getTypeName}
+                            getBadgeStyle={getTypeBadgeStyle}
+                          />
+
+                          <FilterDropdown
+                            label="Immune Types"
+                            items={types}
+                            selectedItems={filters.selectedImmuneTypes}
+                            onAdd={handleAddTo<PokemonTypeInput>('selectedImmuneTypes')}
+                            onRemove={handleRemoveFrom<PokemonTypeInput>('selectedImmuneTypes')}
+                            getKey={getTypeKey}
+                            getLabel={getTypeName}
+                            getBadgeStyle={getTypeBadgeStyle}
+                          />
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </section>
               </div>
             </AccordionContent>
           </AccordionItem>

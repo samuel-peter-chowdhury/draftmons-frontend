@@ -1,10 +1,44 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
+// export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+//   return (
+//     <div
+//       className={cn('rounded-lg border border-border/40 ring-1 ring-inset ring-white/5 bg-card text-card-foreground shadow-sm', className)}
+//       {...props}
+//     />
+//   );
+// }
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('rounded-lg border bg-card text-card-foreground shadow-sm', className)}
+      className={cn(
+        `
+        relative
+        rounded-xl
+        border border-border/50 ring-1 ring-inset ring-white/10
+        bg-card
+        text-card-foreground
+        shadow-sm 
+        backdrop-blur-sm
+
+        before:absolute before:top-2 before:left-2
+        before:h-5 before:w-5
+        before:border-t-2 before:border-l-2
+        before:border-border/90
+        before:content-['']
+
+        after:absolute after:bottom-2 after:right-2
+        after:h-5 after:w-5
+        after:border-b-2 after:border-r-2
+        after:border-border/90
+        after:content-['']
+
+        before:animate-cornerGlow
+        after:animate-cornerGlow
+        `,
+        className
+      )}
       {...props}
     />
   );

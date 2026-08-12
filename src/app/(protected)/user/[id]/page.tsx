@@ -36,6 +36,42 @@ export default function UserDetailPage() {
 
   const displayName = formatUserDisplayName(data);
 
+  function getCookie(name: string): string | undefined{
+    return document.cookie
+      .split('; ')
+      .find((row) => row.startsWith(name + '='))
+      ?.split('=')[1];
+  }
+
+  const handleInitPokemonData = async () => {
+    const csrf = decodeURIComponent(getCookie('XSRF-TOKEN') || '');
+    await fetch('http://localhost:3000/api/admin/initialize-pokemon', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'X-XSRF-TOKEN': csrf },
+    });
+  }
+
+  const handleInitMockData = async () => {
+    const csrf = decodeURIComponent(getCookie('XSRF-TOKEN') || '');
+    await fetch('http://localhost:3000/api/admin/initialize-mock', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'X-XSRF-TOKEN': csrf },
+    });
+  }
+
+  const handleWipeData = async () => {
+    const csrf = decodeURIComponent(getCookie('XSRF-TOKEN') || '');
+    await fetch('http://localhost:3000/api/admin/wipe', {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'X-XSRF-TOKEN': csrf },
+    });
+  }
+
+  
+
   return (
     <div className="mx-auto max-w-7xl p-4">
       {error && <ErrorAlert message={error} />}
@@ -99,6 +135,28 @@ export default function UserDetailPage() {
                   })}
                 </div>
               </div>
+
+              {data.isAdmin && (
+                <div className="border-t border-border pt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <div className="text-sm font-medium">Dev Tools</div>
+                      <div className="text-xs text-muted-foreground">Admin-only setup actions</div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="secondary" onClick={handleInitPokemonData}>
+                        Initialize Pokémon Data
+                      </Button>
+                      <Button variant="secondary" onClick={handleInitMockData}>
+                        Initialize Mock Data
+                      </Button>
+                      <Button variant="destructive" onClick={handleWipeData}>
+                        Wipe Data
+                      </Button>
+                    </div>
+                </div>
+              )}
+
             </CardContent>
           </Card>
         </div>

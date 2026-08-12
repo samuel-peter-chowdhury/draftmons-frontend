@@ -97,12 +97,12 @@ export function PokemonTable({
 
       {data && (
         <>
-          <Card>
-            <CardContent className="p-0">
-              <div className={loading ? 'pointer-events-none opacity-50' : ''}>
+          <Card className="relative z-[0] overflow-visible">
+            <CardContent className="p-0 overflow-visible" >
+              <div className={loading ? 'pointer-events-none opacity-50' : 'z-0 overflow-visible'}>
                 <Table>
-                  <TableHeader>
-                    <TableRow>
+                  <TableHeader className="relative z-0 overflow-visible">
+                    <TableRow className="overflow-visible">
                       <TableHead className="min-w-20 w-20"></TableHead>
                       <TableHead>
                         <SortableHeader column="name" sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>Name</SortableHeader>
