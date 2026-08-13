@@ -15,6 +15,11 @@ export interface TypeEffPokemon {
   effectivenessMap: Map<string, number>;
 }
 
+export interface StatTablePokemon {
+  pokemon: PokemonInput;
+  pointValue: number | null;
+}
+
 export interface TypeColumnInfo {
   name: string;
   abbreviation: string;
