@@ -15,7 +15,7 @@ import {
   TabsTrigger,
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useComparisonSide, useApiSWR, usePokemonModal } from '@/hooks';
+import { useComparisonSide, useApiSWR, usePokemonModal, useSpeedCalculatorRequest } from '@/hooks';
 import { pointMapForSide, type ExportSide } from '@/lib/aiTeamBuilder/buildExport';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
@@ -26,11 +26,13 @@ import {
   ExportForAiButton,
   NoTeamSelected,
   SpecialMovesContent,
+  SpeedCalculatorModal,
   SpeedTierColumn,
   StatTableColumn,
   TeamInfoColumn,
   TypeEffectivenessColumn,
   sortStatTablePokemon,
+  type SpeedCalculatorSide,
   type StatSortColumn,
 } from '@/components/comparison';
 
@@ -136,7 +138,13 @@ function TeamMatchupContent() {
     [searchParams, pathname, router, leagueId, seasonId],
   );
 
-  const { pokemonId: modalPokemonId, seasonPokemonId: modalSeasonPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
+  const {
+    pokemonId: modalPokemonId,
+    seasonPokemonId: modalSeasonPokemonId,
+    open: modalOpen,
+    openModal,
+    onOpenChange,
+  } = usePokemonModal();
 
   // Fetch season with teams
   const {
@@ -297,6 +305,32 @@ function TeamMatchupContent() {
     [pokemonToSeasonPokemonMap, openModal],
   );
 
+  // Speed calculator lives at page level: it needs both rosters, and keeping it
+  // outside the Tabs preserves a comparison setup across tab switches.
+  const speedCalc = useSpeedCalculatorRequest();
+  const calcSideA = useMemo<SpeedCalculatorSide | null>(
+    () =>
+      teamAId
+        ? {
+            label: teamAName,
+            pokemon: teamA.speedTierPokemon,
+            pointByPokemonId: pointsByPokemonIdA,
+          }
+        : null,
+    [teamAId, teamAName, teamA.speedTierPokemon, pointsByPokemonIdA],
+  );
+  const calcSideB = useMemo<SpeedCalculatorSide | null>(
+    () =>
+      teamBId
+        ? {
+            label: teamBName,
+            pokemon: teamB.speedTierPokemon,
+            pointByPokemonId: pointsByPokemonIdB,
+          }
+        : null,
+    [teamBId, teamBName, teamB.speedTierPokemon, pointsByPokemonIdB],
+  );
+
   return (
     <div className="mx-auto max-w-7xl p-4">
       <h1 className="mb-4 text-2xl font-semibold">Team Matchup</h1>
@@ -390,6 +424,7 @@ function TeamMatchupContent() {
                           loading={teamA.rosterLoading}
                           error={teamA.rosterError}
                           onSpriteClick={handleSpriteClick}
+                          onOpenCalculator={(pokemonId) => speedCalc.open('a', pokemonId)}
                         />
                       )}
                       {teamBId && (
@@ -399,6 +434,7 @@ function TeamMatchupContent() {
                           loading={teamB.rosterLoading}
                           error={teamB.rosterError}
                           onSpriteClick={handleSpriteClick}
+                          onOpenCalculator={(pokemonId) => speedCalc.open('b', pokemonId)}
                         />
                       )}
                     </div>
@@ -563,6 +599,13 @@ function TeamMatchupContent() {
           </Tabs>
         </div>
       )}
+
+      <SpeedCalculatorModal
+        request={speedCalc.request}
+        onOpenChange={speedCalc.setOpen}
+        sideA={calcSideA}
+        sideB={calcSideB}
+      />
 
       <PokemonModal
         pokemonId={modalPokemonId}
