@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Route } from 'next';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -27,8 +27,11 @@ import {
   NoTeamSelected,
   SpecialMovesContent,
   SpeedTierColumn,
+  StatTableColumn,
   TeamInfoColumn,
   TypeEffectivenessColumn,
+  sortStatTablePokemon,
+  type StatSortColumn,
 } from '@/components/comparison';
 
 // localStorage keys
@@ -216,6 +219,16 @@ function TeamMatchupContent() {
     [teams, teamBId],
   );
 
+  // pokemonId → point value per side, shared by the Export action and Stat Table tab.
+  const pointsByPokemonIdA = useMemo(
+    () => pointMapForSide({ rosterData: teamA.rosterData, teamBuild: teamA.teamBuild }),
+    [teamA.rosterData, teamA.teamBuild],
+  );
+  const pointsByPokemonIdB = useMemo(
+    () => pointMapForSide({ rosterData: teamB.rosterData, teamBuild: teamB.teamBuild }),
+    [teamB.rosterData, teamB.teamBuild],
+  );
+
   // Export sides for the "Export for AI" action (null until selected & non-empty).
   const exportSideA = useMemo<ExportSide | null>(() => {
     if (!teamAId || teamAWithMoves.length === 0) return null;
@@ -223,12 +236,9 @@ function TeamMatchupContent() {
       label: teamAName,
       pointTotal: teamA.pointTotal,
       pokemon: teamAWithMoves,
-      pointByPokemonId: pointMapForSide({
-        rosterData: teamA.rosterData,
-        teamBuild: teamA.teamBuild,
-      }),
+      pointByPokemonId: pointsByPokemonIdA,
     };
-  }, [teamAId, teamAName, teamA.pointTotal, teamA.rosterData, teamA.teamBuild, teamAWithMoves]);
+  }, [teamAId, teamAName, teamA.pointTotal, pointsByPokemonIdA, teamAWithMoves]);
 
   const exportSideB = useMemo<ExportSide | null>(() => {
     if (!teamBId || teamBWithMoves.length === 0) return null;
@@ -236,12 +246,34 @@ function TeamMatchupContent() {
       label: teamBName,
       pointTotal: teamB.pointTotal,
       pokemon: teamBWithMoves,
-      pointByPokemonId: pointMapForSide({
-        rosterData: teamB.rosterData,
-        teamBuild: teamB.teamBuild,
-      }),
+      pointByPokemonId: pointsByPokemonIdB,
     };
-  }, [teamBId, teamBName, teamB.pointTotal, teamB.rosterData, teamB.teamBuild, teamBWithMoves]);
+  }, [teamBId, teamBName, teamB.pointTotal, pointsByPokemonIdB, teamBWithMoves]);
+
+  // Stat Table sort state — shared across both side columns.
+  const [statSortBy, setStatSortBy] = useState<StatSortColumn>('pointValue');
+  const [statSortOrder, setStatSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+
+  const handleStatSort = useCallback(
+    (column: StatSortColumn) => {
+      if (column === statSortBy) {
+        setStatSortOrder((o) => (o === 'ASC' ? 'DESC' : 'ASC'));
+      } else {
+        setStatSortBy(column);
+        setStatSortOrder('DESC');
+      }
+    },
+    [statSortBy],
+  );
+
+  const statTableA = useMemo(
+    () => sortStatTablePokemon(teamA.rawPokemon, pointsByPokemonIdA, statSortBy, statSortOrder),
+    [teamA.rawPokemon, pointsByPokemonIdA, statSortBy, statSortOrder],
+  );
+  const statTableB = useMemo(
+    () => sortStatTablePokemon(teamB.rawPokemon, pointsByPokemonIdB, statSortBy, statSortOrder),
+    [teamB.rawPokemon, pointsByPokemonIdB, statSortBy, statSortOrder],
+  );
 
   // Map pokemonId → seasonPokemonId from both teams' rosters
   const pokemonToSeasonPokemonMap = useMemo(() => {
@@ -336,6 +368,7 @@ function TeamMatchupContent() {
           >
             <TabsList>
               <TabsTrigger value="speed-tiers">Speed Tiers</TabsTrigger>
+              <TabsTrigger value="stat-table">Stat Table</TabsTrigger>
               <TabsTrigger value="team-info">Team Info</TabsTrigger>
               <TabsTrigger value="type-effectiveness">Type Effectiveness</TabsTrigger>
               <TabsTrigger value="special-moves">Special Moves</TabsTrigger>
@@ -363,6 +396,44 @@ function TeamMatchupContent() {
                         <SpeedTierColumn
                           teamName={teamBName}
                           pokemon={teamB.speedTierPokemon}
+                          loading={teamB.rosterLoading}
+                          error={teamB.rosterError}
+                          onSpriteClick={handleSpriteClick}
+                        />
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Stat Table tab */}
+            <TabsContent value="stat-table">
+              <Card>
+                <CardContent className="pt-6">
+                  {!teamAId && !teamBId ? (
+                    <NoTeamSelected message="Select at least one team to view base stats." />
+                  ) : (
+                    <div className="flex gap-8">
+                      {teamAId && (
+                        <StatTableColumn
+                          teamName={teamAName}
+                          pokemon={statTableA}
+                          sortBy={statSortBy}
+                          sortOrder={statSortOrder}
+                          onSort={handleStatSort}
+                          loading={teamA.rosterLoading}
+                          error={teamA.rosterError}
+                          onSpriteClick={handleSpriteClick}
+                        />
+                      )}
+                      {teamBId && (
+                        <StatTableColumn
+                          teamName={teamBName}
+                          pokemon={statTableB}
+                          sortBy={statSortBy}
+                          sortOrder={statSortOrder}
+                          onSort={handleStatSort}
                           loading={teamB.rosterLoading}
                           error={teamB.rosterError}
                           onSpriteClick={handleSpriteClick}

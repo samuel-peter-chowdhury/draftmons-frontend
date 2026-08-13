@@ -8,5 +8,6 @@ export { MoveSpritesRow } from './MoveSpritesRow';
 export { NoTeamSelected } from './NoTeamSelected';
 export { SpecialMovesContent } from './SpecialMovesContent';
 export { SpeedTierColumn } from './SpeedTierColumn';
+export { StatTableColumn } from './StatTableColumn';
 export { TeamInfoColumn } from './TeamInfoColumn';
 export { TypeEffectivenessColumn } from './TypeEffectivenessColumn';
