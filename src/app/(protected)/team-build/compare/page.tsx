@@ -3,30 +3,24 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Route } from 'next';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  Card,
-  CardContent,
-  Spinner,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components';
+import { Card, CardContent, Spinner, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components';
 import {
   CoverageMovesContent,
   ExportForAiButton,
   MOVES_PAGE_SIZE,
   NoTeamSelected,
   SpecialMovesContent,
+  SpeedCalculatorModal,
   SpeedTierColumn,
   StatTableColumn,
   TeamInfoColumn,
   TypeEffectivenessColumn,
   sortStatTablePokemon,
+  type SpeedCalculatorSide,
   type StatSortColumn,
 } from '@/components/comparison';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useComparisonSide, useApiSWR, usePokemonModal } from '@/hooks';
+import { useComparisonSide, useApiSWR, usePokemonModal, useSpeedCalculatorRequest } from '@/hooks';
 import type { ComparisonSource } from '@/hooks';
 import { pointMapForSide, type ExportSide } from '@/lib/aiTeamBuilder/buildExport';
 import { buildUrlWithQuery } from '@/lib/api';
@@ -136,17 +130,9 @@ function CompareContent() {
   const sideA = useComparisonSide(sourceA);
   const sideB = useComparisonSide(sourceB);
 
-  const {
-    pokemonId: modalPokemonId,
-    open: modalOpen,
-    openModal,
-    onOpenChange,
-  } = usePokemonModal();
+  const { pokemonId: modalPokemonId, open: modalOpen, openModal, onOpenChange } = usePokemonModal();
 
-  const handleSpriteClick = useCallback(
-    (pokemonId: number) => openModal(pokemonId),
-    [openModal],
-  );
+  const handleSpriteClick = useCallback((pokemonId: number) => openModal(pokemonId), [openModal]);
 
   // Fetch moves for all selected Pokemon (both sides)
   const allPokemonIds = useMemo(() => {
@@ -161,8 +147,11 @@ function CompareContent() {
         pageSize: MOVES_PAGE_SIZE,
       })
     : null;
-  const { data: movesData, loading: movesLoading, error: movesError } =
-    useApiSWR<PaginatedResponse<MoveInput>>(movesUrl);
+  const {
+    data: movesData,
+    loading: movesLoading,
+    error: movesError,
+  } = useApiSWR<PaginatedResponse<MoveInput>>(movesUrl);
 
   const pokemonMovesMap = useMemo(() => {
     const map = new Map<number, MoveInput[]>();
@@ -225,6 +214,32 @@ function CompareContent() {
       pointByPokemonId: pointsByPokemonIdB,
     };
   }, [bSelected, sideBName, sideB.pointTotal, pointsByPokemonIdB, sideBWithMoves]);
+
+  // Speed calculator lives at page level: it needs both rosters, and keeping it
+  // outside the Tabs preserves a comparison setup across tab switches.
+  const speedCalc = useSpeedCalculatorRequest();
+  const calcSideA = useMemo<SpeedCalculatorSide | null>(
+    () =>
+      aSelected
+        ? {
+            label: sideAName,
+            pokemon: sideA.speedTierPokemon,
+            pointByPokemonId: pointsByPokemonIdA,
+          }
+        : null,
+    [aSelected, sideAName, sideA.speedTierPokemon, pointsByPokemonIdA],
+  );
+  const calcSideB = useMemo<SpeedCalculatorSide | null>(
+    () =>
+      bSelected
+        ? {
+            label: sideBName,
+            pokemon: sideB.speedTierPokemon,
+            pointByPokemonId: pointsByPokemonIdB,
+          }
+        : null,
+    [bSelected, sideBName, sideB.speedTierPokemon, pointsByPokemonIdB],
+  );
 
   // Stat Table sort state — shared across both side columns.
   const [statSortBy, setStatSortBy] = useState<StatSortColumn>('pointValue');
@@ -343,6 +358,7 @@ function CompareContent() {
                         loading={sideA.rosterLoading}
                         error={sideA.rosterError}
                         onSpriteClick={handleSpriteClick}
+                        onOpenCalculator={(pokemonId) => speedCalc.open('a', pokemonId)}
                       />
                     )}
                     {bSelected && (
@@ -352,6 +368,7 @@ function CompareContent() {
                         loading={sideB.rosterLoading}
                         error={sideB.rosterError}
                         onSpriteClick={handleSpriteClick}
+                        onOpenCalculator={(pokemonId) => speedCalc.open('b', pokemonId)}
                       />
                     )}
                   </div>
@@ -493,6 +510,13 @@ function CompareContent() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <SpeedCalculatorModal
+        request={speedCalc.request}
+        onOpenChange={speedCalc.setOpen}
+        sideA={calcSideA}
+        sideB={calcSideB}
+      />
 
       <PokemonModal pokemonId={modalPokemonId} open={modalOpen} onOpenChange={onOpenChange} />
     </div>

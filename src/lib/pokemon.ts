@@ -83,6 +83,224 @@ export function calculateSpeedTiers(baseSpeed: number): SpeedTiers {
 }
 
 /**
+ * Only the Speed effect of a nature matters for speed math, so the 25 real
+ * natures collapse to this tri-state (see `types/nature.type.ts` for the full
+ * model, which is deliberately not reused here).
+ */
+export type SpeedNature = 'positive' | 'neutral' | 'negative';
+
+export const SPEED_EV_MAX = 252;
+export const SPEED_IV_MAX = 31;
+
+/** The inputs to `calculateCustomSpeed`, as edited in the custom speed modal. */
+export interface CustomSpeedInput {
+  ev: number;
+  iv: number;
+  nature: SpeedNature;
+  /** -6..6, or null for no stat stage applied. */
+  stage: number | null;
+}
+
+export const DEFAULT_CUSTOM_SPEED_INPUT: CustomSpeedInput = {
+  ev: 0,
+  iv: SPEED_IV_MAX,
+  nature: 'neutral',
+  stage: null,
+};
+
+/**
+ * Starting spread for the head-to-head slots in the speed calculator. Unlike
+ * the column default above, this assumes a fully invested Speed attacker —
+ * the usual starting point when checking who outruns whom.
+ */
+export const DEFAULT_COMPARISON_SPEED_INPUT: CustomSpeedInput = {
+  ev: SPEED_EV_MAX,
+  iv: SPEED_IV_MAX,
+  nature: 'positive',
+  stage: null,
+};
+
+/**
+ * Speed EVs only ever move the stat in steps of 4, so the solver walks in 4s —
+ * and the EV number inputs step by the same amount.
+ */
+export const SPEED_EV_STEP = 4;
+
+/** Choice Scarf multiplies Speed by 1.5, stacking on top of any stat stage. */
+export const CHOICE_SCARF_MULTIPLIER = 1.5;
+
+/**
+ * Megas are locked to their Mega Stone, so a Choice Scarf is never an option
+ * for them. Matches `-Mega` anywhere in the name rather than only at the end,
+ * so the X/Y formes (`Mewtwo-Mega-X`) are caught alongside `Rayquaza-Mega`.
+ */
+export function canHoldChoiceScarf(pokemonName: string): boolean {
+  return !pokemonName.toLowerCase().includes('-mega');
+}
+
+function speedWith(
+  baseSpeed: number,
+  ev: number,
+  iv: number,
+  nature: SpeedNature,
+  stage: number | null,
+  choiceScarf: boolean,
+): number {
+  const speed = calculateCustomSpeed(baseSpeed, ev, iv, nature, stage);
+  return choiceScarf ? Math.floor(speed * CHOICE_SCARF_MULTIPLIER) : speed;
+}
+
+/**
+ * Fewest Speed EVs this Pokemon needs to land strictly above `targetSpeed`,
+ * holding its IV/nature/stage fixed. Null when even a full 252 isn't enough.
+ *
+ * Reported regardless of who is currently ahead: when the Pokemon already wins,
+ * the answer doubles as an efficiency check (spending 252 to clear a bar that
+ * 108 would have cleared).
+ */
+export function minEvToOutspeed(
+  baseSpeed: number,
+  iv: number,
+  nature: SpeedNature,
+  stage: number | null,
+  targetSpeed: number,
+  choiceScarf = false,
+): number | null {
+  for (let ev = 0; ev <= SPEED_EV_MAX; ev += SPEED_EV_STEP) {
+    if (speedWith(baseSpeed, ev, iv, nature, stage, choiceScarf) > targetSpeed) return ev;
+  }
+  return null;
+}
+
+export interface OutspeedOption {
+  nature: SpeedNature;
+  ev: number;
+}
+
+export interface OutspeedSolution {
+  /** Ways to get there with no held item. Empty means it can't be done bare. */
+  options: OutspeedOption[];
+  /** Ways to get there with a Choice Scarf. Only filled when `options` is empty. */
+  scarfOptions: OutspeedOption[];
+  /** False for Megas, which are locked to their Mega Stone. */
+  canHoldScarf: boolean;
+  /** Best reachable speed bare — 252 EVs and a positive nature. */
+  maxSpeed: number;
+  /** Best reachable speed holding a Choice Scarf. */
+  maxScarfSpeed: number;
+}
+
+/**
+ * Only these two are worth solving for: a negative Speed nature is never the
+ * answer to "how do I outrun this", even when the slot happens to be set to one.
+ * Positive always needs no more EVs than neutral, so the list is cheapest-first
+ * as written.
+ */
+const SOLVER_NATURES: SpeedNature[] = ['positive', 'neutral'];
+
+/**
+ * Every practical way this Pokemon could end up faster than `targetSpeed`, at a
+ * fixed IV and stat stage: first bare, then — only if bare is impossible — with
+ * a Choice Scarf.
+ */
+export function solveOutspeed(
+  baseSpeed: number,
+  iv: number,
+  stage: number | null,
+  targetSpeed: number,
+  pokemonName: string,
+): OutspeedSolution {
+  const solveFor = (choiceScarf: boolean): OutspeedOption[] =>
+    SOLVER_NATURES.flatMap((nature) => {
+      const ev = minEvToOutspeed(baseSpeed, iv, nature, stage, targetSpeed, choiceScarf);
+      return ev === null ? [] : [{ nature, ev }];
+    });
+
+  const options = solveFor(false);
+  const canHoldScarf = canHoldChoiceScarf(pokemonName);
+
+  return {
+    options,
+    scarfOptions: options.length === 0 && canHoldScarf ? solveFor(true) : [],
+    canHoldScarf,
+    maxSpeed: speedWith(baseSpeed, SPEED_EV_MAX, iv, 'positive', stage, false),
+    maxScarfSpeed: speedWith(baseSpeed, SPEED_EV_MAX, iv, 'positive', stage, true),
+  };
+}
+
+export function isDefaultCustomSpeedInput(input: CustomSpeedInput): boolean {
+  return (
+    input.ev === DEFAULT_CUSTOM_SPEED_INPUT.ev &&
+    input.iv === DEFAULT_CUSTOM_SPEED_INPUT.iv &&
+    input.nature === DEFAULT_CUSTOM_SPEED_INPUT.nature &&
+    input.stage === DEFAULT_CUSTOM_SPEED_INPUT.stage
+  );
+}
+
+/** e.g. "252 EV · 31 IV · +Nature · +1" — used for the Custom column tooltip. */
+export function describeCustomSpeedInput(input: CustomSpeedInput): string {
+  const nature =
+    input.nature === 'positive'
+      ? '+Nature'
+      : input.nature === 'negative'
+        ? '-Nature'
+        : 'Neutral nature';
+  const parts = [`${input.ev} EV`, `${input.iv} IV`, nature];
+  if (input.stage) parts.push(input.stage > 0 ? `+${input.stage}` : String(input.stage));
+  return parts.join(' · ');
+}
+
+/**
+ * Official stat-stage multipliers. Stage 0 is absent on purpose: "no stage"
+ * skips the multiply/floor pass entirely rather than multiplying by 1, so an
+ * unboosted value can never differ from the plain nature-adjusted speed.
+ */
+export const SPEED_STAGE_MULTIPLIERS: Record<number, number> = {
+  [-6]: 0.25,
+  [-5]: 2 / 7,
+  [-4]: 1 / 3,
+  [-3]: 0.4,
+  [-2]: 0.5,
+  [-1]: 2 / 3,
+  1: 1.5,
+  2: 2,
+  3: 2.5,
+  4: 3,
+  5: 3.5,
+  6: 4,
+};
+
+/**
+ * Calculate a Pokemon's real Speed stat at level 100 for a given
+ * EV/IV/nature/stage combination:
+ *
+ *   floor( floor(2*Base + IV + floor(EV/4) + 5) * NatureMult ) * StageMult
+ *
+ * EV/IV are clamped rather than rejected, so an out-of-range value from a
+ * free-text input still produces a sensible number.
+ */
+export function calculateCustomSpeed(
+  baseSpeed: number,
+  ev: number,
+  iv: number,
+  nature: SpeedNature,
+  stage: number | null,
+): number {
+  const clampedEv = Math.min(SPEED_EV_MAX, Math.max(0, ev));
+  const clampedIv = Math.min(SPEED_IV_MAX, Math.max(0, iv));
+
+  // Level is fixed at 100, so the `* Level / 100` term of the real formula
+  // cancels out and is omitted.
+  const raw = 2 * baseSpeed + clampedIv + Math.floor(clampedEv / 4) + 5;
+
+  const natureMult = nature === 'positive' ? 1.1 : nature === 'negative' ? 0.9 : 1;
+  const natureAdjusted = Math.floor(raw * natureMult);
+
+  if (!stage) return natureAdjusted;
+  return Math.floor(natureAdjusted * (SPEED_STAGE_MULTIPLIERS[stage] ?? 1));
+}
+
+/**
  * Standard ordering of the 18 Pokemon types.
  */
 export const POKEMON_TYPE_ORDER = [

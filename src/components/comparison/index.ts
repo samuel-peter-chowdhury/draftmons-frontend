@@ -1,6 +1,12 @@
 export * from './constants';
 export * from './derive';
 export { CopyableField } from './CopyableField';
+export { SpeedCalculatorModal } from './SpeedCalculatorModal';
+export type {
+  CalculatorSideKey,
+  SpeedCalculatorRequest,
+  SpeedCalculatorSide,
+} from './SpeedCalculatorModal';
 export { ExportForAiButton } from './ExportForAiButton';
 export { ExportForAiDialog } from './ExportForAiDialog';
 export { CoverageMovesContent } from './CoverageMovesContent';
