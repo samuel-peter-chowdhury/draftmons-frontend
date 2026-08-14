@@ -7,3 +7,4 @@ export * from './usePokemonModal';
 export * from './usePokemonSearch';
 export * from './useSpeedCalculatorRequest';
 export * from './useToast';
+export * from './useTotalsSelection';

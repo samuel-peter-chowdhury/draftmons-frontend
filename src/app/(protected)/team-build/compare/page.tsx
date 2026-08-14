@@ -20,7 +20,13 @@ import {
   type StatSortColumn,
 } from '@/components/comparison';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useComparisonSide, useApiSWR, usePokemonModal, useSpeedCalculatorRequest } from '@/hooks';
+import {
+  useComparisonSide,
+  useApiSWR,
+  usePokemonModal,
+  useSpeedCalculatorRequest,
+  useTotalsSelection,
+} from '@/hooks';
 import type { ComparisonSource } from '@/hooks';
 import { pointMapForSide, type ExportSide } from '@/lib/aiTeamBuilder/buildExport';
 import { buildUrlWithQuery } from '@/lib/api';
@@ -193,6 +199,11 @@ function CompareContent() {
     () => pointMapForSide({ rosterData: sideB.rosterData, teamBuild: sideB.teamBuild }),
     [sideB.rosterData, sideB.teamBuild],
   );
+
+  // Which Pokemon count toward the Stat Table / Type Effectiveness totals rows.
+  // Owned here so a selection survives tab switches (TabsContent unmounts).
+  const selectionA = useTotalsSelection(sideA.rawPokemon, pointsByPokemonIdA);
+  const selectionB = useTotalsSelection(sideB.rawPokemon, pointsByPokemonIdB);
 
   // Export sides for the "Export for AI" action (null until selected & non-empty).
   const exportSideA = useMemo<ExportSide | null>(() => {
@@ -395,6 +406,10 @@ function CompareContent() {
                         loading={sideA.rosterLoading}
                         error={sideA.rosterError}
                         onSpriteClick={handleSpriteClick}
+                        selectedIds={selectionA.selectedIds}
+                        onToggleSelected={selectionA.toggleSelected}
+                        onResetSelection={selectionA.resetSelection}
+                        isDefaultSelection={selectionA.isDefaultSelection}
                       />
                     )}
                     {bSelected && (
@@ -407,6 +422,10 @@ function CompareContent() {
                         loading={sideB.rosterLoading}
                         error={sideB.rosterError}
                         onSpriteClick={handleSpriteClick}
+                        selectedIds={selectionB.selectedIds}
+                        onToggleSelected={selectionB.toggleSelected}
+                        onResetSelection={selectionB.resetSelection}
+                        isDefaultSelection={selectionB.isDefaultSelection}
                       />
                     )}
                   </div>
@@ -446,6 +465,10 @@ function CompareContent() {
                         loading={sideA.rosterLoading}
                         error={sideA.rosterError}
                         onSpriteClick={handleSpriteClick}
+                        selectedIds={selectionA.selectedIds}
+                        onToggleSelected={selectionA.toggleSelected}
+                        onResetSelection={selectionA.resetSelection}
+                        isDefaultSelection={selectionA.isDefaultSelection}
                       />
                     )}
                     {bSelected && (
@@ -455,6 +478,10 @@ function CompareContent() {
                         loading={sideB.rosterLoading}
                         error={sideB.rosterError}
                         onSpriteClick={handleSpriteClick}
+                        selectedIds={selectionB.selectedIds}
+                        onToggleSelected={selectionB.toggleSelected}
+                        onResetSelection={selectionB.resetSelection}
+                        isDefaultSelection={selectionB.isDefaultSelection}
                       />
                     )}
                   </div>

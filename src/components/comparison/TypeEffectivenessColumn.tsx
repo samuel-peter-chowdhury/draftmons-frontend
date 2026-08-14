@@ -9,6 +9,7 @@ import {
   getEffectivenessColor,
   getEffectivenessScore,
 } from '@/lib/pokemon';
+import { cn } from '@/lib/utils';
 import type { TypeEffPokemon, TypeColumnInfo } from './constants';
 
 export const TypeEffectivenessColumn = memo(function TypeEffectivenessColumn({
@@ -17,13 +18,29 @@ export const TypeEffectivenessColumn = memo(function TypeEffectivenessColumn({
   loading,
   error,
   onSpriteClick,
+  selectedIds,
+  onToggleSelected,
+  onResetSelection,
+  isDefaultSelection,
 }: {
   teamName: string;
   pokemon: TypeEffPokemon[];
   loading: boolean;
   error: string | null;
   onSpriteClick: (pokemonId: number) => void;
+  /** Ids counting toward the Total row. Omit to disable selection entirely. */
+  selectedIds?: Set<number>;
+  onToggleSelected?: (pokemonId: number) => void;
+  onResetSelection?: () => void;
+  /** Disables the Reset control when the selection already matches the default. */
+  isDefaultSelection?: boolean;
 }) {
+  const selectionEnabled = selectedIds !== undefined && onToggleSelected !== undefined;
+
+  /**
+   * Derived from the *full* roster: every Pokemon still gets a row regardless of
+   * selection, so the columns have to cover all of them. Only the Total narrows.
+   */
   const typeColumns = useMemo<TypeColumnInfo[]>(() => {
     const typeColorMap = new Map<string, string>();
     for (const { pokemon: pkmn } of pokemon) {
@@ -47,14 +64,17 @@ export const TypeEffectivenessColumn = memo(function TypeEffectivenessColumn({
     for (const typeName of POKEMON_TYPE_ORDER) {
       sums.set(typeName, 0);
     }
-    for (const { effectivenessMap } of pokemon) {
+    const source = selectionEnabled
+      ? pokemon.filter(({ pokemon: p }) => selectedIds!.has(p.id))
+      : pokemon;
+    for (const { effectivenessMap } of source) {
       for (const [typeName, value] of effectivenessMap.entries()) {
         const current = sums.get(typeName) ?? 0;
         sums.set(typeName, current + getEffectivenessScore(value));
       }
     }
     return sums;
-  }, [pokemon]);
+  }, [pokemon, selectionEnabled, selectedIds]);
 
   if (loading) {
     return (
@@ -108,40 +128,77 @@ export const TypeEffectivenessColumn = memo(function TypeEffectivenessColumn({
 
         {/* Pokemon rows */}
         <div className="space-y-0">
-          {pokemon.map(({ pokemon: pkmn, effectivenessMap }) => (
-            <div
-              key={pkmn.id}
-              className="grid items-center gap-x-0.5 rounded-md px-1 py-0.5 transition-colors hover:bg-secondary/50"
-              style={{ gridTemplateColumns: gridCols }}
-            >
-              <PokemonSprite
-                pokemonId={pkmn.id}
-                spriteUrl={pkmn.spritePngUrl}
-                name={pkmn.name}
-                className="h-8 w-8 object-contain"
-                onClick={onSpriteClick}
-              />
-              <span className="truncate text-xs capitalize">{pkmn.name}</span>
-              <span
-                className="text-center text-xs font-semibold"
-                style={{ color: getStatColor(pkmn.speed) }}
+          {pokemon.map(({ pokemon: pkmn, effectivenessMap }) => {
+            const isSelected = selectionEnabled && selectedIds!.has(pkmn.id);
+            return (
+              <div
+                key={pkmn.id}
+                className={cn(
+                  'grid items-center gap-x-0.5 rounded-md px-1 py-0.5 transition-colors',
+                  // Unselected rows keep today's look at full opacity — they're the
+                  // candidates being evaluated and must stay just as readable.
+                  isSelected ? 'bg-accent ring-1 ring-primary/30' : 'hover:bg-secondary/50',
+                  // `ring-inset` is load-bearing: a row spans the full width of the
+                  // `overflow-x-auto` wrapper, so an outward ring's left/right strokes
+                  // land outside the scroll container and get clipped.
+                  selectionEnabled &&
+                    'cursor-pointer ring-inset focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                )}
+                style={{ gridTemplateColumns: gridCols }}
+                {...(selectionEnabled
+                  ? {
+                      role: 'button',
+                      tabIndex: 0,
+                      'aria-pressed': isSelected,
+                      'aria-label': `Toggle ${pkmn.name} in totals`,
+                      onClick: () => onToggleSelected!(pkmn.id),
+                      onKeyDown: (e: React.KeyboardEvent) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onToggleSelected!(pkmn.id);
+                        }
+                      },
+                    }
+                  : {})}
               >
-                {pkmn.speed}
-              </span>
-              {typeColumns.map((tc) => {
-                const value = effectivenessMap.get(tc.name) ?? 1;
-                return (
-                  <span
-                    key={tc.name}
-                    className="flex h-6 items-center justify-center rounded-sm text-[11px] font-semibold"
-                    style={{ backgroundColor: getEffectivenessColor(value) }}
-                  >
-                    {formatEffectivenessValue(value)}
-                  </span>
-                );
-              })}
-            </div>
-          ))}
+                {/* The sprite opens the Pokemon modal; it must never toggle the row. */}
+                <span
+                  className="flex items-center"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+                  }}
+                >
+                  <PokemonSprite
+                    pokemonId={pkmn.id}
+                    spriteUrl={pkmn.spritePngUrl}
+                    name={pkmn.name}
+                    className="h-8 w-8 object-contain"
+                    onClick={onSpriteClick}
+                  />
+                </span>
+                <span className="truncate text-xs capitalize">{pkmn.name}</span>
+                <span
+                  className="text-center text-xs font-semibold"
+                  style={{ color: getStatColor(pkmn.speed) }}
+                >
+                  {pkmn.speed}
+                </span>
+                {typeColumns.map((tc) => {
+                  const value = effectivenessMap.get(tc.name) ?? 1;
+                  return (
+                    <span
+                      key={tc.name}
+                      className="flex h-6 items-center justify-center rounded-sm text-[11px] font-semibold"
+                      style={{ backgroundColor: getEffectivenessColor(value) }}
+                    >
+                      {formatEffectivenessValue(value)}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
 
         {/* Cumulative summary row */}
@@ -150,7 +207,9 @@ export const TypeEffectivenessColumn = memo(function TypeEffectivenessColumn({
           style={{ gridTemplateColumns: gridCols }}
         >
           <span />
-          <span className="text-[11px] font-semibold text-muted-foreground">Total</span>
+          <span className="whitespace-nowrap text-[11px] font-semibold text-muted-foreground">
+            {selectionEnabled ? `Total (${selectedIds!.size})` : 'Total'}
+          </span>
           <span />
           {typeColumns.map((tc) => {
             const cumValue = cumulativeRow.get(tc.name) ?? 0;
@@ -171,6 +230,23 @@ export const TypeEffectivenessColumn = memo(function TypeEffectivenessColumn({
             );
           })}
         </div>
+
+        {/* Reset sits on its own line, aligned under the Total label. */}
+        {selectionEnabled && onResetSelection && (
+          <div
+            className="grid items-center gap-x-0.5 px-1 pt-1"
+            style={{ gridTemplateColumns: gridCols }}
+          >
+            <span />
+            <button
+              onClick={onResetSelection}
+              disabled={isDefaultSelection}
+              className="mr-auto text-[11px] text-muted-foreground transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-40"
+            >
+              Reset
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
