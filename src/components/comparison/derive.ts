@@ -21,6 +21,40 @@ export function toTypeEffPokemon(pokemon: PokemonInput[]): TypeEffPokemon[] {
   });
 }
 
+/** A Pokemon league match is played with six, so that's what the totals rows default to. */
+export const DEFAULT_TOTALS_SELECTION_SIZE = 6;
+
+/**
+ * Picks the default set of Pokemon that count toward a column's totals row:
+ * the `size` highest-value Pokemon on the side.
+ *
+ * Ranking is points descending, with every unpriced Pokemon sorted below every
+ * priced one (mirroring how `sortStatTablePokemon` treats a null `pointValue`
+ * as a tier beneath all real values). Unpriced Pokemon are ordered among
+ * themselves by base stat total, and ties at any level break on BST descending
+ * then name ascending so the default is deterministic.
+ *
+ * A roster of `size` or fewer is fully selected.
+ */
+export function deriveDefaultTotalsSelection(
+  pokemon: PokemonInput[],
+  pointByPokemonId: Map<number, number>,
+  size: number = DEFAULT_TOTALS_SELECTION_SIZE,
+): Set<number> {
+  const ranked = [...pokemon].sort((a, b) => {
+    const aPoints = pointByPokemonId.get(a.id) ?? null;
+    const bPoints = pointByPokemonId.get(b.id) ?? null;
+    if (aPoints === null && bPoints !== null) return 1;
+    if (aPoints !== null && bPoints === null) return -1;
+    if (aPoints !== null && bPoints !== null && aPoints !== bPoints) return bPoints - aPoints;
+    const byBst = b.baseStatTotal - a.baseStatTotal;
+    if (byBst !== 0) return byBst;
+    return a.name.localeCompare(b.name);
+  });
+
+  return new Set(ranked.slice(0, size).map((pkmn) => pkmn.id));
+}
+
 export type StatSortColumn =
   | 'name'
   | 'hp'

@@ -15,7 +15,13 @@ import {
   TabsTrigger,
 } from '@/components';
 import { PokemonModal } from '@/components/pokemon/PokemonModal';
-import { useComparisonSide, useApiSWR, usePokemonModal, useSpeedCalculatorRequest } from '@/hooks';
+import {
+  useComparisonSide,
+  useApiSWR,
+  usePokemonModal,
+  useSpeedCalculatorRequest,
+  useTotalsSelection,
+} from '@/hooks';
 import { pointMapForSide, type ExportSide } from '@/lib/aiTeamBuilder/buildExport';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
@@ -236,6 +242,11 @@ function TeamMatchupContent() {
     () => pointMapForSide({ rosterData: teamB.rosterData, teamBuild: teamB.teamBuild }),
     [teamB.rosterData, teamB.teamBuild],
   );
+
+  // Which Pokemon count toward the Stat Table / Type Effectiveness totals rows.
+  // Owned here so a selection survives tab switches (TabsContent unmounts).
+  const selectionA = useTotalsSelection(teamA.rawPokemon, pointsByPokemonIdA);
+  const selectionB = useTotalsSelection(teamB.rawPokemon, pointsByPokemonIdB);
 
   // Export sides for the "Export for AI" action (null until selected & non-empty).
   const exportSideA = useMemo<ExportSide | null>(() => {
@@ -461,6 +472,10 @@ function TeamMatchupContent() {
                           loading={teamA.rosterLoading}
                           error={teamA.rosterError}
                           onSpriteClick={handleSpriteClick}
+                          selectedIds={selectionA.selectedIds}
+                          onToggleSelected={selectionA.toggleSelected}
+                          onResetSelection={selectionA.resetSelection}
+                          isDefaultSelection={selectionA.isDefaultSelection}
                         />
                       )}
                       {teamBId && (
@@ -473,6 +488,10 @@ function TeamMatchupContent() {
                           loading={teamB.rosterLoading}
                           error={teamB.rosterError}
                           onSpriteClick={handleSpriteClick}
+                          selectedIds={selectionB.selectedIds}
+                          onToggleSelected={selectionB.toggleSelected}
+                          onResetSelection={selectionB.resetSelection}
+                          isDefaultSelection={selectionB.isDefaultSelection}
                         />
                       )}
                     </div>
@@ -534,6 +553,10 @@ function TeamMatchupContent() {
                           loading={teamA.rosterLoading}
                           error={teamA.rosterError}
                           onSpriteClick={handleSpriteClick}
+                          selectedIds={selectionA.selectedIds}
+                          onToggleSelected={selectionA.toggleSelected}
+                          onResetSelection={selectionA.resetSelection}
+                          isDefaultSelection={selectionA.isDefaultSelection}
                         />
                       )}
                       {teamBId && (
@@ -543,6 +566,10 @@ function TeamMatchupContent() {
                           loading={teamB.rosterLoading}
                           error={teamB.rosterError}
                           onSpriteClick={handleSpriteClick}
+                          selectedIds={selectionB.selectedIds}
+                          onToggleSelected={selectionB.toggleSelected}
+                          onResetSelection={selectionB.resetSelection}
+                          isDefaultSelection={selectionB.isDefaultSelection}
                         />
                       )}
                     </div>
