@@ -48,7 +48,7 @@ export function ReplayInputForm({
           <label className="text-sm text-muted-foreground">Game {i + 1}</label>
           <Input
             type="url"
-            placeholder="https://replay.pokemonshowdown.com/…"
+            placeholder="Showdown replay link, or a third-party server's .html replay"
             className="w-full"
             value={replayUrls[i] ?? ''}
             disabled={loading}
