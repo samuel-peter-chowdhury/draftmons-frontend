@@ -74,6 +74,13 @@ export default function UserDetailPage() {
 
   const isLinked = !!data?.hasDiscordLinked;
 
+  // Only show dev/admin-only UI when running locally (for seeding db)
+  const isLocalDev =
+    typeof window !== 'undefined' &&
+    (process.env.NODE_ENV === 'development' ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1');
+
   // Unlink mutation
   const unlinkMutation = useMutation<{ message: string }, void>(() => AuthApi.unlinkDiscord(), {
     onSuccess: () => {
@@ -260,7 +267,7 @@ export default function UserDetailPage() {
                 </div>
               </div>
 
-              {data.isAdmin && (
+              {data.isAdmin && isLocalDev && (
                 <div className="border-t border-border pt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>
                       <div className="text-sm font-medium">Dev Tools</div>

@@ -130,6 +130,7 @@ export function PokemonFilterPanel({
       <CardContent className="p-0">
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="filters" className="border-b-0">
+            <AccordionTrigger>
               <div className="flex gap-5 px-6 pt-5 w-full items-center">
                 <div
                   className="flex-1"
@@ -149,11 +150,10 @@ export function PokemonFilterPanel({
                   />
                 </div>
               </div>
-
-
+            </AccordionTrigger>
 
             <SectionAccordionTrigger className="px-6 text-base font-semibold text-foreground">
-                Advanced Filters
+              Advanced Filters
             </SectionAccordionTrigger>
 
 
@@ -481,6 +481,11 @@ export function PokemonFilterPanel({
                   getLabel={getTypeName}
                   getBadgeStyle={getTypeBadgeStyle}
                 />
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </section>
 
                 {/* Exclude Drafted Pokemon */}
                 {variant === 'seasonPokemon' && (
@@ -491,7 +496,7 @@ export function PokemonFilterPanel({
                     <Checkbox
                       checked={filters.excludeDrafted}
                       id="excludeDrafted"
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={(checked: any) =>
                         onFilterChange({ excludeDrafted: checked === true })
                       }
                     />
