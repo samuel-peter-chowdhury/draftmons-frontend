@@ -101,12 +101,24 @@ export async function apiFetch<T>(url: string, options: RequestInit = {}): Promi
   });
   const contentType = res.headers.get('content-type') || '';
   const isJson = contentType.includes('application/json');
-  const body = isJson ? await res.json() : await res.text();
+  let body: any;
+  if (isJson) {
+    const text = await res.text();
+    try {
+      body = text ? JSON.parse(text) : undefined;
+    } catch {
+      // Malformed/truncated JSON body (e.g. a proxy timeout mid-response) — fall back to raw text
+      // rather than letting a cryptic SyntaxError bubble up as the user-facing error message.
+      body = text;
+    }
+  } else {
+    body = await res.text();
+  }
 
   if (!res.ok) {
-    // On 401, redirect to login with current path
+    // On 401, redirect to login with current path (including query params)
     if (res.status === 401 && typeof window !== 'undefined') {
-      const currentPath = window.location.pathname;
+      const currentPath = window.location.pathname + window.location.search;
       window.location.href = `/?next=${encodeURIComponent(currentPath)}`;
     }
     const message = (body && typeof body === 'object' && body.message) || 'Request failed';
@@ -136,8 +148,13 @@ export const Api = {
 export * from './api/ability.api';
 export * from './api/auth.api';
 export * from './api/generation.api';
+export * from './api/item.api';
 export * from './api/league.api';
+export * from './api/nature.api';
 export * from './api/pokemon.api';
 export * from './api/seasonPokemonTeam.api';
 export * from './api/pokemonType.api';
+export * from './api/teamBuild.api';
+export * from './api/teamBuildSet.api';
 export * from './api/user.api';
+export * from './api/match-upload.api';

@@ -1,9 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
-  Button,
   Card,
   CardContent,
   CardHeader,
@@ -13,7 +12,7 @@ import {
   Pagination,
   SortControls,
 } from '@/components';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatUserDisplayName } from '@/lib/utils';
@@ -25,6 +24,7 @@ const USER_SORT_OPTIONS = [
 ];
 
 export default function UserListPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [sortBy, setSortBy] = useState('lastName');
@@ -35,7 +35,7 @@ export default function UserListPage() {
     [page, pageSize, sortBy, sortOrder],
   );
 
-  const { data, loading, error } = useFetch<PaginatedResponse<UserInput>>(url);
+  const { data, loading, error } = useApiSWR<PaginatedResponse<UserInput>>(url);
 
   const handleSortChange = (newSortBy: string, newSortOrder: 'ASC' | 'DESC') => {
     setSortBy(newSortBy);
@@ -79,21 +79,18 @@ export default function UserListPage() {
                 const displayName = formatUserDisplayName(user);
 
                 return (
-                  <Card key={user.id}>
+                  <Card
+                    key={user.id}
+                    className="cursor-pointer transition-colors hover:border-primary/50"
+                    onClick={() => router.push(`/user/${user.id}`)}
+                  >
                     <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span>{displayName}</span>
-                      </CardTitle>
+                      <CardTitle>{displayName}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                       {user.email && (
                         <div className="text-muted-foreground">{user.email}</div>
                       )}
-                      <div className="flex items-center justify-end">
-                        <Link href={`/user/${user.id}` as any}>
-                          <Button variant="secondary">View Profile</Button>
-                        </Link>
-                      </div>
                     </CardContent>
                   </Card>
                 );

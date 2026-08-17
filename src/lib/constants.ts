@@ -35,19 +35,28 @@ export const BASE_ENDPOINTS = {
   AUTH_STATUS: `${API_BASE_URL}/api/auth/status`,
   AUTH_GOOGLE: `${API_BASE_URL}/api/auth/google`,
   AUTH_LOGOUT: `${API_BASE_URL}/api/auth/logout`,
+  AUTH_DISCORD: `${API_BASE_URL}/api/auth/discord`,
   GENERATION_BASE: `${API_BASE_URL}/api/generation`,
+  ITEM_BASE: `${API_BASE_URL}/api/item`,
   LEAGUE_BASE: `${API_BASE_URL}/api/league`,
   LEAGUE_USER_BASE: `${API_BASE_URL}/api/league-user`,
   MOVE_BASE: `${API_BASE_URL}/api/move`,
+  NATURE_BASE: `${API_BASE_URL}/api/nature`,
   POKEMON_BASE: `${API_BASE_URL}/api/pokemon`,
+  SEASON_POKEMON_BASE: `${API_BASE_URL}/api/season-pokemon`,
   SEASON_POKEMON_TEAM_BASE: `${API_BASE_URL}/api/season-pokemon-team`,
   POKEMON_TYPE_BASE: `${API_BASE_URL}/api/pokemon-type`,
   SEASON_BASE: `${API_BASE_URL}/api/season`,
   SPECIAL_MOVE_CATEGORY_BASE: `${API_BASE_URL}/api/special-move-category`,
+  TEAM_BUILD_BASE: `${API_BASE_URL}/api/team-build`,
+  TEAM_BUILD_SET_BASE: `${API_BASE_URL}/api/team-build-set`,
+  TEAM_BASE: `${API_BASE_URL}/api/team`,
   USER_BASE: `${API_BASE_URL}/api/user`,
+  DISCORD_GUILDS: `${API_BASE_URL}/api/discord/guilds`,
+  DISCORD_INVITE_URL: `${API_BASE_URL}/api/discord/invite-url`,
 } as const;
 
-export const NAT_DEX_GENERATION_ID = 10;
+export const NAT_DEX_GENERATION_ID = 1;
 
 /**
  * IANA timezone identifiers organized by region

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { X, Pencil } from 'lucide-react';
 import {
   Button,
@@ -12,6 +11,11 @@ import {
   CardTitle,
   ErrorAlert,
   Spinner,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  LeagueLogo,
 } from '@/components';
 import {
   AlertDialog,
@@ -26,17 +30,19 @@ import {
 import { AddLeagueUsersModal } from '@/components/modals/AddLeagueUsersModal';
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import { useCheckAuth, useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 import type { LeagueInput } from '@/types';
+import { DiscordTab } from './DiscordTab';
 
 export default function LeagueDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { user: currentUser } = useAuthStore();
-  const { data, loading, error, refetch } = useFetch<LeagueInput>(
+  const { data, loading, error, refetch } = useApiSWR<LeagueInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [params.id], { full: true }),
   );
 
@@ -44,8 +50,6 @@ export default function LeagueDetailPage() {
   const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
   const [isEditLeagueModalOpen, setIsEditLeagueModalOpen] = useState(false);
   const [leagueUserToDelete, setLeagueUserToDelete] = useState<number | null>(null);
-
-  useCheckAuth();
 
   // Check if the current user is a moderator of this league
   const isModerator = data?.leagueUsers?.some(
@@ -80,25 +84,31 @@ export default function LeagueDetailPage() {
       {data && (
         <div className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div>
-                  <span>{data.name}</span>
+            <CardHeader className="relative pb-4">
+              {isModerator && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditLeagueModalOpen(true)}
+                  aria-label="Edit league"
+                  className="absolute right-4 top-4"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+              <div className="flex items-start gap-3">
+                <LeagueLogo
+                  logoUrl={data.logoUrl}
+                  name={data.name}
+                  className="h-20 w-20 rounded-xl sm:h-24 sm:w-24 md:h-28 md:w-28"
+                />
+                <div className="flex min-w-0 flex-col">
+                  <CardTitle>{data.name}</CardTitle>
                   <div className="mt-1 text-sm font-normal text-muted-foreground">
                     {data.abbreviation}
                   </div>
                 </div>
-                {isModerator && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditLeagueModalOpen(true)}
-                    aria-label="Edit league"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                )}
-              </CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <div>
@@ -112,98 +122,113 @@ export default function LeagueDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>League Users</span>
-                {isModerator && (
-                  <Button onClick={() => setIsAddUsersModalOpen(true)} size="sm">
-                    Add Users
-                  </Button>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!data.leagueUsers || data.leagueUsers.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No users in this league yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {data.leagueUsers.map((leagueUser) => {
-                    const displayName = formatUserDisplayName(leagueUser.user);
+          <Tabs defaultValue="overview">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="seasons">Seasons</TabsTrigger>
+              {isModerator && <TabsTrigger value="discord">Discord</TabsTrigger>}
+            </TabsList>
 
-                    return (
-                      <div
-                        key={leagueUser.id}
-                        className="flex items-center justify-between rounded-md border border-border bg-card p-3"
-                      >
-                        <div>
-                          <div className="text-sm font-medium">{displayName}</div>
-                          {leagueUser.isModerator && (
-                            <div className="text-xs text-muted-foreground">Moderator</div>
-                          )}
-                        </div>
-                        {isModerator && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setLeagueUserToDelete(leagueUser.id)}
-                            aria-label={`Remove ${displayName}`}
+            <TabsContent value="overview">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>League Users</span>
+                    {isModerator && (
+                      <Button onClick={() => setIsAddUsersModalOpen(true)} size="sm">
+                        Add Users
+                      </Button>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {!data.leagueUsers || data.leagueUsers.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No users in this league yet.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {data.leagueUsers.map((leagueUser) => {
+                        const displayName = formatUserDisplayName(leagueUser.user);
+
+                        return (
+                          <div
+                            key={leagueUser.id}
+                            className="flex items-center justify-between rounded-md border border-border bg-card p-3"
                           >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Seasons</span>
-                {isModerator && (
-                  <Button onClick={() => setIsCreateSeasonModalOpen(true)} size="sm">
-                    Add Season
-                  </Button>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!data.seasons || data.seasons.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No seasons created yet.</p>
-              ) : (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {data.seasons.map((season) => (
-                    <div key={season.id} className="rounded-md border border-border bg-card p-3">
-                      <div className="mb-2 flex items-center justify-between">
-                        <div className="font-medium">{season.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {season.generation?.name
-                            ? formatGenerationName(season.generation.name)
-                            : 'Unknown Generation'}
-                        </div>
-                      </div>
-                      <div className="space-y-1 text-sm text-muted-foreground">
-                        <div>Status: {season.status.replace(/_/g, ' ')}</div>
-                        <div>Point Limit: {season.pointLimit}</div>
-                        <div>Max Point Value: {season.maxPointValue}</div>
-                      </div>
-                      <div className="mt-3">
-                        <Link href={`/league/${params.id}/season/${season.id}`}>
-                          <Button variant="secondary" size="sm">
-                            Open
-                          </Button>
-                        </Link>
-                      </div>
+                            <div>
+                              <div className="text-sm font-medium">{displayName}</div>
+                              {leagueUser.isModerator && (
+                                <div className="text-xs text-muted-foreground">Moderator</div>
+                              )}
+                            </div>
+                            {isModerator && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setLeagueUserToDelete(leagueUser.id)}
+                                aria-label={`Remove ${displayName}`}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="seasons">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Seasons</span>
+                    {isModerator && (
+                      <Button onClick={() => setIsCreateSeasonModalOpen(true)} size="sm">
+                        Add Season
+                      </Button>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {!data.seasons || data.seasons.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No seasons created yet.</p>
+                  ) : (
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {data.seasons.map((season) => (
+                        <div
+                          key={season.id}
+                          onClick={() => router.push(`/league/${params.id}/season/${season.id}`)}
+                          className="cursor-pointer rounded-md border border-border bg-card p-3 transition-colors hover:border-primary/50"
+                        >
+                          <div className="mb-2 flex items-center justify-between">
+                            <div className="font-medium">{season.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {season.generation?.name
+                                ? formatGenerationName(season.generation.name)
+                                : 'Unknown Generation'}
+                            </div>
+                          </div>
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            <div>Status: {season.status.replace(/_/g, ' ')}</div>
+                            <div>Point Limit: {season.pointLimit}</div>
+                            <div>Max Point Value: {season.maxPointValue}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {isModerator && (
+              <TabsContent value="discord">
+                <DiscordTab leagueId={Number(params.id)} league={data} onUpdate={refetch} />
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       )}
 

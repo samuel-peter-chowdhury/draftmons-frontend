@@ -6,7 +6,7 @@ export function Alert({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
     <div
       role="alert"
       className={cn(
-        'relative w-full rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm',
+        'relative w-full rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm',
         className,
       )}
       {...props}

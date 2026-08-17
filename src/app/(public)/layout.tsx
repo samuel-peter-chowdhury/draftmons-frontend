@@ -1,3 +1,10 @@
+import { AmbientBackground } from '@/components';
+
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  return <main className="min-h-screen">{children}</main>;
+  return (
+    <>
+      <AmbientBackground />
+      <main className="min-h-screen">{children}</main>
+    </>
+  );
 }

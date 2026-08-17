@@ -27,6 +27,22 @@ export const AuthApi = {
    * @param redirectUrl - The URL to redirect to after authentication
    */
   getGoogleAuthUrl: (redirectUrl: string) => {
-    return `${BASE_ENDPOINTS.AUTH_GOOGLE}?redirect=${encodeURIComponent(redirectUrl)}&state=${encodeURIComponent(redirectUrl)}`;
+    return `${BASE_ENDPOINTS.AUTH_GOOGLE}?redirect=${encodeURIComponent(redirectUrl)}`;
+  },
+
+  /**
+   * GET /api/auth/discord (via browser navigation)
+   * Returns the Discord OAuth URL for link initiation
+   */
+  getDiscordAuthUrl: () => {
+    return BASE_ENDPOINTS.AUTH_DISCORD;
+  },
+
+  /**
+   * DELETE /api/auth/discord
+   * Unlink the current user's Discord account
+   */
+  unlinkDiscord: () => {
+    return Api.delete<{ message: string }>(BASE_ENDPOINTS.AUTH_DISCORD);
   },
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, Input, Label } from '@/components';
+import { Card, CardContent, Checkbox, Input, Label, PokemonVariant } from '@/components';
 import {
   Accordion,
   AccordionContent,
@@ -11,6 +11,7 @@ import {
 // import { NewCard } from '../util/NewCard';
 import { SectionAccordionTrigger } from '../util/SectionAccordionTrigger';
 import { FilterDropdown } from '@/components/pokemon/FilterDropdown';
+import { StatRangeFilter } from '@/components/pokemon/StatRangeFilter';
 import type {
   AbilityInput,
   MoveInput,
@@ -41,6 +42,9 @@ export interface PokemonFilters {
   maxPhysicalBulk: string;
   minSpecialBulk: string;
   maxSpecialBulk: string;
+  minPointValue: string;
+  maxPointValue: string;
+  excludeDrafted: boolean;
   selectedAbilities: AbilityInput[];
   selectedTypes: PokemonTypeInput[];
   selectedWeakTypes: PokemonTypeInput[];
@@ -53,6 +57,7 @@ export interface PokemonFilters {
 
 export interface PokemonFilterPanelProps {
   filters: PokemonFilters;
+  variant: PokemonVariant;
   onFilterChange: (filters: Partial<PokemonFilters>) => void;
   types: PokemonTypeInput[];
   specialMoveCategories: SpecialMoveCategoryInput[];
@@ -81,8 +86,21 @@ const getMoveName = (m: MoveInput) => m.name;
 const getSmcKey = (smc: SpecialMoveCategoryInput) => smc.id;
 const getSmcName = (smc: SpecialMoveCategoryInput) => smc.name;
 
+const STAT_RANGE_FILTERS: { label: string; minKey: keyof PokemonFilters; maxKey: keyof PokemonFilters }[] = [
+  { label: 'HP', minKey: 'minHp', maxKey: 'maxHp' },
+  { label: 'Attack', minKey: 'minAttack', maxKey: 'maxAttack' },
+  { label: 'Defense', minKey: 'minDefense', maxKey: 'maxDefense' },
+  { label: 'Special Attack', minKey: 'minSpecialAttack', maxKey: 'maxSpecialAttack' },
+  { label: 'Special Defense', minKey: 'minSpecialDefense', maxKey: 'maxSpecialDefense' },
+  { label: 'Speed', minKey: 'minSpeed', maxKey: 'maxSpeed' },
+  { label: 'Base Stat Total', minKey: 'minBaseStatTotal', maxKey: 'maxBaseStatTotal' },
+  { label: 'Physical Bulk', minKey: 'minPhysicalBulk', maxKey: 'maxPhysicalBulk' },
+  { label: 'Special Bulk', minKey: 'minSpecialBulk', maxKey: 'maxSpecialBulk' },
+];
+
 export function PokemonFilterPanel({
   filters,
+  variant,
   onFilterChange,
   types,
   specialMoveCategories,
@@ -108,7 +126,7 @@ export function PokemonFilterPanel({
     };
 
   return (
-    <Card className="mb-6">
+    <Card className="relative z-20 mb-6">
       <CardContent className="p-0">
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="filters" className="border-b-0">
@@ -452,21 +470,33 @@ export function PokemonFilterPanel({
                             getBadgeStyle={getTypeBadgeStyle}
                           />
 
-                          <FilterDropdown
-                            label="Immune Types"
-                            items={types}
-                            selectedItems={filters.selectedImmuneTypes}
-                            onAdd={handleAddTo<PokemonTypeInput>('selectedImmuneTypes')}
-                            onRemove={handleRemoveFrom<PokemonTypeInput>('selectedImmuneTypes')}
-                            getKey={getTypeKey}
-                            getLabel={getTypeName}
-                            getBadgeStyle={getTypeBadgeStyle}
-                          />
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                </section>
+                {/* Immune Types Filter */}
+                <FilterDropdown
+                  label="Immune Types"
+                  items={types}
+                  selectedItems={filters.selectedImmuneTypes}
+                  onAdd={handleAddTo<PokemonTypeInput>('selectedImmuneTypes')}
+                  onRemove={handleRemoveFrom<PokemonTypeInput>('selectedImmuneTypes')}
+                  getKey={getTypeKey}
+                  getLabel={getTypeName}
+                  getBadgeStyle={getTypeBadgeStyle}
+                />
+
+                {/* Exclude Drafted Pokemon */}
+                {variant === 'seasonPokemon' && (
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="excludeDrafted" className="text-sm font-medium">
+                      Exclude Drafted Pokemon
+                    </Label>
+                    <Checkbox
+                      checked={filters.excludeDrafted}
+                      id="excludeDrafted"
+                      onCheckedChange={(checked) =>
+                        onFilterChange({ excludeDrafted: checked === true })
+                      }
+                    />
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>

@@ -1,0 +1,118 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { useApiSWR, usePokemonSearch } from '@/hooks';
+import { buildUrlWithQuery } from '@/lib/api';
+import { BASE_ENDPOINTS } from '@/lib/constants';
+import { formatGenerationName } from '@/lib/utils';
+import { Label } from '@/components';
+import { Select } from '@/components/ui/select';
+import { PokemonFilterPanel } from '@/components/pokemon/PokemonFilterPanel';
+import { PokemonTable } from '@/components/pokemon/PokemonTable';
+import type { SeasonInput } from '@/types';
+
+export default function SeasonPokemonSearchPage() {
+  const params = useParams<{ id: string; seasonId: string }>();
+  const leagueId = Number(params.id);
+  const seasonId = Number(params.seasonId);
+
+  const {
+    data,
+    loading,
+    error,
+    filters,
+    types,
+    generations,
+    specialMoveCategories,
+    abilitySearchResults,
+    moveSearchResults,
+    abilitySearchLoading,
+    moveSearchLoading,
+    sortBy,
+    sortOrder,
+    page,
+    pageSize,
+    selectedGenerationId,
+    resetGeneration,
+    handleFilterChange,
+    handleSort,
+    handlePageChange,
+    handlePageSizeChange,
+    setAbilitySearch,
+    setMoveSearch,
+  } = usePokemonSearch({
+    endpoint: BASE_ENDPOINTS.SEASON_POKEMON_BASE,
+    extraParams: { seasonId, full: true },
+    initialFilters: { excludeDrafted: true },
+    initialSortBy: 'pointValue',
+    initialSortOrder: 'DESC',
+  });
+
+  // Fetch season data
+  const { data: season } = useApiSWR<SeasonInput>(
+    buildUrlWithQuery(BASE_ENDPOINTS.SEASON_BASE, [seasonId], { full: true }),
+  );
+
+  // Sync generation from season data, resetting dependent filters
+  useEffect(() => {
+    if (season?.generationId) {
+      resetGeneration(season.generationId);
+    }
+  }, [season?.generationId, resetGeneration]);
+
+  return (
+    <div className="mx-auto max-w-7xl p-4">
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">{season?.name} Pokemon</h1>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="generation-select" className="text-sm text-muted-foreground">
+            Generation:
+          </Label>
+          <Select
+            id="generation-select"
+            value={selectedGenerationId}
+            disabled={true}
+            className="h-9 w-auto px-2 py-1"
+            aria-label="Select generation"
+          >
+            {generations.map((g) => (
+              <option key={g.id} value={g.id}>
+                {formatGenerationName(g.name)}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
+
+      <PokemonFilterPanel
+        filters={filters}
+        variant={'seasonPokemon'}
+        onFilterChange={handleFilterChange}
+        types={types}
+        specialMoveCategories={specialMoveCategories}
+        abilitySearchResults={abilitySearchResults}
+        moveSearchResults={moveSearchResults}
+        onAbilitySearchChange={setAbilitySearch}
+        onMoveSearchChange={setMoveSearch}
+        abilitySearchLoading={abilitySearchLoading}
+        moveSearchLoading={moveSearchLoading}
+      />
+
+      <PokemonTable
+        data={data}
+        variant={'seasonPokemon'}
+        loading={loading}
+        error={error}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        page={page}
+        pageSize={pageSize}
+        onSort={handleSort}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        leagueId={leagueId}
+      />
+    </div>
+  );
+}

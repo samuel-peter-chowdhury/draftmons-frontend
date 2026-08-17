@@ -1,8 +1,23 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { SeasonStatus } from '@/types';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+const SEASON_STATUS_LABELS: Record<SeasonStatus, string> = {
+  [SeasonStatus.PRE_DRAFT]: 'Pre-Draft',
+  [SeasonStatus.DRAFT]: 'Draft',
+  [SeasonStatus.PRE_SEASON]: 'Pre-Season',
+  [SeasonStatus.REGULAR_SEASON]: 'Regular Season',
+  [SeasonStatus.POST_SEASON]: 'Post-Season',
+  [SeasonStatus.PLAYOFFS]: 'Playoffs',
+};
+
+export function formatSeasonStatus(status: SeasonStatus): string {
+  return SEASON_STATUS_LABELS[status] ?? status;
 }
 
 /**
@@ -27,6 +42,10 @@ export function formatUserDisplayName(
   return user.firstName || user.lastName || user.email || fallback;
 }
 
+export function capitalizeFirst(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 export function formatGenerationName(name: string): string {
   if (name.length <= 2) {
     return name.toUpperCase();
@@ -36,4 +55,24 @@ export function formatGenerationName(name: string): string {
     .split(' ')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
+}
+
+/**
+ * Converts a string into a URL/filename-safe slug: lowercases, trims,
+ * replaces runs of non-alphanumeric characters with a single hyphen, and
+ * strips leading/trailing hyphens.
+ *
+ * @param input - The raw string to slugify
+ * @returns The slugified string, or '' for empty/whitespace input
+ *
+ * @example
+ * slugify("Summer 2026") // Returns "summer-2026"
+ * slugify("  ") // Returns ""
+ */
+export function slugify(input: string): string {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }

@@ -5,6 +5,9 @@ import { SeasonInput } from './season.type';
 export interface LeagueInput extends BaseInput {
   name: string;
   abbreviation: string;
+  discordGuildId?: string | null;
+  discordChannelId?: string | null;
+  logoUrl?: string | null;
   leagueUsers?: LeagueUserInput[];
   seasons?: SeasonInput[];
 }
@@ -12,4 +15,7 @@ export interface LeagueInput extends BaseInput {
 export interface LeagueOutput extends BaseOutput {
   name: string;
   abbreviation: string;
+  discordGuildId?: string | null;
+  discordChannelId?: string | null;
+  logoUrl?: string | null;
 }

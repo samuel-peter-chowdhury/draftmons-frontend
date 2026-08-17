@@ -1,21 +1,20 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Button,
   Card,
-  CardContent,
   CardHeader,
   CardTitle,
   ErrorAlert,
   Spinner,
   Pagination,
   SortControls,
+  LeagueLogo,
 } from '@/components';
 import { CreateLeagueModal } from '@/components/modals/CreateLeagueModal';
-import { useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import type { LeagueInput, PaginatedResponse } from '@/types';
@@ -38,7 +37,7 @@ export default function LeagueListPage() {
     [page, pageSize, sortBy, sortOrder],
   );
 
-  const { data, loading, error } = useFetch<PaginatedResponse<LeagueInput>>(url);
+  const { data, loading, error } = useApiSWR<PaginatedResponse<LeagueInput>>(url);
 
   const handleLeagueCreated = (league?: LeagueInput) => {
     if (league?.id) {
@@ -92,18 +91,26 @@ export default function LeagueListPage() {
           <div className={loading ? 'pointer-events-none opacity-50' : ''}>
             <div className="grid gap-3 md:grid-cols-2">
               {data.data.map((league) => (
-                <Card key={league.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{league.name}</span>
-                      <span className="text-sm text-muted-foreground">{league.abbreviation}</span>
-                    </CardTitle>
+                <Card
+                  key={league.id}
+                  className="cursor-pointer transition-colors hover:border-primary/50"
+                  onClick={() => router.push(`/league/${league.id}`)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
+                      <LeagueLogo
+                        logoUrl={league.logoUrl}
+                        name={league.name}
+                        className="h-16 w-16 rounded-lg sm:h-20 sm:w-20"
+                      />
+                      <div className="flex min-w-0 flex-col">
+                        <CardTitle>{league.name}</CardTitle>
+                        <div className="mt-0.5 text-sm font-normal text-muted-foreground">
+                          {league.abbreviation}
+                        </div>
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent className="flex items-center justify-end">
-                    <Link href={`/league/${league.id}`}>
-                      <Button variant="secondary">Open</Button>
-                    </Link>
-                  </CardContent>
                 </Card>
               ))}
             </div>

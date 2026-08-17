@@ -5,13 +5,14 @@ import {
   DialogHeader,
   DialogTitle,
   Button,
+  Checkbox,
   Input,
   Label,
   ErrorAlert,
   Spinner,
   Select,
 } from '@/components';
-import { useFetch, useMutation } from '@/hooks';
+import { useApiSWR, useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
@@ -36,7 +37,7 @@ export function CreateSeasonModal({
   const isEditMode = !!season;
 
   const { data: generationsResponse, loading: generationsLoading, error: generationsError } =
-    useFetch<PaginatedResponse<GenerationOutput>>(open ? BASE_ENDPOINTS.GENERATION_BASE : null);
+    useApiSWR<PaginatedResponse<GenerationOutput>>(open ? BASE_ENDPOINTS.GENERATION_BASE : null);
 
   const generations = generationsResponse?.data;
 
@@ -45,11 +46,17 @@ export function CreateSeasonModal({
     status: season?.status || ('PRE_DRAFT' as SeasonStatus),
     pointLimit: season?.pointLimit ?? 100,
     maxPointValue: season?.maxPointValue ?? 20,
-    generationId: season?.generationId || 0,
+    numberOfGames: season?.numberOfGames ?? 3,
+    numberOfWeeks: season?.numberOfWeeks ?? 10,
+    minRosterSize: season?.minRosterSize ?? 10,
+    maxRosterSize: season?.maxRosterSize ?? 12,
+    allowMultiTeamPokemon: season?.allowMultiTeamPokemon ?? false,
+    generationId: season?.generationId ?? 0,
     leagueId,
   });
 
   const [form, setForm] = useState<Omit<SeasonOutput, 'rules'>>(getDefaultForm());
+  const [numberOfGamesError, setNumberOfGamesError] = useState<string | null>(null);
 
   // Reset form when modal opens or season changes
   useEffect(() => {
@@ -89,6 +96,11 @@ export function CreateSeasonModal({
         status: form.status,
         pointLimit: form.pointLimit,
         maxPointValue: form.maxPointValue,
+        numberOfGames: form.numberOfGames,
+        numberOfWeeks: form.numberOfWeeks,
+        minRosterSize: form.minRosterSize,
+        maxRosterSize: form.maxRosterSize,
+        allowMultiTeamPokemon: form.allowMultiTeamPokemon,
         generationId: form.generationId,
       });
     } else {
@@ -163,7 +175,7 @@ export function CreateSeasonModal({
               value={form.status}
               onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as SeasonStatus }))}
               required
-              disabled={mutation.loading}
+              disabled={mutation.loading || !isEditMode}
             >
               <option value="PRE_DRAFT">Pre-Draft</option>
               <option value="DRAFT">Draft</option>
@@ -200,6 +212,84 @@ export function CreateSeasonModal({
             />
           </div>
 
+          <div>
+            <Label htmlFor="season-number-of-games">Best-of-X (Number of Games)</Label>
+            <Input
+              id="season-number-of-games"
+              type="number"
+              min="1"
+              step="2"
+              value={form.numberOfGames ?? 3}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                setForm((f) => ({ ...f, numberOfGames: val }));
+                setNumberOfGamesError(
+                  val > 0 && val % 2 === 0
+                    ? 'Must be a positive odd number (e.g. 1, 3, 5)'
+                    : null,
+                );
+              }}
+              required
+              disabled={mutation.loading}
+            />
+            {numberOfGamesError && (
+              <p className="mt-1 text-xs text-destructive">{numberOfGamesError}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="season-number-of-weeks">Number of Weeks</Label>
+            <Input
+              id="season-number-of-weeks"
+              type="number"
+              min="1"
+              value={form.numberOfWeeks}
+              onChange={(e) => setForm((f) => ({ ...f, numberOfWeeks: Number(e.target.value) }))}
+              required
+              disabled={mutation.loading}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="season-min-roster-size">Min Roster Size</Label>
+            <Input
+              id="season-min-roster-size"
+              type="number"
+              value={form.minRosterSize}
+              onChange={(e) => setForm((f) => ({ ...f, minRosterSize: Number(e.target.value) }))}
+              required
+              disabled={mutation.loading}
+              min="1"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="season-max-roster-size">Max Roster Size</Label>
+            <Input
+              id="season-max-roster-size"
+              type="number"
+              value={form.maxRosterSize}
+              onChange={(e) => setForm((f) => ({ ...f, maxRosterSize: Number(e.target.value) }))}
+              required
+              disabled={mutation.loading}
+              min="1"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="season-allow-multi-team-pokemon"
+              checked={form.allowMultiTeamPokemon}
+              onCheckedChange={(checked) =>
+                setForm((f) => ({ ...f, allowMultiTeamPokemon: checked === true }))
+              }
+              disabled={mutation.loading}
+            />
+            <Label htmlFor="season-allow-multi-team-pokemon" className="text-sm font-medium">
+              Allow Multi-Team Pokémon
+            </Label>
+          </div>
+
           <div className="flex items-center justify-end gap-2">
             <Button
               type="button"
@@ -209,7 +299,7 @@ export function CreateSeasonModal({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={mutation.loading}>
+            <Button type="submit" disabled={mutation.loading || !!numberOfGamesError}>
               {mutation.loading ? <Spinner size={18} /> : isEditMode ? 'Save' : 'Create'}
             </Button>
           </div>

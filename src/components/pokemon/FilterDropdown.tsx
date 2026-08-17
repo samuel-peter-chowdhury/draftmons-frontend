@@ -2,8 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
-import { Input, Label } from '@/components';
-import { Badge } from '@/components/ui/badge';
+import { Badge, Input, Label } from '@/components';
 
 
 

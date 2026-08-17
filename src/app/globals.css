@@ -2,43 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-/* shadcn-inspired CSS variables for dark theme */
+/*
+ * Minimalist Dark / Amber design tokens.
+ * HSL triplets (no hsl() wrapper) so Tailwind can compose them with the
+ * <alpha-value> placeholder in tailwind.config.ts — this is what lets
+ * glass surfaces (bg-card/60) and hairline borders (border-border/[0.08])
+ * composite real alpha against a CSS-variable color.
+ */
 :root {
-  --background: 222 47% 4%;
-  --foreground: 210 20% 98%;
-  --card: 222 47% 6%;
-  --card-foreground: 210 20% 98%;
+  --background: 240 20% 5%; /* #0A0A0F */
+  --foreground: 0 0% 98%; /* #FAFAFA */
 
-  --popover: 222 47% 5%;
-  --popover-foreground: 210 20% 98%;
+  --card: 240 16% 12%; /* #1A1A24, consumed at alpha (bg-card/60 etc.) */
+  --card-foreground: 0 0% 98%;
 
-  --primary: 222 47% 50%;
-  --primary-foreground: 210 20% 98%;
+  --popover: 240 18% 9%; /* #12121A */
+  --popover-foreground: 0 0% 98%;
 
-  --secondary: 222 27% 12%;
-  --secondary-foreground: 210 20% 98%;
+  --primary: 38 92% 50%; /* #F59E0B amber — the single accent, used sparingly */
+  --primary-foreground: 240 20% 5%; /* dark text on amber */
 
-  --muted: 215 27% 12%;
-  --muted-foreground: 217.9 10.6% 64.9%;
+  --secondary: 240 16% 12%; /* #1A1A24 */
+  --secondary-foreground: 0 0% 98%;
 
-  --accent: 222 27% 12%;
-  --accent-foreground: 210 20% 98%;
+  --muted: 240 16% 12%; /* #1A1A24 */
+  --muted-foreground: 240 4% 46%; /* zinc-500-ish, #71717A */
+
+  --accent: 240 14% 16%; /* neutral hover/highlight surface — NOT amber */
+  --accent-foreground: 0 0% 98%;
+
+  --success: 142 30% 40%; /* muted sage, deliberately not vibrant green */
+  --success-foreground: 0 0% 98%;
+
+  --warning: 38 45% 42%; /* muted ochre/gold — less saturated than --primary */
+  --warning-foreground: 0 0% 98%;
 
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 20% 98%;
 
-  --border: 215 27% 12%;
-  --input: 215 27% 12%;
-  --ring: 222 47% 50%;
+  --border: 0 0% 100%; /* pure white, consumed at low alpha (border-border/[0.08]) */
+  --input: 240 14% 16%;
+  --ring: 38 92% 50%; /* matches --primary */
 
   --radius: 0.5rem;
+
+  /*
+   * Discrete type-effectiveness swatches (see lib/pokemon.ts).
+   * These are fixed stops, not a gradient — mirrored here so
+   * getEffectivenessColor() returns var() references instead of inline rgba.
+   * Values are unchanged from the original literals (mechanical extraction).
+   */
+  --effectiveness-immune: rgba(50, 50, 50, 0.9);
+  --effectiveness-resist-min: rgba(20, 100, 45, 0.8); /* <= 1/8 */
+  --effectiveness-resist-low: rgba(34, 120, 60, 0.7); /* <= 1/4 */
+  --effectiveness-resist-high: rgba(56, 142, 80, 0.5); /* <= 1/2 */
+  --effectiveness-weak-low: rgba(190, 50, 50, 0.5); /* <= 2x */
+  --effectiveness-weak-mid: rgba(200, 30, 30, 0.7); /* <= 4x */
+  --effectiveness-weak-high: rgba(180, 20, 20, 0.85); /* 8x+ */
 }
 
 html {
   color-scheme: dark;
 }
 body {
-  @apply bg-background text-foreground min-h-screen antialiased;
+  @apply bg-background text-foreground font-sans min-h-screen antialiased;
 }
 /* Header height utility */
 :root { --header-h: 64px; }

@@ -8,9 +8,12 @@ export interface UserInput extends BaseInput {
   email: string;
   isAdmin: boolean;
   googleId: string;
+  discordId: string | null;
+  hasDiscordLinked: boolean;
   showdownUsername: string;
   discordUsername: string;
   timezone: string;
+  avatarUrl?: string | null;
   leagueUsers?: LeagueUserInput[];
   teams?: TeamInput[];
 }
@@ -21,7 +24,10 @@ export interface UserOutput extends BaseOutput {
   email?: string;
   isAdmin: boolean;
   googleId?: string;
+  discordId?: string | null;
+  hasDiscordLinked?: boolean;
   showdownUsername?: string;
   discordUsername?: string;
   timezone?: string;
+  avatarUrl?: string | null;
 }

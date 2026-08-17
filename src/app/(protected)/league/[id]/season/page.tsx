@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   Button,
   Card,
@@ -15,7 +14,7 @@ import {
   SortControls,
 } from '@/components';
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
-import { useCheckAuth, useFetch } from '@/hooks';
+import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { formatGenerationName } from '@/lib/utils';
@@ -29,6 +28,7 @@ const SEASON_SORT_OPTIONS = [
 
 export default function SeasonsPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const leagueId = Number(params.id);
   const { user: currentUser } = useAuthStore();
 
@@ -46,7 +46,7 @@ export default function SeasonsPage() {
     loading: leagueLoading,
     error: leagueError,
     refetch: refetchLeague,
-  } = useFetch<LeagueInput>(
+  } = useApiSWR<LeagueInput>(
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId], { full: true }),
   );
 
@@ -68,9 +68,7 @@ export default function SeasonsPage() {
     loading: seasonsLoading,
     error: seasonsError,
     refetch: refetchSeasons,
-  } = useFetch<PaginatedResponse<SeasonInput>>(seasonsUrl);
-
-  useCheckAuth();
+  } = useApiSWR<PaginatedResponse<SeasonInput>>(seasonsUrl);
 
   // Check if the current user is a moderator of this league
   const isModerator =
@@ -140,7 +138,11 @@ export default function SeasonsPage() {
               <div className={loading ? 'pointer-events-none opacity-50' : ''}>
                 <div className="grid gap-3 md:grid-cols-2">
                   {seasons.map((season) => (
-                    <Card key={season.id}>
+                    <Card
+                      key={season.id}
+                      className="cursor-pointer transition-colors hover:border-primary/50"
+                      onClick={() => router.push(`/league/${leagueId}/season/${season.id}`)}
+                    >
                       <CardHeader>
                         <CardTitle className="flex items-center justify-between">
                           <span>{season.name}</span>
@@ -151,17 +153,10 @@ export default function SeasonsPage() {
                           </span>
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="space-y-1 text-sm text-muted-foreground">
-                          <div>Status: {season.status.replace(/_/g, ' ')}</div>
-                          <div>Point Limit: {season.pointLimit}</div>
-                          <div>Max Point Value: {season.maxPointValue}</div>
-                        </div>
-                        <div className="flex items-center justify-end">
-                          <Link href={`/league/${leagueId}/season/${season.id}`}>
-                            <Button variant="secondary">Open</Button>
-                          </Link>
-                        </div>
+                      <CardContent className="space-y-1 text-sm text-muted-foreground">
+                        <div>Status: {season.status.replace(/_/g, ' ')}</div>
+                        <div>Point Limit: {season.pointLimit}</div>
+                        <div>Max Point Value: {season.maxPointValue}</div>
                       </CardContent>
                     </Card>
                   ))}

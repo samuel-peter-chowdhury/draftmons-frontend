@@ -12,6 +12,8 @@ import type {
   MatchOutput,
   SeasonPokemonInput,
   SeasonPokemonOutput,
+  SeasonPokemonTeamInput,
+  SeasonPokemonTeamOutput,
   SeasonInput,
   SeasonOutput,
   TeamInput,
@@ -19,6 +21,8 @@ import type {
   WeekInput,
   WeekOutput,
   PaginatedResponse,
+  BulkUpsertInput,
+  BulkUpsertEntryResult,
 } from '@/types';
 
 /**
@@ -28,14 +32,15 @@ export const LeagueApi = {
   // ==================== League Base Operations ====================
 
   /**
-   * GET /api/league?page=1&pageSize=10&sortBy=name&sortOrder=ASC
-   * Get paginated list of leagues
+   * GET /api/league?page=1&pageSize=10&sortBy=name&sortOrder=ASC&nameLike=foo
+   * Get paginated list of leagues, optionally searching by name/abbreviation
    */
   getAll: (params: {
     page: number;
     pageSize: number;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC';
+    nameLike?: string;
   }) => {
     const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [], params);
     return Api.get<PaginatedResponse<LeagueInput>>(url);
@@ -66,7 +71,7 @@ export const LeagueApi = {
    * PUT /api/league/:id
    * Update an existing league
    */
-  update: (id: number, data: LeagueOutput) => {
+  update: (id: number, data: Partial<LeagueOutput>) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, id);
     return Api.put<LeagueInput>(url, data);
   },
@@ -81,6 +86,19 @@ export const LeagueApi = {
   },
 
   // ==================== League User Operations ====================
+
+  /**
+   * GET /api/league-user?userId={userId}&full=true
+   * Get all league memberships for a given user, across leagues
+   */
+  getLeagueUsersForUser: (userId: number, full = false) => {
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_USER_BASE, [], {
+      userId,
+      full,
+      pageSize: 100,
+    });
+    return Api.get<PaginatedResponse<LeagueUserInput>>(url);
+  },
 
   /**
    * GET /api/league/:leagueId/league-user
@@ -130,12 +148,18 @@ export const LeagueApi = {
   // ==================== Season Operations ====================
 
   /**
-   * GET /api/league/:leagueId/season
-   * Get all seasons in a league
+   * GET /api/league/:leagueId/season?leagueId={leagueId}&pageSize=100
+   * Get all seasons in a league.
+   * The nested route's getWhere() doesn't scope by the leagueId path param
+   * (like the other league-nested endpoints), so leagueId is passed explicitly
+   * as a query filter, mirroring how those endpoints are scoped via seasonId.
    */
   getSeasons: (leagueId: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season');
-    return Api.get<SeasonInput[]>(url);
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season'], {
+      leagueId,
+      pageSize: 100,
+    });
+    return Api.get<PaginatedResponse<SeasonInput>>(url);
   },
 
   /**
@@ -177,12 +201,15 @@ export const LeagueApi = {
   // ==================== Team Operations ====================
 
   /**
-   * GET /api/league/:leagueId/team
+   * GET /api/league/:leagueId/team?full=true
    * Get all teams in a league
    */
-  getTeams: (leagueId: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'team');
-    return Api.get<TeamInput[]>(url);
+  getTeams: (
+    leagueId: number,
+    params?: { seasonId?: number; userId?: number; full?: boolean; pageSize?: number },
+  ) => {
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'team'], params);
+    return Api.get<PaginatedResponse<TeamInput>>(url);
   },
 
   /**
@@ -227,9 +254,18 @@ export const LeagueApi = {
    * GET /api/league/:leagueId/week
    * Get all weeks in a league
    */
-  getWeeks: (leagueId: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'week');
-    return Api.get<WeekInput[]>(url);
+  getWeeks: (
+    leagueId: number,
+    params?: {
+      seasonId?: number;
+      full?: boolean;
+      pageSize?: number;
+      sortBy?: string;
+      sortOrder?: 'ASC' | 'DESC';
+    },
+  ) => {
+    const url = buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'week'], params);
+    return Api.get<PaginatedResponse<WeekInput>>(url);
   },
 
   /**
@@ -424,8 +460,17 @@ export const LeagueApi = {
    * GET /api/league/:leagueId/season-pokemon/:seasonPokemonId
    * Get a specific season pokemon
    */
-  getSeasonPokemonById: (leagueId: number, seasonPokemonId: number) => {
-    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon', seasonPokemonId);
+  getSeasonPokemonById: (
+    leagueId: number,
+    seasonPokemonId: number,
+    full?: boolean,
+    activeRelationsOnly?: boolean,
+  ) => {
+    const url = buildUrlWithQuery(
+      BASE_ENDPOINTS.LEAGUE_BASE,
+      [leagueId, 'season-pokemon', seasonPokemonId],
+      { full, activeRelationsOnly },
+    );
     return Api.get<SeasonPokemonInput>(url);
   },
 
@@ -453,6 +498,49 @@ export const LeagueApi = {
    */
   deleteSeasonPokemon: (leagueId: number, seasonPokemonId: number) => {
     const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon', seasonPokemonId);
+    return Api.delete<void>(url);
+  },
+
+  /**
+   * POST /api/league/:leagueId/season-pokemon-bulk
+   * Returns BulkUpsertEntryResult[] (200, always) — per-entry results, never blocks
+   * on individual row failures (moderator-only, isAuthReadLeagueModWrite-gated).
+   */
+  bulkUpsertSeasonPokemon: (leagueId: number, data: BulkUpsertInput) => {
+    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-bulk');
+    return Api.post<BulkUpsertEntryResult[]>(url, data);
+  },
+
+  // ==================== Season Pokemon Team Operations ====================
+
+  /**
+   * POST /api/league/:leagueId/season-pokemon-team
+   * Create a new season pokemon team assignment
+   */
+  createSeasonPokemonTeam: (leagueId: number, data: SeasonPokemonTeamOutput) => {
+    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-team');
+    return Api.post<SeasonPokemonTeamInput>(url, data);
+  },
+
+  /**
+   * PUT /api/league/:leagueId/season-pokemon-team/:id
+   * Update a season pokemon team assignment (e.g. soft-unassign/reactivate via isActive)
+   */
+  updateSeasonPokemonTeam: (
+    leagueId: number,
+    id: number,
+    data: Partial<SeasonPokemonTeamOutput>,
+  ) => {
+    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-team', id);
+    return Api.put<SeasonPokemonTeamInput>(url, data);
+  },
+
+  /**
+   * DELETE /api/league/:leagueId/season-pokemon-team/:id
+   * Permanently delete a season pokemon team assignment
+   */
+  deleteSeasonPokemonTeam: (leagueId: number, id: number) => {
+    const url = buildUrl(BASE_ENDPOINTS.LEAGUE_BASE, leagueId, 'season-pokemon-team', id);
     return Api.delete<void>(url);
   },
 };

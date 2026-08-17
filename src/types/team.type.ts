@@ -8,7 +8,9 @@ import { UserInput } from './user.type';
 export interface TeamInput extends BaseInput {
   name: string;
   seasonId: number;
-  userId: number;
+  userId: number | null;
+  skillLevel?: number | null;
+  logoUrl?: string | null;
   season?: SeasonInput;
   user?: UserInput;
   seasonPokemonTeams?: SeasonPokemonTeamInput[];
@@ -22,5 +24,7 @@ export interface TeamInput extends BaseInput {
 export interface TeamOutput extends BaseOutput {
   name: string;
   seasonId: number;
-  userId: number;
+  userId: number | null;
+  skillLevel?: number | null;
+  logoUrl?: string | null;
 }

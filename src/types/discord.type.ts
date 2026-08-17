@@ -1,0 +1,15 @@
+export interface DiscordGuild {
+  id: string;
+  name: string;
+  linkedLeagueName: string | null;
+  hasManagePermission: boolean;
+}
+
+export interface DiscordChannel {
+  id: string;
+  name: string;
+}
+
+export interface DiscordInviteUrl {
+  url: string;
+}

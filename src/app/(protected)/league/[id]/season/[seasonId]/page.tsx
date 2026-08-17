@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { X, Pencil } from 'lucide-react';
 import {
   Button,
@@ -11,6 +11,7 @@ import {
   CardTitle,
   ErrorAlert,
   Spinner,
+  TeamLogo,
 } from '@/components';
 import {
   AlertDialog,
@@ -25,57 +26,45 @@ import {
 import { CreateSeasonModal } from '@/components/modals/CreateSeasonModal';
 import { CreateTeamModal } from '@/components/modals/CreateTeamModal';
 import { EditRulesModal } from '@/components/modals/EditRulesModal';
-import { useCheckAuth, useFetch, useMutation } from '@/hooks';
-import { LeagueApi, buildUrlWithQuery } from '@/lib/api';
-import { BASE_ENDPOINTS } from '@/lib/constants';
+import { useMutation } from '@/hooks';
+import { LeagueApi } from '@/lib/api';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { formatGenerationName, formatUserDisplayName } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
-import type { LeagueInput, SeasonInput } from '@/types';
+import { useLeagueStore, useIsModerator } from '@/stores/useLeagueStore';
+import Link from 'next/link';
 
 export default function SeasonDetailPage() {
   const params = useParams<{ id: string; seasonId: string }>();
+  const router = useRouter();
   const leagueId = Number(params.id);
   const seasonId = Number(params.seasonId);
   const { user: currentUser } = useAuthStore();
 
-  // Fetch league data for moderator check and league users
-  const {
-    data: league,
-    loading: leagueLoading,
-    error: leagueError,
-  } = useFetch<LeagueInput>(
-    buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId], { full: true }),
-  );
+  const league = useLeagueStore((s) => s.league);
+  const leagueLoading = useLeagueStore((s) => s.leagueLoading);
+  const leagueError = useLeagueStore((s) => s.leagueError);
+  const season = useLeagueStore((s) => s.season);
+  const seasonLoading = useLeagueStore((s) => s.seasonLoading);
+  const seasonError = useLeagueStore((s) => s.seasonError);
+  const refetchSeason = useLeagueStore((s) => s.refetchSeason);
 
-  // Fetch season with teams
-  const {
-    data: season,
-    loading: seasonLoading,
-    error: seasonError,
-    refetch: refetchSeason,
-  } = useFetch<SeasonInput>(
-    buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season', seasonId], { full: true }),
-  );
+  const handleRefetchSeason = useCallback(() => {
+    refetchSeason(leagueId, seasonId);
+  }, [refetchSeason, leagueId, seasonId]);
 
   const [isEditSeasonModalOpen, setIsEditSeasonModalOpen] = useState(false);
   const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
   const [isEditRulesModalOpen, setIsEditRulesModalOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<number | null>(null);
 
-  useCheckAuth();
-
-  // Check if the current user is a moderator of this league
-  const isModerator =
-    league?.leagueUsers?.some(
-      (leagueUser) => leagueUser.userId === currentUser?.id && leagueUser.isModerator,
-    ) ?? false;
+  const isModerator = useIsModerator(currentUser?.id);
 
   const deleteTeamMutation = useMutation(
     (teamId: number) => LeagueApi.deleteTeam(leagueId, teamId),
     {
       onSuccess: () => {
-        refetchSeason();
+        handleRefetchSeason();
         setTeamToDelete(null);
       },
     },
@@ -156,28 +145,42 @@ export default function SeasonDetailPage() {
               {!season.teams || season.teams.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No teams in this season yet.</p>
               ) : (
-                <div className="space-y-2">
+                <div className="grid gap-3 md:grid-cols-2">
                   {season.teams.map((team) => (
                     <div
                       key={team.id}
-                      className="flex items-center justify-between rounded-md border border-border bg-card p-3"
+                      onClick={() =>
+                        router.push(`/league/${params.id}/season/${season.id}/team/${team.id}`)
+                      }
+                      className="relative cursor-pointer rounded-md border border-border bg-card p-3 transition-colors hover:border-primary/50"
                     >
-                      <div>
-                        <div className="text-sm font-medium">{team.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatUserDisplayName(team.user)}
-                        </div>
-                      </div>
                       {isModerator && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setTeamToDelete(team.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTeamToDelete(team.id);
+                          }}
                           aria-label={`Remove ${team.name}`}
+                          className="absolute right-1 top-1"
                         >
                           <X className="h-4 w-4" />
                         </Button>
                       )}
+                      <div className="flex items-start gap-3">
+                        <TeamLogo
+                          logoUrl={team.logoUrl}
+                          name={team.name}
+                          className="h-12 w-12 rounded-lg sm:h-14 sm:w-14"
+                        />
+                        <div className="flex min-w-0 flex-col">
+                          <div className="text-sm font-medium">{team.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatUserDisplayName(team.user, 'Unclaimed')}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -204,10 +207,18 @@ export default function SeasonDetailPage() {
             </CardHeader>
             <CardContent>
               {season.rules ? (
-                <div
-                  className="prose prose-sm prose-invert max-w-none [&_a]:text-primary [&_a]:underline [&_h1]:mb-2 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:text-base [&_h3]:font-medium [&_li]:mb-1 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-2 [&_p]:leading-relaxed [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-6"
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(season.rules) }}
-                />
+                <>
+                  <div
+                    className="prose prose-sm prose-invert line-clamp-3 max-w-none overflow-hidden [&_a]:text-primary [&_a]:underline [&_h1]:mb-2 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:text-base [&_h3]:font-medium [&_li]:mb-1 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-2 [&_p]:leading-relaxed [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-6"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(season.rules) }}
+                  />
+                  <Link
+                    href={`/league/${params.id}/season/${season.id}/tools/rules`}
+                    className="mt-2 inline-block text-sm text-primary hover:underline"
+                  >
+                    View full rules →
+                  </Link>
+                </>
               ) : (
                 <p className="text-sm text-muted-foreground">
                   No rules have been set for this season.
@@ -224,7 +235,7 @@ export default function SeasonDetailPage() {
           onOpenChange={setIsEditSeasonModalOpen}
           leagueId={leagueId}
           season={season}
-          onSuccess={refetchSeason}
+          onSuccess={handleRefetchSeason}
         />
       )}
 
@@ -236,7 +247,7 @@ export default function SeasonDetailPage() {
             leagueId={leagueId}
             seasonId={seasonId}
             leagueUsers={league.leagueUsers}
-            onSuccess={refetchSeason}
+            onSuccess={handleRefetchSeason}
           />
 
           <EditRulesModal
@@ -245,7 +256,7 @@ export default function SeasonDetailPage() {
             leagueId={leagueId}
             seasonId={seasonId}
             currentRules={season?.rules || ''}
-            onSuccess={refetchSeason}
+            onSuccess={handleRefetchSeason}
           />
 
           <AlertDialog
