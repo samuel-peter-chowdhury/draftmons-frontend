@@ -4,7 +4,16 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { Badge } from '@/components';
 import type { MatchInput } from '@/types';
+import { MatchResultSource } from '@/types';
+
+// Only non-replay results get a badge — a REPLAY (or not-yet-recorded) result is
+// the unremarkable default.
+const RESULT_SOURCE_LABELS: Partial<Record<MatchResultSource, string>> = {
+  [MatchResultSource.MANUAL]: 'Manual',
+  [MatchResultSource.FORFEIT]: 'Forfeit',
+};
 
 interface MatchRowProps {
   match: MatchInput;
@@ -19,6 +28,10 @@ export function MatchRow({ match, leagueId, seasonId }: MatchRowProps) {
   const hasResult = match.winningTeamId != null && match.losingTeamId != null;
   const winningTeam = match.winningTeam;
   const losingTeam = match.losingTeam;
+
+  const resultSourceLabel = match.resultSource
+    ? (RESULT_SOURCE_LABELS[match.resultSource] ?? null)
+    : null;
 
   const games = [...(match.games ?? [])].sort(
     (a, b) => (a.gameNumber ?? 0) - (b.gameNumber ?? 0),
@@ -82,6 +95,11 @@ export function MatchRow({ match, leagueId, seasonId }: MatchRowProps) {
             </>
           )}
         </span>
+        {hasResult && resultSourceLabel && (
+          <Badge variant="secondary" className="shrink-0">
+            {resultSourceLabel}
+          </Badge>
+        )}
       </div>
 
       {expanded && (
