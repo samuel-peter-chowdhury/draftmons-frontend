@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ErrorAlert, Spinner } from '@/components';
+import { ErrorAlert, Spinner, Tabs, TabsList, TabsTrigger } from '@/components';
 import {
   ReplayInputForm,
   UnresolvedBanner,
   MatchPreviewPanel,
   OverwriteDialog,
   SuccessState,
+  ManualEntryForm,
 } from './_components';
 import { useApiSWR, useMutation } from '@/hooks';
 import { MatchUploadApi, buildUrlWithQuery, type ApiRequestError } from '@/lib/api';
@@ -38,6 +39,10 @@ const BLOCKING_CODES = new Set<PreviewErrorCode>([
 ]);
 
 type PageState = 'input' | 'analyzing' | 'review' | 'submitting' | 'success';
+
+// How the result gets into the system: parsed from replays (the original flow) or
+// entered by hand for matches with no saved replay / decided by forfeit.
+type UploadMode = 'replay' | 'manual';
 
 // Interfaces for the 409 overwrite detail shape returned by the server
 interface ExistingGameStat {
@@ -95,6 +100,7 @@ export default function MatchUploadPage() {
   const pool: SeasonPokemonInput[] = spData?.data ?? [];
 
   // ─── State machine ────────────────────────────────────────────────────────
+  const [uploadMode, setUploadMode] = useState<UploadMode>('replay');
   const [pageState, setPageState] = useState<PageState>('input');
   const [preview, setPreview] = useState<MatchPreviewDto | null>(null);
   // Working copy of the preview — holds override state layered over the analyzed preview
@@ -149,8 +155,29 @@ export default function MatchUploadPage() {
 
       {spError && <ErrorAlert message={spError} />}
 
+      <Tabs
+        value={uploadMode}
+        onValueChange={(v) => setUploadMode(v as UploadMode)}
+        className="mb-6"
+      >
+        <TabsList>
+          <TabsTrigger value="replay">From Replay</TabsTrigger>
+          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {uploadMode === 'manual' && (
+        <ManualEntryForm
+          leagueId={leagueId}
+          seasonId={seasonId}
+          numberOfGames={numberOfGames}
+          pool={pool}
+          poolLoading={spLoading || seasonLoading}
+        />
+      )}
+
       {/* Input state */}
-      {(pageState === 'input' || pageState === 'analyzing') && (
+      {uploadMode === 'replay' && (pageState === 'input' || pageState === 'analyzing') && (
         <ReplayInputForm
           numberOfGames={numberOfGames}
           loading={pageState === 'analyzing'}
@@ -161,7 +188,7 @@ export default function MatchUploadPage() {
       )}
 
       {/* Review state — filled in Task 2 */}
-      {pageState === 'review' && workingPreview && (
+      {uploadMode === 'replay' && pageState === 'review' && workingPreview && (
         <ReviewPanel
           workingPreview={workingPreview}
           setWorkingPreview={setWorkingPreview}
@@ -186,7 +213,7 @@ export default function MatchUploadPage() {
       )}
 
       {/* Submitting state — user is in review; submitting shows a spinner overlay */}
-      {pageState === 'submitting' && workingPreview && (
+      {uploadMode === 'replay' && pageState === 'submitting' && workingPreview && (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-center py-10">
             <Spinner size={32} />
@@ -195,7 +222,7 @@ export default function MatchUploadPage() {
       )}
 
       {/* Success state — filled in Task 3 */}
-      {pageState === 'success' && submittedResult && (
+      {uploadMode === 'replay' && pageState === 'success' && submittedResult && (
         <SuccessState
           result={submittedResult}
           weekName={workingPreview?.weekName ?? null}
@@ -289,9 +316,7 @@ function ReviewPanel({
       const updated = clonePreview(prev);
       updated.matchId = matchId;
       // Clear the MATCH_AMBIGUOUS error
-      updated.errors = updated.errors.filter(
-        (e) => e.code !== PreviewErrorCode.MATCH_AMBIGUOUS,
-      );
+      updated.errors = updated.errors.filter((e) => e.code !== PreviewErrorCode.MATCH_AMBIGUOUS);
       return updated;
     });
   }
@@ -330,11 +355,7 @@ function ReviewPanel({
       // Clear POKEMON_NOT_FOUND error for this field
       const fieldPrefix = `games[${gameIndex}].stats[${statIndex}]`;
       updated.errors = updated.errors.filter(
-        (e) =>
-          !(
-            e.code === PreviewErrorCode.POKEMON_NOT_FOUND &&
-            e.field.startsWith(fieldPrefix)
-          ),
+        (e) => !(e.code === PreviewErrorCode.POKEMON_NOT_FOUND && e.field.startsWith(fieldPrefix)),
       );
 
       return updated;
@@ -362,8 +383,9 @@ function ReviewPanel({
   // ─── Derive resolved teams from players ───────────────────────────────────
   const teams = useMemo(() => {
     return workingPreview.players
-      .filter((p): p is PlayerPreviewDto & { teamId: number; teamName: string } =>
-        p.teamId !== null && p.teamName !== null,
+      .filter(
+        (p): p is PlayerPreviewDto & { teamId: number; teamName: string } =>
+          p.teamId !== null && p.teamName !== null,
       )
       .map((p) => ({ teamId: p.teamId, teamName: p.teamName }));
   }, [workingPreview.players]);
@@ -499,9 +521,7 @@ function ReviewPanel({
           return;
         }
         if (detail?.duplicateLinks) {
-          setSubmitError(
-            'One or more replay links are already recorded for another match.',
-          );
+          setSubmitError('One or more replay links are already recorded for another match.');
           return;
         }
       }
@@ -560,12 +580,7 @@ function ReviewPanel({
 }
 
 // ─── SubmitButton with tooltip ────────────────────────────────────────────────
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button, Spinner as SpinnerComponent } from '@/components';
 
 function SubmitButton({
@@ -591,9 +606,7 @@ function SubmitButton({
           </span>
         </TooltipTrigger>
         {unresolvedCount > 0 && (
-          <TooltipContent>
-            Resolve {unresolvedCount} item(s) before submitting
-          </TooltipContent>
+          <TooltipContent>Resolve {unresolvedCount} item(s) before submitting</TooltipContent>
         )}
       </Tooltip>
     </TooltipProvider>

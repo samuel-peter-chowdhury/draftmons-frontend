@@ -1,3 +1,5 @@
+import type { MatchResultSource } from './match.type';
+
 // Mirror of backend PreviewErrorCode enum (draftmons-backend/src/dtos/match-analysis.dto.ts)
 export enum PreviewErrorCode {
   REPLAY_NOT_FOUND = 'REPLAY_NOT_FOUND',
@@ -114,4 +116,66 @@ export interface SubmitInputDto {
 export interface SubmitResultDto {
   matchId: number;
   games: { id: number; gameNumber: number; replayLink: string }[];
+}
+
+// ─── Manual / forfeit entry ───────────────────────────────────────────────────
+// Mirror of the backend's AnalyzeGameInputDto / ManualSubmitInputDto. These map
+// to /match-upload/analyze-game and /match-upload/submit-manual, the no-replay-
+// required counterparts to /analyze and /submit.
+
+// Sent to /analyze-game — the target match is already known, so a single replay
+// is resolved against that match's two teams rather than the season roster.
+export interface AnalyzeGameInput {
+  matchId: number;
+  replayUrl: string;
+  playerOverrides?: PlayerOverrideInput[];
+}
+
+// Received from /analyze-game. `game` is null when the replay could not be
+// fetched or parsed; recoverable problems land in errors[] as usual.
+export interface GameAnalysisPreviewDto {
+  matchId: number;
+  replayUrl: string;
+  players: PlayerPreviewDto[];
+  game: GamePreviewDto | null;
+  errors: PreviewErrorDto[];
+}
+
+// Sent to /submit-manual. Looser than SubmitGameInput on purpose: a manually
+// recorded game may have no replay link and no stats at all.
+export interface ManualStatInput {
+  seasonPokemonId: number;
+  directKills: number;
+  indirectKills: number;
+  deaths: number;
+}
+
+export interface ManualGameInput {
+  winningTeamId: number;
+  losingTeamId: number;
+  differential?: number;
+  replayLink?: string;
+  stats?: ManualStatInput[];
+}
+
+// gameNumber is assigned server-side from array order. `games` may be empty for a
+// FORFEIT with no score; MANUAL requires a strict-majority winner matching
+// winningTeamId. resultSource is narrowed to the two hand-entered sources —
+// REPLAY belongs to the parsed-replay flow.
+export interface ManualSubmitInputDto {
+  matchId: number;
+  resultSource: MatchResultSource.MANUAL | MatchResultSource.FORFEIT;
+  confirmOverwrite: boolean;
+  winningTeamId: number;
+  losingTeamId: number;
+  games: ManualGameInput[];
+}
+
+// Result type for /submit-manual 201 response
+export interface ManualSubmitResultDto {
+  matchId: number;
+  resultSource: MatchResultSource;
+  winningTeamId: number;
+  losingTeamId: number;
+  games: { id: number; gameNumber: number; replayLink: string | null }[];
 }

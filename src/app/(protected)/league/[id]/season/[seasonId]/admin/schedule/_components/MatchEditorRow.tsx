@@ -11,10 +11,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button, ErrorAlert, Select, Spinner } from '@/components';
+import { Badge, Button, ErrorAlert, Select, Spinner } from '@/components';
 import { useMutation } from '@/hooks';
 import { LeagueApi } from '@/lib/api';
 import type { MatchInput, TeamInput } from '@/types';
+import { MatchResultSource } from '@/types';
+
+// Mirrors MatchRow's badge: flag results that weren't parsed from replays.
+const RESULT_SOURCE_LABELS: Partial<Record<MatchResultSource, string>> = {
+  [MatchResultSource.MANUAL]: 'Manual',
+  [MatchResultSource.FORFEIT]: 'Forfeit',
+};
 
 interface MatchEditorRowProps {
   leagueId: number;
@@ -31,6 +38,9 @@ export function MatchEditorRow({ leagueId, match, teams, onChanged }: MatchEdito
 
   const [displayA, displayB] = match.teams ?? [];
   const hasResult = match.winningTeamId != null && match.losingTeamId != null;
+  const resultSourceLabel = match.resultSource
+    ? (RESULT_SOURCE_LABELS[match.resultSource] ?? null)
+    : null;
 
   const updateMutation = useMutation(
     (teamIds: number[]) => LeagueApi.updateMatch(leagueId, match.id, { teamIds }),
@@ -71,6 +81,11 @@ export function MatchEditorRow({ leagueId, match, teams, onChanged }: MatchEdito
                     ? `${match.winningTeam?.name ?? 'Winner'} won`
                     : 'no result yet'}
                 </span>
+                {hasResult && resultSourceLabel && (
+                  <Badge variant="secondary" className="ml-2">
+                    {resultSourceLabel}
+                  </Badge>
+                )}
               </>
             ) : (
               <span className="text-muted-foreground">Teams not assigned yet</span>
