@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { AuthApi, ApiError } from '@/lib/api';
 import type { UserInput } from '@/types';
+import { useRecentLeagueStore } from './useRecentLeagueStore';
 
 type AuthState = {
   user: UserInput | null;
@@ -56,6 +57,9 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
     try {
       await AuthApi.logout();
       set({ user: null, isAuthenticated: false, loading: false });
+      // Otherwise the next user to log in on this browser inherits the previous
+      // one's last-visited season in their sidebar.
+      useRecentLeagueStore.getState().clear();
     } catch (e) {
       const error = e as ApiError;
       set({ loading: false, error: error?.message || 'Logout failed' });
