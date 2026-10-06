@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
   ErrorAlert,
+  SortableHeader,
   Spinner,
   Table,
   TableBody,
@@ -21,7 +22,12 @@ import {
 import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import { buildMatchSummaries, computeStandings } from '@/lib/standings';
+import {
+  buildMatchSummaries,
+  computeStandings,
+  sortStandings,
+  type TeamRankSortColumn,
+} from '@/lib/standings';
 import { formatDifferential, formatWinPct } from '@/lib/teamStats';
 import { formatUserDisplayName } from '@/lib/utils';
 import type { PaginatedResponse, TeamInput } from '@/types';
@@ -44,10 +50,32 @@ export default function SeasonTeamRankPage() {
   const { data, loading, error } = useApiSWR<PaginatedResponse<TeamInput>>(teamsUrl);
 
   // Keyed by team id, not row index, so a background SWR revalidation — or a
-  // future re-sort of the columns — leaves each open detail row with its team.
+  // re-sort of the columns — leaves each open detail row with its team.
   const [expandedTeamIds, setExpandedTeamIds] = useState<Set<number>>(new Set());
 
+  const [sortBy, setSortBy] = useState<TeamRankSortColumn | null>(null);
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+
+  // Kept in its own memo so the frozen standings rank is computed once per
+  // fetch rather than on every header click.
   const standings = useMemo(() => computeStandings(data?.data ?? []), [data]);
+  const sortedStandings = useMemo(
+    () => sortStandings(standings, sortBy, sortOrder),
+    [standings, sortBy, sortOrder],
+  );
+
+  /** Three-state cycle: DESC -> ASC -> default standings order. */
+  function handleSort(column: TeamRankSortColumn) {
+    if (sortBy !== column) {
+      setSortBy(column);
+      setSortOrder('DESC');
+    } else if (sortOrder === 'DESC') {
+      setSortOrder('ASC');
+    } else {
+      setSortBy(null);
+      setSortOrder('DESC');
+    }
+  }
 
   // Every team in the season arrives in this one page of results, so opponent
   // ids resolve locally — the nested winningTeam/losingTeam objects are not in
@@ -97,17 +125,80 @@ export default function SeasonTeamRankPage() {
                     <span className="sr-only">Expand</span>
                   </TableHead>
                   <TableHead>#</TableHead>
-                  <TableHead>Team</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Match record</TableHead>
-                  <TableHead>Match Win%</TableHead>
-                  <TableHead>Game record</TableHead>
-                  <TableHead>Game Win%</TableHead>
-                  <TableHead>Differential</TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="name"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Team
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="owner"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Owner
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="matchRecord"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Match record
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="matchWinPct"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Match Win%
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="gameRecord"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Game record
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="gameWinPct"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Game Win%
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="differential"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Differential
+                    </SortableHeader>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {standings.length === 0 ? (
+                {sortedStandings.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={STANDINGS_COLUMN_COUNT}
@@ -117,7 +208,7 @@ export default function SeasonTeamRankPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  standings.map((row, index) => {
+                  sortedStandings.map((row) => {
                     const isExpanded = expandedTeamIds.has(row.team.id);
 
                     return (
@@ -153,7 +244,7 @@ export default function SeasonTeamRankPage() {
                               )}
                             </button>
                           </TableCell>
-                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{row.rank}</TableCell>
                           <TableCell className="font-medium">
                             <span className="flex items-center gap-2">
                               <TeamLogo
