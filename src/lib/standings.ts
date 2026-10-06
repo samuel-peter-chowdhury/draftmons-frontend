@@ -1,5 +1,5 @@
+import { computeTeamRecord, type TeamRecord } from '@/lib/teamStats';
 import type { TeamInput } from '@/types';
-
 import { formatUserDisplayName } from './utils';
 
 export interface StandingsRow {
@@ -55,6 +55,14 @@ function toRow(team: TeamInput): StandingsStats {
   };
 }
 
+export interface StandingsRow extends TeamRecord {
+  team: TeamInput;
+}
+
+function toRow(team: TeamInput): StandingsRow {
+  return { team, ...computeTeamRecord(team) };
+}
+
 function compareRows(a: StandingsStats, b: StandingsStats): number {
   if (a.matchesPlayed === 0 && b.matchesPlayed === 0) {
     return a.team.name.localeCompare(b.team.name);
@@ -64,9 +72,9 @@ function compareRows(a: StandingsStats, b: StandingsStats): number {
 
   return (
     (b.matchWinPct as number) - (a.matchWinPct as number) ||
-    (b.matchWins - b.matchLosses) - (a.matchWins - a.matchLosses) ||
+    b.matchWins - b.matchLosses - (a.matchWins - a.matchLosses) ||
     (b.gameWinPct as number) - (a.gameWinPct as number) ||
-    (b.gameWins - b.gameLosses) - (a.gameWins - a.gameLosses) ||
+    b.gameWins - b.gameLosses - (a.gameWins - a.gameLosses) ||
     b.differential - a.differential
   );
 }

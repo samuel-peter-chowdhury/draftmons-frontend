@@ -21,7 +21,7 @@ import { useCustomSpeedStore } from '@/stores';
 import type { SpeedTierPokemon } from './constants';
 
 /**
- * Sprite · Name · Base · the three fixed tiers · the custom tier.
+ * Sprite · Name · Base · the three fixed tiers · the adjustable tier.
  *
  * The name column needs an explicit floor: `truncate` zeroes its min-content
  * width, so a bare `1fr` collapses to nothing when the row outgrows the space
@@ -30,11 +30,13 @@ import type { SpeedTierPokemon } from './constants';
 const GRID_COLS = '48px minmax(100px, 1fr) 60px 60px 60px 60px 60px';
 
 /**
- * Opens the shared custom-speed settings, and shows the spread currently in
- * effect on hover. Amber when that spread is non-default, since it persists
- * across sessions and would otherwise silently skew the column.
+ * Header for the one adjustable tier column. Opens the shared speed settings,
+ * and shows the spread currently in effect on hover. Reads `252+/+1` while the
+ * spread is untouched, since that is the tier the default reproduces; amber
+ * `Custom` once it is changed, because the spread persists across sessions and
+ * would otherwise silently skew the column.
  */
-function CustomHeader({ onOpen }: { onOpen: () => void }) {
+function AdjustableTierHeader({ onOpen }: { onOpen: () => void }) {
   const input = useCustomSpeedStore((s) => s.input);
   const isDefault = isDefaultCustomSpeedInput(input);
 
@@ -49,7 +51,7 @@ function CustomHeader({ onOpen }: { onOpen: () => void }) {
               !isDefault && 'text-primary hover:text-primary',
             )}
           >
-            Custom
+            {isDefault ? '252+/+1' : 'Custom'}
           </button>
         </TooltipTrigger>
         <TooltipContent>
@@ -127,10 +129,10 @@ export const SpeedTierColumn = memo(function SpeedTierColumn({
           <span />
           <span>Name</span>
           <span className="text-right">Base</span>
+          <span className="text-right">0</span>
           <span className="text-right">252</span>
           <span className="text-right">252+</span>
-          <span className="text-right">252+/+1</span>
-          <CustomHeader onOpen={() => onOpenCalculator(null)} />
+          <AdjustableTierHeader onOpen={() => onOpenCalculator(null)} />
         </div>
         <div className="space-y-0">
           {pokemon.map(({ pokemon: pkmn, speedTiers }) => {
@@ -162,13 +164,13 @@ export const SpeedTierColumn = memo(function SpeedTierColumn({
                   {pkmn.speed}
                 </span>
                 <span className="text-right text-sm text-muted-foreground">
+                  {speedTiers.noInvestment}
+                </span>
+                <span className="text-right text-sm text-muted-foreground">
                   {speedTiers.maxNeutral}
                 </span>
                 <span className="text-right text-sm text-muted-foreground">
                   {speedTiers.maxPositive}
-                </span>
-                <span className="text-right text-sm text-muted-foreground">
-                  {speedTiers.maxPositivePlus1}
                 </span>
                 <button
                   onClick={() => onOpenCalculator(pkmn.id)}

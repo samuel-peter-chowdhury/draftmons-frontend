@@ -25,7 +25,9 @@ import {
 import { pointMapForSide, type ExportSide } from '@/lib/aiTeamBuilder/buildExport';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import type { SeasonInput, PaginatedResponse, MoveInput, PokemonInput } from '@/types';
+import { buildTeamSelectorGroups, findMyTeam, type TeamSelectorGroups } from '@/lib/teamSelector';
+import { useAuthStore } from '@/stores';
+import type { SeasonInput, PaginatedResponse, MoveInput, PokemonInput, WeekInput } from '@/types';
 import {
   MOVES_PAGE_SIZE,
   CoverageMovesContent,
@@ -47,6 +49,40 @@ const LS_TAB_KEY = 'teamMatchup_tab';
 const lsTeamKey = (leagueId: number, seasonId: number, side: 'teamAId' | 'teamBId') =>
   `teamMatchup_${leagueId}_${seasonId}_${side}`;
 
+/**
+ * The option list for both selects — identical on each side, since either team can go
+ * on either side. `<optgroup>` rather than per-option CSS: `Select` is a bare native
+ * `<select>`, where per-`<option>` styling is unreliable across platforms.
+ *
+ * With nothing to pin (not logged in yet, or no team of yours in this season) the list
+ * stays flat — a lone "All Teams" header separates nothing from nothing.
+ */
+function TeamSelectorOptions({ groups }: { groups: TeamSelectorGroups }) {
+  const { myTeam, opponent, rest } = groups;
+
+  const restOptions = rest.map((team) => (
+    <option key={team.id} value={team.id}>
+      {team.name}
+    </option>
+  ));
+
+  if (!myTeam) return <>{restOptions}</>;
+
+  return (
+    <>
+      <optgroup label="Your Team">
+        <option value={myTeam.id}>{myTeam.name}</option>
+      </optgroup>
+      {opponent && (
+        <optgroup label="Your Opponent">
+          <option value={opponent.id}>{opponent.name}</option>
+        </optgroup>
+      )}
+      {rest.length > 0 && <optgroup label="All Teams">{restOptions}</optgroup>}
+    </>
+  );
+}
+
 function TeamMatchupContent() {
   const params = useParams<{ id: string; seasonId: string }>();
   const leagueId = Number(params.id);
@@ -55,6 +91,9 @@ function TeamMatchupContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+
+  // Null until AuthProvider's effect resolves, which just means nothing is pinned yet.
+  const user = useAuthStore((s) => s.user);
 
   // Hydrate from localStorage on first render when query params are absent
   const hydrated = useRef(false);
@@ -161,7 +200,31 @@ function TeamMatchupContent() {
     buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'season', seasonId], { full: true }),
   );
 
-  const teams = season?.teams ?? [];
+  const teams = useMemo(() => season?.teams ?? [], [season]);
+
+  // Weeks exist only to resolve "who do I play next", so skip the request entirely for
+  // anyone without a team in this season — spectators, admins, other leagues' users.
+  // `season.teams` already carries `userId`, so finding my team costs no extra fetch.
+  const myTeam = useMemo(() => findMyTeam(teams, user?.id), [teams, user?.id]);
+  // Same query shape as the schedule and match-upload pages, so all four share one
+  // SWR cache entry instead of re-downloading an identical `full=true` weeks tree.
+  const weeksUrl = myTeam
+    ? buildUrlWithQuery(BASE_ENDPOINTS.LEAGUE_BASE, [leagueId, 'week'], {
+        seasonId,
+        full: true,
+        pageSize: 100,
+        sortBy: 'weekNumber',
+        sortOrder: 'ASC',
+      })
+    : null;
+  // A weeks failure is swallowed on purpose: the grouping is a convenience, and the
+  // page is fully usable with a flat list.
+  const { data: weeksData } = useApiSWR<PaginatedResponse<WeekInput>>(weeksUrl);
+
+  const teamGroups = useMemo(
+    () => buildTeamSelectorGroups(teams, user?.id, weeksData?.data ?? []),
+    [teams, user?.id, weeksData],
+  );
 
   // Per-team data via shared hook
   const teamA = useComparisonSide(teamAId ? { type: 'team', leagueId, teamId: teamAId } : null);
@@ -368,11 +431,7 @@ function TeamMatchupContent() {
                 }}
               >
                 <option value="">Select a team...</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
+                <TeamSelectorOptions groups={teamGroups} />
               </Select>
             </div>
             <div className="w-64">
@@ -385,11 +444,7 @@ function TeamMatchupContent() {
                 }}
               >
                 <option value="">Select a team...</option>
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
+                <TeamSelectorOptions groups={teamGroups} />
               </Select>
             </div>
             <div className="ml-auto flex items-end">
