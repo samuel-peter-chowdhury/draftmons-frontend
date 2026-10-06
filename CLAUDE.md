@@ -93,7 +93,7 @@ src/
     constants.ts      # ENDPOINTS + URLs
     pokemon.ts        # getStatColor/getEffectivenessColor, POKEMON_TYPE_ORDER
     sanitize.ts       # sanitizeHtml for rich-text rendering
-    standings.ts      # computeStandings
+    standings.ts      # computeStandings, sortStandings
     utils.ts          # cn(), formatUserDisplayName, etc.
     index.ts
   stores/
@@ -188,11 +188,14 @@ once a second, unrelated route needs it (see `components/comparison/*`, shared b
 ### 6) UI & theming
 
 - Dark theme only. CSS variables defined in `globals.css` (shadcn-style tokens).  
-- Local shadcn-style primitives (`src/components/ui/*.tsx`, 24 files, all re-exported from the
+- Local shadcn-style primitives (`src/components/ui/*.tsx`, 25 files, all re-exported from the
   `components` barrel): `Accordion`, `Alert`, `AlertDialog`, `Badge`, `Button`, `Card`, `Checkbox`,
   `Combobox`, `Command`, `Dialog`, `Input`, `Label`, `Pagination`, `Popover`, `RichTextEditor`
-  (Tiptap-based), `Select`, `Skeleton`, `SortControls`, `Table`, `Tabs`, `Textarea`, `Toast`/
-  `Toaster` (+ `addToast` helper in `hooks/useToast.ts`), `Tooltip`. `Combobox`/`Command` wrap
+  (Tiptap-based), `Select`, `Skeleton`, `SortableHeader`, `SortControls`, `Table`, `Tabs`,
+  `Textarea`, `Toast`/`Toaster` (+ `addToast` helper in `hooks/useToast.ts`), `Tooltip`.
+  `SortableHeader` is the in-table clickable column header; `SortControls` is the
+  dropdown-plus-toggle for server-side sorted lists — they are not interchangeable.
+  `Combobox`/`Command` wrap
   `cmdk`. Add new primitives by hand (no `components.json`/shadcn CLI in this repo) and export them
   from `components/index.ts` — every primitive should be reachable via the `@/components` barrel,
   not a direct `@/components/ui/*` import.  

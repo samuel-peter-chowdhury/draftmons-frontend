@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
 import {
   Badge,
   Card,
@@ -9,6 +8,7 @@ import {
   ErrorAlert,
   Spinner,
   Pagination,
+  SortableHeader,
   Table,
   TableBody,
   TableCell,
@@ -24,33 +24,6 @@ import { PokemonSprite } from './PokemonSprite';
 import { PokemonModal } from './PokemonModal';
 import { usePokemonModal } from '@/hooks';
 import type { PaginatedResponse, PokemonInput, SeasonPokemonInput, SortableColumn } from '@/types';
-
-function SortableHeader({
-  column,
-  sortBy,
-  sortOrder,
-  onSort,
-  children,
-}: {
-  column: SortableColumn;
-  sortBy: SortableColumn;
-  sortOrder: 'ASC' | 'DESC';
-  onSort: (column: SortableColumn) => void;
-  children: React.ReactNode;
-}) {
-  const isActive = sortBy === column;
-  return (
-    <button
-      onClick={() => onSort(column)}
-      className="inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground"
-    >
-      {children}
-      {isActive && sortOrder === 'ASC' && <ChevronUp className="h-4 w-4" />}
-      {isActive && sortOrder === 'DESC' && <ChevronDown className="h-4 w-4" />}
-      {!isActive && <div className="h-4 w-4" />}
-    </button>
-  );
-}
 
 interface PokemonRow {
   pokemon: PokemonInput;
