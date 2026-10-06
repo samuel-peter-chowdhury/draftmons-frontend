@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { Badge, Card, CardContent, CardHeader, CardTitle, ErrorAlert, LeagueLogo, Skeleton, TeamLogo } from '@/components';
 import type { ApiError } from '@/lib/api';
 import { LeagueApi } from '@/lib/api';
+import { findNextOpponentTeam } from '@/lib/teamSelector';
 import { formatSeasonStatus } from '@/lib/utils';
 import type { LeagueUserInput, SeasonInput, TeamInput } from '@/types';
 
@@ -64,23 +65,10 @@ function useMyLeagueCardData(leagueId: number, userId: number): MyLeagueCardStat
           });
           if (cancelled) return;
 
-          const myMatches = (weeksResp.data ?? []).flatMap((week) =>
-            (week.matches ?? [])
-              .filter((match) => (match.teams ?? []).some((t) => t.id === myTeam.id))
-              .map((match) => ({ match, weekNumber: week.weekNumber })),
-          );
-
-          const unplayedMatches = myMatches.filter(
-            ({ match }) => !match.winningTeamId && !match.losingTeamId,
-          );
-
-          if (unplayedMatches.length > 0) {
-            const next = unplayedMatches.reduce((a, b) => (b.weekNumber < a.weekNumber ? b : a));
-            const opponent = (next.match.teams ?? []).find((t) => t.id !== myTeam.id);
-            if (opponent) {
-              opponentTeamName = opponent.name;
-              opponentTeamId = opponent.id;
-            }
+          const opponent = findNextOpponentTeam(weeksResp.data ?? [], myTeam.id);
+          if (opponent) {
+            opponentTeamName = opponent.name;
+            opponentTeamId = opponent.id;
           }
         }
 
