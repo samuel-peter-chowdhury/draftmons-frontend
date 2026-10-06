@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
   Card,
   CardContent,
   ErrorAlert,
+  SortableHeader,
   Spinner,
   Table,
   TableBody,
@@ -20,7 +21,7 @@ import {
 import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import { computeStandings } from '@/lib/standings';
+import { computeStandings, sortStandings, type TeamRankSortColumn } from '@/lib/standings';
 import { formatDifferential, formatWinPct } from '@/lib/teamStats';
 import { formatUserDisplayName } from '@/lib/utils';
 import type { PaginatedResponse, TeamInput } from '@/types';
@@ -37,7 +38,29 @@ export default function SeasonTeamRankPage() {
   });
   const { data, loading, error } = useApiSWR<PaginatedResponse<TeamInput>>(teamsUrl);
 
+  const [sortBy, setSortBy] = useState<TeamRankSortColumn | null>(null);
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+
+  // Kept in its own memo so the frozen standings rank is computed once per
+  // fetch rather than on every header click.
   const standings = useMemo(() => computeStandings(data?.data ?? []), [data]);
+  const sortedStandings = useMemo(
+    () => sortStandings(standings, sortBy, sortOrder),
+    [standings, sortBy, sortOrder],
+  );
+
+  /** Three-state cycle: DESC -> ASC -> default standings order. */
+  function handleSort(column: TeamRankSortColumn) {
+    if (sortBy !== column) {
+      setSortBy(column);
+      setSortOrder('DESC');
+    } else if (sortOrder === 'DESC') {
+      setSortOrder('ASC');
+    } else {
+      setSortBy(null);
+      setSortOrder('DESC');
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl p-4">
@@ -58,26 +81,89 @@ export default function SeasonTeamRankPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>#</TableHead>
-                  <TableHead>Team</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Match record</TableHead>
-                  <TableHead>Match Win%</TableHead>
-                  <TableHead>Game record</TableHead>
-                  <TableHead>Game Win%</TableHead>
-                  <TableHead>Differential</TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="name"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Team
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="owner"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Owner
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="matchRecord"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Match record
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="matchWinPct"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Match Win%
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="gameRecord"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Game record
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="gameWinPct"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Game Win%
+                    </SortableHeader>
+                  </TableHead>
+                  <TableHead>
+                    <SortableHeader
+                      column="differential"
+                      sortBy={sortBy}
+                      sortOrder={sortOrder}
+                      onSort={handleSort}
+                    >
+                      Differential
+                    </SortableHeader>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {standings.length === 0 ? (
+                {sortedStandings.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-muted-foreground">
                       No teams in this season yet.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  standings.map((row, index) => (
+                  sortedStandings.map((row) => (
                     <TableRow key={row.team.id}>
-                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{row.rank}</TableCell>
                       <TableCell className="font-medium">
                         <span className="flex items-center gap-2">
                           <TeamLogo
