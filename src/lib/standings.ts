@@ -1,41 +1,12 @@
+import { computeTeamRecord, type TeamRecord } from '@/lib/teamStats';
 import type { TeamInput } from '@/types';
 
-export interface StandingsRow {
+export interface StandingsRow extends TeamRecord {
   team: TeamInput;
-  matchWins: number;
-  matchLosses: number;
-  matchesPlayed: number;
-  matchWinPct: number | null;
-  gameWins: number;
-  gameLosses: number;
-  gamesPlayed: number;
-  gameWinPct: number | null;
-  differential: number;
 }
 
 function toRow(team: TeamInput): StandingsRow {
-  const matchWins = team.wonMatches?.length ?? 0;
-  const matchLosses = team.lostMatches?.length ?? 0;
-  const matchesPlayed = matchWins + matchLosses;
-  const gameWins = team.wonGames?.length ?? 0;
-  const gameLosses = team.lostGames?.length ?? 0;
-  const gamesPlayed = gameWins + gameLosses;
-  const differential =
-    (team.wonGames ?? []).reduce((sum, g) => sum + g.differential, 0) -
-    (team.lostGames ?? []).reduce((sum, g) => sum + g.differential, 0);
-
-  return {
-    team,
-    matchWins,
-    matchLosses,
-    matchesPlayed,
-    matchWinPct: matchesPlayed > 0 ? matchWins / matchesPlayed : null,
-    gameWins,
-    gameLosses,
-    gamesPlayed,
-    gameWinPct: gamesPlayed > 0 ? gameWins / gamesPlayed : null,
-    differential,
-  };
+  return { team, ...computeTeamRecord(team) };
 }
 
 function compareRows(a: StandingsRow, b: StandingsRow): number {
@@ -47,9 +18,9 @@ function compareRows(a: StandingsRow, b: StandingsRow): number {
 
   return (
     (b.matchWinPct as number) - (a.matchWinPct as number) ||
-    (b.matchWins - b.matchLosses) - (a.matchWins - a.matchLosses) ||
+    b.matchWins - b.matchLosses - (a.matchWins - a.matchLosses) ||
     (b.gameWinPct as number) - (a.gameWinPct as number) ||
-    (b.gameWins - b.gameLosses) - (a.gameWins - a.gameLosses) ||
+    b.gameWins - b.gameLosses - (a.gameWins - a.gameLosses) ||
     b.differential - a.differential
   );
 }

@@ -21,16 +21,9 @@ import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { computeStandings } from '@/lib/standings';
+import { formatDifferential, formatWinPct } from '@/lib/teamStats';
 import { formatUserDisplayName } from '@/lib/utils';
 import type { PaginatedResponse, TeamInput } from '@/types';
-
-function formatWinPct(pct: number | null): string {
-  return pct === null ? '—' : `${(pct * 100).toFixed(1)}%`;
-}
-
-function formatDifferential(differential: number): string {
-  return differential > 0 ? `+${differential}` : String(differential);
-}
 
 export default function SeasonTeamRankPage() {
   const params = useParams<{ id: string; seasonId: string }>();
