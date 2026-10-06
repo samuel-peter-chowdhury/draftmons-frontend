@@ -64,6 +64,8 @@ export function getStatColor(value: number): string {
 }
 
 export interface SpeedTiers {
+  /** 0 EV, 31 IV, neutral nature — the floor every speed check measures from. */
+  noInvestment: number;
   maxNeutral: number;
   maxPositive: number;
   maxPositivePlus1: number;
@@ -71,15 +73,17 @@ export interface SpeedTiers {
 
 /**
  * Calculate speed tier values from a base speed stat.
+ * - noInvestment: Speed with no EVs and a neutral nature (level 100, 31 IVs)
  * - maxNeutral: Max speed with neutral nature (level 100, 31 IVs, 252 EVs)
  * - maxPositive: Max speed with +speed nature
  * - maxPositivePlus1: Max speed with +speed nature after +1 boost (e.g. Dragon Dance)
  */
 export function calculateSpeedTiers(baseSpeed: number): SpeedTiers {
+  const noInvestment = Math.floor(baseSpeed * 2 + 36); // 2*base + 31 IV + 0 EV + 5
   const maxNeutral = Math.floor(baseSpeed * 2 + 99);
   const maxPositive = Math.floor(maxNeutral * 1.1);
   const maxPositivePlus1 = Math.floor(maxPositive * 1.5);
-  return { maxNeutral, maxPositive, maxPositivePlus1 };
+  return { noInvestment, maxNeutral, maxPositive, maxPositivePlus1 };
 }
 
 /**
@@ -101,17 +105,22 @@ export interface CustomSpeedInput {
   stage: number | null;
 }
 
+/**
+ * Starting spread for the adjustable speed-tier column. Chosen to reproduce
+ * `maxPositivePlus1` exactly, so the column shows that tier's value until the
+ * user changes it — see `calculateCustomSpeed`, which floors at the same points.
+ */
 export const DEFAULT_CUSTOM_SPEED_INPUT: CustomSpeedInput = {
-  ev: 0,
+  ev: SPEED_EV_MAX,
   iv: SPEED_IV_MAX,
-  nature: 'neutral',
-  stage: null,
+  nature: 'positive',
+  stage: 1,
 };
 
 /**
- * Starting spread for the head-to-head slots in the speed calculator. Unlike
- * the column default above, this assumes a fully invested Speed attacker —
- * the usual starting point when checking who outruns whom.
+ * Starting spread for the head-to-head slots in the speed calculator. Same
+ * fully invested attacker as the column default above, but unboosted — the
+ * usual starting point when checking who outruns whom.
  */
 export const DEFAULT_COMPARISON_SPEED_INPUT: CustomSpeedInput = {
   ev: SPEED_EV_MAX,
@@ -237,7 +246,7 @@ export function isDefaultCustomSpeedInput(input: CustomSpeedInput): boolean {
   );
 }
 
-/** e.g. "252 EV · 31 IV · +Nature · +1" — used for the Custom column tooltip. */
+/** e.g. "252 EV · 31 IV · +Nature · +1" — used for the adjustable column's header tooltip. */
 export function describeCustomSpeedInput(input: CustomSpeedInput): string {
   const nature =
     input.nature === 'positive'
