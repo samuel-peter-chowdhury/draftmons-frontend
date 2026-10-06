@@ -1,8 +1,9 @@
 'use client';
 
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   Card,
@@ -22,11 +23,93 @@ import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { useApiSWR, usePokemonModal } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
-import { computePokemonRanks, type PokemonRankRow } from '@/lib/pokemonStats';
+import {
+  computePokemonRanks,
+  sortPokemonRankRows,
+  type PokemonRankRow,
+  type RankSortColumn,
+} from '@/lib/pokemonStats';
 import type { PaginatedResponse, SeasonPokemonInput, TeamInput } from '@/types';
 
 function formatDecimal(value: number): string {
   return value.toFixed(2);
+}
+
+/**
+ * Deliberately a third copy of a component that already exists in
+ * `PokemonTable.tsx` (server-side sort) and `comparison/StatTableColumn.tsx`
+ * (client-side sort). Extracting a shared version would put the Pokemon browse
+ * table and the team-build compare page in the blast radius of a sorting
+ * change to this one page.
+ */
+function SortableHeader({
+  column,
+  sortBy,
+  sortOrder,
+  onSort,
+  children,
+}: {
+  column: RankSortColumn;
+  sortBy: RankSortColumn;
+  sortOrder: 'ASC' | 'DESC';
+  onSort: (column: RankSortColumn) => void;
+  children: React.ReactNode;
+}) {
+  const isActive = sortBy === column;
+  return (
+    <button
+      onClick={() => onSort(column)}
+      className="inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground"
+    >
+      {children}
+      {isActive && sortOrder === 'ASC' && <ChevronUp className="h-4 w-4" />}
+      {isActive && sortOrder === 'DESC' && <ChevronDown className="h-4 w-4" />}
+      {/* Reserves the chevron's width so header widths don't jump as the active column moves. */}
+      {!isActive && <div className="h-4 w-4" />}
+    </button>
+  );
+}
+
+/** The seven sortable data columns, in display order. `#` is not sortable. */
+const RANK_COLUMNS: { column: RankSortColumn; label: string }[] = [
+  { column: 'name', label: 'Pokemon' },
+  { column: 'team', label: 'Team' },
+  { column: 'gamesPlayed', label: 'Games Played' },
+  { column: 'totalKills', label: 'Total Kills' },
+  { column: 'totalDeaths', label: 'Deaths' },
+  { column: 'kda', label: 'KDA' },
+  { column: 'avgKillsPerGame', label: 'Avg Kills/Game' },
+];
+
+/** Shared by the main and Limited Sample Size tables, which sort as one. */
+function RankTableHeader({
+  sortBy,
+  sortOrder,
+  onSort,
+}: {
+  sortBy: RankSortColumn;
+  sortOrder: 'ASC' | 'DESC';
+  onSort: (column: RankSortColumn) => void;
+}) {
+  return (
+    <TableHeader>
+      <TableRow>
+        <TableHead>#</TableHead>
+        {RANK_COLUMNS.map(({ column, label }) => (
+          <TableHead
+            key={column}
+            aria-sort={
+              sortBy === column ? (sortOrder === 'ASC' ? 'ascending' : 'descending') : undefined
+            }
+          >
+            <SortableHeader column={column} sortBy={sortBy} sortOrder={sortOrder} onSort={onSort}>
+              {label}
+            </SortableHeader>
+          </TableHead>
+        ))}
+      </TableRow>
+    </TableHeader>
+  );
 }
 
 export default function SeasonPokemonRankPage() {
@@ -64,12 +147,43 @@ export default function SeasonPokemonRankPage() {
 
   const hasAnyGames = main.length > 0 || limited.length > 0;
 
+  // One sort pair drives both tables — they are one ranking split by sample
+  // size, so a single control reads as one table with a divider. Held outside
+  // the data memos so a SWR revalidation doesn't reset the user's choice.
+  const [sortBy, setSortBy] = useState<RankSortColumn>('totalKills');
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+
+  const handleSort = useCallback(
+    (column: RankSortColumn) => {
+      if (column === sortBy) {
+        setSortOrder((o) => (o === 'ASC' ? 'DESC' : 'ASC'));
+      } else {
+        setSortBy(column);
+        // Text columns open A→Z; numeric columns open highest-first.
+        setSortOrder(column === 'name' || column === 'team' ? 'ASC' : 'DESC');
+      }
+    },
+    [sortBy],
+  );
+
+  // Downstream of `computePokemonRanks`, never folded into it — that memo is
+  // what stamps `rank`, and it must stay keyed only on the fetched data so the
+  // frozen `#` survives a re-sort.
+  const sortedMain = useMemo(
+    () => sortPokemonRankRows(main, sortBy, sortOrder),
+    [main, sortBy, sortOrder],
+  );
+  const sortedLimited = useMemo(
+    () => sortPokemonRankRows(limited, sortBy, sortOrder),
+    [limited, sortBy, sortOrder],
+  );
+
   function renderRows(rows: PokemonRankRow[]) {
-    return rows.map((row, index) => {
+    return rows.map((row) => {
       const pkmn = row.seasonPokemon.pokemon!;
       return (
         <TableRow key={row.seasonPokemon.id}>
-          <TableCell>{index + 1}</TableCell>
+          <TableCell>{row.rank}</TableCell>
           <TableCell className="font-medium">
             <div className="flex items-center gap-2">
               <PokemonSprite
@@ -138,19 +252,8 @@ export default function SeasonPokemonRankPage() {
         <Card>
           <CardContent className="p-0">
             <Table className="[&_td]:p-2 [&_th]:h-8 [&_th]:px-2 [&_th]:py-1">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>#</TableHead>
-                  <TableHead>Pokemon</TableHead>
-                  <TableHead>Team</TableHead>
-                  <TableHead>Games Played</TableHead>
-                  <TableHead>Total Kills</TableHead>
-                  <TableHead>Deaths</TableHead>
-                  <TableHead>KDA</TableHead>
-                  <TableHead>Avg Kills/Game</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>{renderRows(main)}</TableBody>
+              <RankTableHeader sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+              <TableBody>{renderRows(sortedMain)}</TableBody>
             </Table>
           </CardContent>
         </Card>
@@ -165,19 +268,8 @@ export default function SeasonPokemonRankPage() {
           <Card>
             <CardContent className="p-0">
               <Table className="[&_td]:p-2 [&_th]:h-8 [&_th]:px-2 [&_th]:py-1">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>Pokemon</TableHead>
-                    <TableHead>Team</TableHead>
-                    <TableHead>Games Played</TableHead>
-                    <TableHead>Total Kills</TableHead>
-                    <TableHead>Deaths</TableHead>
-                    <TableHead>KDA</TableHead>
-                    <TableHead>Avg Kills/Game</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>{renderRows(limited)}</TableBody>
+                <RankTableHeader sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                <TableBody>{renderRows(sortedLimited)}</TableBody>
               </Table>
             </CardContent>
           </Card>
