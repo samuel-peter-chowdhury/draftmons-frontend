@@ -9,7 +9,13 @@ import {
   type SpeedNature,
 } from '@/lib/pokemon';
 
-const LS_CUSTOM_SPEED_KEY = 'draftmons:customSpeedInput';
+/**
+ * Versioned: `:v2` abandons every spread saved against the old 0-EV neutral
+ * default, so a returning user lands on the new `252+/+1` default instead of a
+ * stored spread that would now duplicate the fixed `0` column. The orphaned
+ * value is a throwaway UI preference, so there is deliberately no migration.
+ */
+const LS_CUSTOM_SPEED_KEY = 'draftmons:customSpeedInput:v2';
 
 type CustomSpeedState = {
   input: CustomSpeedInput;
@@ -68,7 +74,8 @@ function persist(input: CustomSpeedInput): void {
 }
 
 /**
- * The one EV/IV/nature/stage spread behind the Speed Tiers "Custom" column.
+ * The one EV/IV/nature/stage spread behind the adjustable Speed Tiers column —
+ * the rightmost one, labelled `252+/+1` until it is changed.
  *
  * Deliberately global rather than per-row or per-column: the same spread drives
  * every Pokemon on both sides, on both the team-matchup and team-build/compare
