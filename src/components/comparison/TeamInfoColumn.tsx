@@ -4,10 +4,10 @@ import { memo, useMemo } from 'react';
 import { ErrorAlert, Spinner, TeamLogo } from '@/components';
 import { PokemonSprite } from '@/components/pokemon/PokemonSprite';
 import { ExternalLink } from 'lucide-react';
+import { computePokemonStatRows, computeTeamRecord } from '@/lib/teamStats';
 import { formatUserDisplayName } from '@/lib/utils';
 import type {
   SeasonPokemonTeamInput,
-  PokemonInput,
   TeamInput,
   TeamBuildInput,
   GameInput,
@@ -92,9 +92,7 @@ function TeamBuildInfo({
     <div className="flex-1 space-y-4 overflow-x-auto">
       <div>
         <h3 className="text-sm font-semibold">{teamBuild.name}</h3>
-        <p className="text-xs text-muted-foreground">
-          {teamBuild.season?.name ?? 'Standalone'}
-        </p>
+        <p className="text-xs text-muted-foreground">{teamBuild.season?.name ?? 'Standalone'}</p>
       </div>
 
       <div className="rounded-md border border-border p-3">
@@ -134,50 +132,23 @@ function TeamInfo({
   seasonTeams: TeamInput[];
   onSpriteClick: (pokemonId: number) => void;
 }) {
-  // Build seasonPokemonId → PokemonInput map from team's roster
-  const seasonPokemonMap = useMemo(() => {
-    const map = new Map<number, PokemonInput>();
-    teamPokemon.forEach((spt) => {
-      if (spt.seasonPokemon?.pokemon) {
-        map.set(spt.seasonPokemonId, spt.seasonPokemon.pokemon);
-      }
-    });
-    return map;
-  }, [teamPokemon]);
+  const roster = useMemo(
+    () =>
+      teamPokemon.flatMap((spt) =>
+        spt.seasonPokemon?.pokemon
+          ? [{ seasonPokemonId: spt.seasonPokemonId, pokemon: spt.seasonPokemon.pokemon }]
+          : [],
+      ),
+    [teamPokemon],
+  );
 
-  // Compute top 3 kill leaders: aggregate kills per seasonPokemonId, filter to team's pokemon
-  const killLeaders = useMemo(() => {
-    if (gameStats.length === 0 || seasonPokemonMap.size === 0) return [];
-    const killMap = new Map<number, number>();
-    gameStats.forEach((stat) => {
-      if (seasonPokemonMap.has(stat.seasonPokemonId)) {
-        const current = killMap.get(stat.seasonPokemonId) ?? 0;
-        killMap.set(stat.seasonPokemonId, current + stat.directKills + stat.indirectKills);
-      }
-    });
-    return Array.from(killMap.entries())
-      .map(([spId, totalKills]) => ({ pokemon: seasonPokemonMap.get(spId)!, totalKills }))
-      .filter((entry) => entry.pokemon)
-      .sort((a, b) => b.totalKills - a.totalKills)
-      .slice(0, 3);
-  }, [gameStats, seasonPokemonMap]);
-
-  // Compute records
-  const matchRecord = useMemo(() => {
-    if (!team) return { wins: 0, losses: 0, pct: 0 };
-    const wins = team.wonMatches?.length ?? 0;
-    const losses = team.lostMatches?.length ?? 0;
-    const total = wins + losses;
-    return { wins, losses, pct: total > 0 ? (wins / total) * 100 : 0 };
-  }, [team]);
-
-  const gameRecord = useMemo(() => {
-    if (!team) return { wins: 0, losses: 0, pct: 0 };
-    const wins = team.wonGames?.length ?? 0;
-    const losses = team.lostGames?.length ?? 0;
-    const total = wins + losses;
-    return { wins, losses, pct: total > 0 ? (wins / total) * 100 : 0 };
-  }, [team]);
+  // `teamGameIds` is null because `useComparisonSide` already fetches this column's
+  // gameStats filtered to the team's own game ids.
+  const statRows = useMemo(
+    () => computePokemonStatRows(roster, gameStats, null),
+    [roster, gameStats],
+  );
+  const killLeaders = useMemo(() => statRows.slice(0, 3), [statRows]);
 
   // Build match history from wonGames + lostGames, grouped by matchId
   const teamNameMap = useMemo(() => {
@@ -201,8 +172,7 @@ function TeamInfo({
       if (existing) {
         existing.games.push(game);
       } else {
-        const opponentId =
-          game.winningTeamId === teamId ? game.losingTeamId : game.winningTeamId;
+        const opponentId = game.winningTeamId === teamId ? game.losingTeamId : game.winningTeamId;
         groupMap.set(game.matchId, {
           weekName: game.match?.week?.name ?? 'Unknown Week',
           opponentName: teamNameMap.get(opponentId) ?? 'Unknown',
@@ -231,6 +201,10 @@ function TeamInfo({
   }
 
   const teamId = team.id;
+  // Computed below the `!team` guard, so there is nothing to narrow. Cheap enough
+  // not to need a memo, and the whole column is already `memo`-wrapped.
+  const { matchWins, matchLosses, matchWinPct, gameWins, gameLosses, gameWinPct } =
+    computeTeamRecord(team);
 
   return (
     <div className="flex-1 space-y-4 overflow-x-auto">
@@ -290,18 +264,18 @@ function TeamInfo({
         <div className="rounded-md border border-border p-3">
           <span className="text-xs font-medium text-muted-foreground">Match Record</span>
           <p className="text-sm font-semibold">
-            {matchRecord.wins}-{matchRecord.losses}{' '}
+            {matchWins}-{matchLosses}{' '}
             <span className="font-normal text-muted-foreground">
-              ({matchRecord.pct.toFixed(1)}%)
+              ({((matchWinPct ?? 0) * 100).toFixed(1)}%)
             </span>
           </p>
         </div>
         <div className="rounded-md border border-border p-3">
           <span className="text-xs font-medium text-muted-foreground">Game Record</span>
           <p className="text-sm font-semibold">
-            {gameRecord.wins}-{gameRecord.losses}{' '}
+            {gameWins}-{gameLosses}{' '}
             <span className="font-normal text-muted-foreground">
-              ({gameRecord.pct.toFixed(1)}%)
+              ({((gameWinPct ?? 0) * 100).toFixed(1)}%)
             </span>
           </p>
         </div>

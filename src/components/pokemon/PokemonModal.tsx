@@ -382,7 +382,7 @@ export function PokemonModal({
                       );
 
                       if (key === 'speed') {
-                        const { maxNeutral, maxPositive, maxPositivePlus1 } =
+                        const { noInvestment, maxNeutral, maxPositive, maxPositivePlus1 } =
                           calculateSpeedTiers(value);
 
                         return (
@@ -392,6 +392,7 @@ export function PokemonModal({
                             </TooltipTrigger>
                             <TooltipContent>
                               <div className="space-y-1 text-xs">
+                                <p>No Investment: <span className="font-medium">{noInvestment}</span></p>
                                 <p>Max Neutral: <span className="font-medium">{maxNeutral}</span></p>
                                 <p>Max Positive: <span className="font-medium">{maxPositive}</span></p>
                                 <p>Max Positive (+1): <span className="font-medium">{maxPositivePlus1}</span></p>
