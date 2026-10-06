@@ -22,6 +22,7 @@ import { useApiSWR } from '@/hooks';
 import { buildUrlWithQuery } from '@/lib/api';
 import { BASE_ENDPOINTS } from '@/lib/constants';
 import { buildMatchSummaries, computeStandings } from '@/lib/standings';
+import { formatDifferential, formatWinPct } from '@/lib/teamStats';
 import { formatUserDisplayName } from '@/lib/utils';
 import type { PaginatedResponse, TeamInput } from '@/types';
 

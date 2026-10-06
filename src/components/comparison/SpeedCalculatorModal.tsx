@@ -371,8 +371,8 @@ function OutspeedSummary({
 }
 
 /**
- * Head-to-head speed calculator plus the persisted default behind the Speed
- * Tiers "Custom" column.
+ * Head-to-head speed calculator plus the persisted default behind the
+ * adjustable Speed Tiers column.
  *
  * Two independent scratch spreads sit at the top — one per side, fixed left to
  * right so the modal mirrors the table — and the persisted column default sits
@@ -521,9 +521,10 @@ export function SpeedCalculatorModal({
         <div className="space-y-2 border-t border-border/[0.08] pt-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-medium">Custom column default</p>
+              <p className="text-sm font-medium">Adjustable column default</p>
               <p className="text-xs text-muted-foreground">
-                Drives the Custom column for every Pokemon. Saved for next time.
+                Drives the last speed tier column for every Pokemon — 252+/+1 unless you change it.
+                Saved for next time.
               </p>
             </div>
             <Button
