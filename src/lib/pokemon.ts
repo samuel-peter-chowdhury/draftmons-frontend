@@ -1,3 +1,5 @@
+import { MoveCategory, type MoveInput, type SpecialMoveCategoryInput } from '@/types';
+
 /**
  * Linearly interpolate between two values
  */
@@ -401,4 +403,66 @@ export function getEffectivenessScore(value: number): number {
   if (value === 8) return -3;
   // Fallback: use -log2 for any other value
   return -Math.round(Math.log2(value));
+}
+
+/** Inner grouping order — fixed, not alphabetical. */
+const MOVE_CATEGORY_ORDER: MoveCategory[] = [
+  MoveCategory.PHYSICAL,
+  MoveCategory.SPECIAL,
+  MoveCategory.STATUS,
+];
+
+export interface SpecialCategoryMoveGroup {
+  category: MoveCategory;
+  moves: MoveInput[];
+}
+
+export interface SpecialCategoryGroup {
+  specialMoveCategory: SpecialMoveCategoryInput;
+  categories: SpecialCategoryMoveGroup[];
+  /** Total moves across all inner categories — drives the col-span-2 rule. */
+  totalMoves: number;
+}
+
+/**
+ * Group a Pokemon's moves by special move category, then by move category.
+ *
+ * The loop is over each move's `specialMoveCategories`, so a move in two
+ * categories lands in both groups. Moves with no special category are skipped
+ * entirely — a Pokemon with none yields `[]`.
+ */
+export function groupMovesBySpecialCategory(moves: MoveInput[]): SpecialCategoryGroup[] {
+  const groups: SpecialCategoryGroup[] = [];
+  const byId = new Map<number, SpecialCategoryGroup>();
+
+  for (const move of moves) {
+    if (!move.specialMoveCategories) continue;
+    for (const smc of move.specialMoveCategories) {
+      let group = byId.get(smc.id);
+      if (!group) {
+        group = { specialMoveCategory: smc, categories: [], totalMoves: 0 };
+        byId.set(smc.id, group);
+        groups.push(group);
+      }
+      const categoryGroup = group.categories.find((c) => c.category === move.category);
+      if (categoryGroup) {
+        categoryGroup.moves.push(move);
+      } else {
+        group.categories.push({ category: move.category, moves: [move] });
+      }
+      group.totalMoves += 1;
+    }
+  }
+
+  groups.sort((a, b) => a.specialMoveCategory.name.localeCompare(b.specialMoveCategory.name));
+  for (const group of groups) {
+    group.categories.sort(
+      (a, b) => MOVE_CATEGORY_ORDER.indexOf(a.category) - MOVE_CATEGORY_ORDER.indexOf(b.category),
+    );
+    for (const categoryGroup of group.categories) {
+      categoryGroup.moves.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+    }
+  }
+
+  return groups;
 }
